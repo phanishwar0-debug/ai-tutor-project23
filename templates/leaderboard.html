@@ -1,0 +1,1335 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .leaderboard-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .leaderboard-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: slideDown 1s ease-out;
+    }
+    
+    .leaderboard-header h1 {
+        font-size: 3rem;
+        background: linear-gradient(135deg, #667eea, #764ba2, #48bb78);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-badge {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        display: inline-block;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+    
+    .leaderboard-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        padding: 0.75rem 2rem;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .tab-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .tab-btn:hover:not(.active) {
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+    
+    .leaderboard-content {
+        display: none;
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .leaderboard-content.active {
+        display: block;
+    }
+    
+    .leaderboard-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .table-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: 80px 2fr 1fr 1fr 1fr 1fr;
+        gap: 1rem;
+        font-weight: 600;
+    }
+    
+    .table-row {
+        display: grid;
+        grid-template-columns: 80px 2fr 1fr 1fr 1fr 1fr;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        align-items: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .table-row:hover {
+        background: #f8f9fa;
+        transform: translateX(10px);
+    }
+    
+    .table-row:last-child {
+        border-bottom: none;
+    }
+    
+    .table-row.current-user {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border-left: 5px solid #667eea;
+    }
+    
+    .rank-badge {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin: 0 auto;
+    }
+    
+    .rank-1 {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        color: #7a6000;
+        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    }
+    
+    .rank-2 {
+        background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+        color: #4a4a4a;
+        box-shadow: 0 5px 15px rgba(192, 192, 192, 0.4);
+    }
+    
+    .rank-3 {
+        background: linear-gradient(135deg, #CD7F32, #A0522D);
+        color: #5a3a1c;
+        box-shadow: 0 5px 15px rgba(205, 127, 50, 0.4);
+    }
+    
+    .rank-other {
+        background: #f8f9fa;
+        color: #718096;
+    }
+    
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .student-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+    }
+    
+    .student-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .student-name {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .student-grade {
+        font-size: 0.85rem;
+        color: #718096;
+    }
+    
+    .last-active {
+        font-size: 0.75rem;
+        color: #a0aec0;
+        margin-top: 2px;
+    }
+    
+    .last-active i {
+        margin-right: 3px;
+        font-size: 0.7rem;
+    }
+    
+    .last-active.today {
+        color: #48bb78;
+    }
+    
+    .last-active.yesterday {
+        color: #ed8936;
+    }
+    
+    .xp-display {
+        font-weight: 600;
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+    
+    .xp-display i {
+        margin-right: 0.5rem;
+        color: #fbbf24;
+    }
+    
+    .level-display {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .streak-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        background: #fef3c7;
+        color: #d97706;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .streak-badge i {
+        color: #f59e0b;
+    }
+    
+    .medals-display {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .medal-small {
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        color: #7a6000;
+    }
+    
+    .medal-small.silver { 
+        background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+        color: #4a4a4a;
+    }
+    
+    .medal-small.bronze { 
+        background: linear-gradient(135deg, #CD7F32, #A0522D);
+        color: #5a3a1c;
+    }
+    
+    .activity-stats {
+        display: flex;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: #718096;
+    }
+    
+    .activity-stats span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .activity-stats i {
+        font-size: 0.7rem;
+    }
+    
+    .progress-circle {
+        width: 40px;
+        height: 40px;
+        position: relative;
+    }
+    
+    .progress-circle svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+    
+    .progress-circle-bg {
+        fill: none;
+        stroke: #e2e8f0;
+        stroke-width: 4;
+    }
+    
+    .progress-circle-fill {
+        fill: none;
+        stroke: #48bb78;
+        stroke-width: 4;
+        stroke-linecap: round;
+        stroke-dasharray: 100;
+        stroke-dashoffset: calc(100 - var(--progress));
+        transition: stroke-dashoffset 1s ease;
+    }
+    
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .your-position {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+        animation: pulse 2s infinite;
+    }
+    
+    .language-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .language-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .language-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(102,126,234,0.2);
+    }
+    
+    .language-flag {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+    
+    .language-name {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+    
+    .language-count {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .language-label {
+        font-size: 0.85rem;
+        color: #718096;
+    }
+    
+    .material-leaderboards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+    
+    .material-leaderboard {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .material-leaderboard h3 {
+        margin-bottom: 1.5rem;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .material-leaderboard h3 i {
+        color: #667eea;
+    }
+    
+    .material-leader-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .material-leader-row:hover {
+        background: #f8f9fa;
+        transform: translateX(5px);
+    }
+    
+    .material-leader-row:last-child {
+        border-bottom: none;
+    }
+    
+    .material-rank {
+        width: 40px;
+        height: 40px;
+        background: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    
+    .material-student {
+        flex: 1;
+        padding: 0 1rem;
+        font-weight: 500;
+    }
+    
+    .material-count {
+        font-weight: 600;
+        color: #48bb78;
+    }
+    
+    .filter-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .search-box {
+        max-width: 400px;
+        margin: 0 auto 2rem;
+    }
+    
+    .search-box input {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-box input:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .trophy-animation {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 10rem;
+        color: gold;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 1000;
+    }
+    
+    .trophy-animation.active {
+        animation: trophyCelebrate 2s ease-out;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #a0aec0;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    @keyframes trophyCelebrate {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        }
+        50% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0) rotate(360deg);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Language-specific flag colors */
+    .flag-english { background: linear-gradient(135deg, #4299e1, #3182ce); }
+    .flag-hindi { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+    .flag-bengali { background: linear-gradient(135deg, #f56565, #e53e3e); }
+    .flag-telugu { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .flag-marathi { background: linear-gradient(135deg, #9f7aea, #805ad5); }
+    .flag-tamil { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .flag-urdu { background: linear-gradient(135deg, #667eea, #5a67d8); }
+    .flag-gujarati { background: linear-gradient(135deg, #fc8181, #f56565); }
+    .flag-kannada { background: linear-gradient(135deg, #68d391, #48bb78); }
+    .flag-malayalam { background: linear-gradient(135deg, #b794f4, #9f7aea); }
+    .flag-oriya { background: linear-gradient(135deg, #f687b3, #ed64a6); }
+    .flag-punjabi { background: linear-gradient(135deg, #f6ad55, #ed8936); }
+    .flag-assamese { background: linear-gradient(135deg, #4fd1c5, #38b2ac); }
+    .flag-maithili { background: linear-gradient(135deg, #cbd5e0, #a0aec0); }
+    .flag-santali { background: linear-gradient(135deg, #90cdf4, #63b3ed); }
+    .flag-kashmiri { background: linear-gradient(135deg, #d53f8c, #b83280); }
+    .flag-nepali { background: linear-gradient(135deg, #fbbf24, #d69e2e); }
+    .flag-sindhi { background: linear-gradient(135deg, #b794f4, #9f7aea); }
+    .flag-dogri { background: linear-gradient(135deg, #f687b3, #ed64a6); }
+    .flag-konkani { background: linear-gradient(135deg, #4fd1c5, #319795); }
+    .flag-manipuri { background: linear-gradient(135deg, #f6ad55, #dd6b20); }
+    .flag-bodo { background: linear-gradient(135deg, #a0aec0, #718096); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="leaderboard-container">
+    <div class="leaderboard-header">
+        <h1><i class="fas fa-trophy"></i> Global Leaderboard</h1>
+        <p>Compete with students learning in 22 Indian languages!</p>
+        <div class="stats-badge">
+            <i class="fas fa-users"></i> {{ total_active|default(0) }} Active Students
+            <i class="fas fa-book ml-2"></i> {{ total_materials|default(0) }} Study Materials
+        </div>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="search-box">
+        <input type="text" id="studentSearch" placeholder="🔍 Search for a student..." onkeyup="searchStudents()">
+    </div>
+    
+    <div class="leaderboard-tabs">
+        <button class="tab-btn active" onclick="switchTab('overall', event)">
+            <i class="fas fa-globe"></i> Overall Ranking
+        </button>
+        <button class="tab-btn" onclick="switchTab('material_masters', event)">
+            <i class="fas fa-book"></i> Material Masters
+        </button>
+        <button class="tab-btn" onclick="switchTab('video_learners', event)">
+            <i class="fas fa-video"></i> Video Learners
+        </button>
+        <button class="tab-btn" onclick="switchTab('language_leaders', event)">
+            <i class="fas fa-language"></i> Language Leaders
+        </button>
+        <button class="tab-btn" onclick="switchTab('polyglots', event)">
+            <i class="fas fa-globe"></i> Polyglots
+        </button>
+    </div>
+    
+    <!-- Overall Leaderboard -->
+    <div id="overall" class="leaderboard-content active">
+        {% if top_students %}
+        <div class="leaderboard-table">
+            <div class="table-header">
+                <div>Rank</div>
+                <div>Student</div>
+                <div>XP</div>
+                <div>Level</div>
+                <div>Language</div>
+                <div>Activity</div>
+            </div>
+            
+            {% for student in top_students %}
+            <div class="table-row {% if current_user.id == student.id %}current-user{% endif %}" onclick="showStudentProfile('{{ student.id }}')">
+                <div>
+                    <div class="rank-badge rank-{% if loop.index <= 3 %}{{ loop.index }}{% else %}other{% endif %}">
+                        {{ loop.index }}
+                        {% if loop.index == 1 %}<i class="fas fa-crown" style="margin-left: 5px;"></i>{% endif %}
+                    </div>
+                </div>
+                <div class="student-info">
+                    <div class="student-avatar">
+                        {{ student.name[0]|upper }}
+                    </div>
+                    <div class="student-details">
+                        <span class="student-name">{{ student.name }}</span>
+                        <span class="student-grade">Grade {{ student.grade|default('N/A') }}</span>
+                        <span class="last-active {% if student.last_active == 'Today' %}today{% elif student.last_active == 'Yesterday' %}yesterday{% endif %}">
+                            <i class="fas fa-clock"></i> {{ student.last_active|default('Active') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="xp-display">
+                    <i class="fas fa-star"></i> {{ student.xp|default(0)|int }}
+                </div>
+                <div>
+                    <span class="level-display">Level {{ student.level|default(1) }}</span>
+                    {% if student.streak > 0 %}
+                    <div class="streak-badge" style="margin-top: 5px;">
+                        <i class="fas fa-fire"></i> {{ student.streak }} day streak
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="badge-language" style="background: {% if student.language == 'english' %}#4299e1{% elif student.language == 'hindi' %}#ed8936{% elif student.language == 'telugu' %}#48bb78{% else %}#667eea{% endif %}; color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.85rem;">
+                        <i class="fas fa-language"></i> 
+                        {% if student.language == 'english' %}English
+                        {% elif student.language == 'hindi' %}हिंदी
+                        {% elif student.language == 'bengali' %}বাংলা
+                        {% elif student.language == 'telugu' %}తెలుగు
+                        {% elif student.language == 'marathi' %}मराठी
+                        {% elif student.language == 'tamil' %}தமிழ்
+                        {% elif student.language == 'urdu' %}اردو
+                        {% elif student.language == 'gujarati' %}ગુજરાતી
+                        {% elif student.language == 'kannada' %}ಕನ್ನಡ
+                        {% elif student.language == 'malayalam' %}മലയാളം
+                        {% elif student.language == 'oriya' %}ଓଡ଼ିଆ
+                        {% elif student.language == 'punjabi' %}ਪੰਜਾਬੀ
+                        {% elif student.language == 'assamese' %}অসমীয়া
+                        {% elif student.language == 'maithili' %}मैथिली
+                        {% elif student.language == 'santali' %}ᱥᱟᱱᱛᱟᱲᱤ
+                        {% elif student.language == 'kashmiri' %}कॉशुर
+                        {% elif student.language == 'nepali' %}नेपाली
+                        {% elif student.language == 'sindhi' %}سنڌي
+                        {% elif student.language == 'dogri' %}डोगरी
+                        {% elif student.language == 'konkani' %}कोंकणी
+                        {% elif student.language == 'manipuri' %}মৈতৈলোন্
+                        {% elif student.language == 'bodo' %}बर'
+                        {% else %}{{ student.language|title }}{% endif %}
+                    </span>
+                </div>
+                <div class="activity-stats">
+                    <span title="Materials studied"><i class="fas fa-book"></i> {{ student.material_count|default(0) }}</span>
+                    <span title="Videos watched"><i class="fas fa-video"></i> {{ student.video_count|default(0) }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users-slash"></i>
+            <h3>No Active Students Yet</h3>
+            <p>Be the first to start learning and appear on the leaderboard!</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Material Masters Leaderboard -->
+    <div id="material_masters" class="leaderboard-content">
+        <div class="leaderboard-table">
+            <div class="table-header">
+                <div>Rank</div>
+                <div>Student</div>
+                <div>Materials</div>
+                <div>Views</div>
+                <div>Downloads</div>
+                <div>Language</div>
+            </div>
+            
+            {% if material_masters %}
+                {% for student in material_masters %}
+                <div class="table-row" onclick="showStudentProfile('{{ student.id }}')">
+                    <div>
+                        <div class="rank-badge rank-{% if loop.index <= 3 %}{{ loop.index }}{% else %}other{% endif %}">
+                            {{ loop.index }}
+                        </div>
+                    </div>
+                    <div class="student-info">
+                        <div class="student-avatar" style="background: linear-gradient(135deg, #48bb78, #38a169);">
+                            {{ student.name[0]|upper }}
+                        </div>
+                        <div>
+                            <strong>{{ student.name }}</strong><br>
+                            <small>Grade {{ student.grade|default('N/A') }}</small>
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="color: #48bb78; font-size: 1.2rem;">
+                            {{ student.material_count|default(0) }}
+                        </strong>
+                    </div>
+                    <div>
+                        <i class="fas fa-eye" style="color: #667eea;"></i> {{ student.total_views|default(0) }}
+                    </div>
+                    <div>
+                        <i class="fas fa-download" style="color: #9f7aea;"></i> {{ student.total_downloads|default(0) }}
+                    </div>
+                    <div>
+                        <span class="badge-language" style="background: {% if student.language == 'english' %}#4299e1{% else %}#667eea{% endif %}; color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.85rem;">
+                            <i class="fas fa-language"></i> 
+                            {% if student.language == 'english' %}English
+                            {% elif student.language == 'hindi' %}हिंदी
+                            {% elif student.language == 'telugu' %}తెలుగు
+                            {% else %}{{ student.language|title }}{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-book"></i>
+                    <h3>No Material Data Yet</h3>
+                    <p>Study materials to become a Material Master!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Video Learners Leaderboard -->
+    <div id="video_learners" class="leaderboard-content">
+        <div class="leaderboard-table">
+            <div class="table-header">
+                <div>Rank</div>
+                <div>Student</div>
+                <div>Videos</div>
+                <div>Watch Time</div>
+                <div>Completed</div>
+                <div>Language</div>
+            </div>
+            
+            {% if video_learners %}
+                {% for student in video_learners %}
+                <div class="table-row" onclick="showStudentProfile('{{ student.id }}')">
+                    <div>
+                        <div class="rank-badge rank-{% if loop.index <= 3 %}{{ loop.index }}{% else %}other{% endif %}">
+                            {{ loop.index }}
+                        </div>
+                    </div>
+                    <div class="student-info">
+                        <div class="student-avatar" style="background: linear-gradient(135deg, #f56565, #e53e3e);">
+                            {{ student.name[0]|upper }}
+                        </div>
+                        <div>
+                            <strong>{{ student.name }}</strong><br>
+                            <small>Grade {{ student.grade|default('N/A') }}</small>
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="color: #f56565; font-size: 1.2rem;">
+                            {{ student.video_count|default(0) }}
+                        </strong>
+                    </div>
+                    <div>
+                        <i class="fas fa-clock"></i> {{ student.watch_time|default(0) }} min
+                    </div>
+                    <div>
+                        <div class="progress-circle" style="width: 40px; height: 40px;">
+                            <svg>
+                                <circle class="progress-circle-bg" cx="20" cy="20" r="18"></circle>
+                                <circle class="progress-circle-fill" cx="20" cy="20" r="18" 
+                                        style="--progress: {{ student.completion_rate|default(0) }}"></circle>
+                            </svg>
+                            <div class="progress-text">{{ student.completion_rate|default(0)|int }}%</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge-language" style="background: {% if student.language == 'english' %}#4299e1{% else %}#667eea{% endif %}; color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.85rem;">
+                            <i class="fas fa-language"></i> 
+                            {% if student.language == 'english' %}English
+                            {% elif student.language == 'hindi' %}हिंदी
+                            {% elif student.language == 'telugu' %}తెలుగు
+                            {% else %}{{ student.language|title }}{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-video"></i>
+                    <h3>No Video Data Yet</h3>
+                    <p>Watch educational videos to appear here!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Language Leaders Leaderboard -->
+    <div id="language_leaders" class="leaderboard-content">
+        <div class="language-stats">
+            <!-- English -->
+            <div class="language-card">
+                <div class="language-flag flag-english">🇬🇧</div>
+                <div class="language-name">English</div>
+                <div class="language-count">{{ language_counts.english|default(0) }}</div>
+                <div class="language-label">Active Learners</div>
+            </div>
+            <!-- Hindi -->
+            <div class="language-card">
+                <div class="language-flag flag-hindi">🇮🇳</div>
+                <div class="language-name">हिंदी</div>
+                <div class="language-count">{{ language_counts.hindi|default(0) }}</div>
+                <div class="language-label">सक्रिय शिक्षार्थी</div>
+            </div>
+            <!-- Bengali -->
+            <div class="language-card">
+                <div class="language-flag flag-bengali">🇮🇳</div>
+                <div class="language-name">বাংলা</div>
+                <div class="language-count">{{ language_counts.bengali|default(0) }}</div>
+                <div class="language-label">সক্রিয় শিক্ষার্থী</div>
+            </div>
+            <!-- Telugu -->
+            <div class="language-card">
+                <div class="language-flag flag-telugu">🇮🇳</div>
+                <div class="language-name">తెలుగు</div>
+                <div class="language-count">{{ language_counts.telugu|default(0) }}</div>
+                <div class="language-label">చురుకైన అభ్యాసకులు</div>
+            </div>
+            <!-- Marathi -->
+            <div class="language-card">
+                <div class="language-flag flag-marathi">🇮🇳</div>
+                <div class="language-name">मराठी</div>
+                <div class="language-count">{{ language_counts.marathi|default(0) }}</div>
+                <div class="language-label">सक्रिय शिकणारे</div>
+            </div>
+            <!-- Tamil -->
+            <div class="language-card">
+                <div class="language-flag flag-tamil">🇮🇳</div>
+                <div class="language-name">தமிழ்</div>
+                <div class="language-count">{{ language_counts.tamil|default(0) }}</div>
+                <div class="language-label">செயலில் கற்பவர்கள்</div>
+            </div>
+            <!-- Urdu -->
+            <div class="language-card">
+                <div class="language-flag flag-urdu">🇮🇳</div>
+                <div class="language-name">اردو</div>
+                <div class="language-count">{{ language_counts.urdu|default(0) }}</div>
+                <div class="language-label">فعال سیکھنے والے</div>
+            </div>
+            <!-- Gujarati -->
+            <div class="language-card">
+                <div class="language-flag flag-gujarati">🇮🇳</div>
+                <div class="language-name">ગુજરાતી</div>
+                <div class="language-count">{{ language_counts.gujarati|default(0) }}</div>
+                <div class="language-label">સક્રિય શિક્ષાર્થીઓ</div>
+            </div>
+            <!-- Kannada -->
+            <div class="language-card">
+                <div class="language-flag flag-kannada">🇮🇳</div>
+                <div class="language-name">ಕನ್ನಡ</div>
+                <div class="language-count">{{ language_counts.kannada|default(0) }}</div>
+                <div class="language-label">ಸಕ್ರಿಯ ಕಲಿಕಾರ್ಥಿಗಳು</div>
+            </div>
+            <!-- Malayalam -->
+            <div class="language-card">
+                <div class="language-flag flag-malayalam">🇮🇳</div>
+                <div class="language-name">മലയാളം</div>
+                <div class="language-count">{{ language_counts.malayalam|default(0) }}</div>
+                <div class="language-label">സജീവ പഠിതാക്കൾ</div>
+            </div>
+            <!-- Odia -->
+            <div class="language-card">
+                <div class="language-flag flag-oriya">🇮🇳</div>
+                <div class="language-name">ଓଡ଼ିଆ</div>
+                <div class="language-count">{{ language_counts.oriya|default(0) }}</div>
+                <div class="language-label">ସକ୍ରିୟ ଶିକ୍ଷାର୍ଥୀ</div>
+            </div>
+            <!-- Punjabi -->
+            <div class="language-card">
+                <div class="language-flag flag-punjabi">🇮🇳</div>
+                <div class="language-name">ਪੰਜਾਬੀ</div>
+                <div class="language-count">{{ language_counts.punjabi|default(0) }}</div>
+                <div class="language-label">ਸਰਗਰਮ ਸਿੱਖਿਆਰਥੀ</div>
+            </div>
+            <!-- Assamese -->
+            <div class="language-card">
+                <div class="language-flag flag-assamese">🇮🇳</div>
+                <div class="language-name">অসমীয়া</div>
+                <div class="language-count">{{ language_counts.assamese|default(0) }}</div>
+                <div class="language-label">সক্ৰিয় শিক্ষাৰ্থী</div>
+            </div>
+            <!-- Maithili -->
+            <div class="language-card">
+                <div class="language-flag flag-maithili">🇮🇳</div>
+                <div class="language-name">मैथिली</div>
+                <div class="language-count">{{ language_counts.maithili|default(0) }}</div>
+                <div class="language-label">सक्रिय शिक्षार्थी</div>
+            </div>
+            <!-- Santali -->
+            <div class="language-card">
+                <div class="language-flag flag-santali">🇮🇳</div>
+                <div class="language-name">ᱥᱟᱱᱛᱟᱲᱤ</div>
+                <div class="language-count">{{ language_counts.santali|default(0) }}</div>
+                <div class="language-label">ᱠᱟᱹᱢᱤᱭᱟᱱ ᱪᱮᱛᱟᱱ</div>
+            </div>
+            <!-- Kashmiri -->
+            <div class="language-card">
+                <div class="language-flag flag-kashmiri">🇮🇳</div>
+                <div class="language-name">कॉशुर</div>
+                <div class="language-count">{{ language_counts.kashmiri|default(0) }}</div>
+                <div class="language-label">فعال سیکھنے والے</div>
+            </div>
+            <!-- Nepali -->
+            <div class="language-card">
+                <div class="language-flag flag-nepali">🇮🇳</div>
+                <div class="language-name">नेपाली</div>
+                <div class="language-count">{{ language_counts.nepali|default(0) }}</div>
+                <div class="language-label">सक्रिय सिकारु</div>
+            </div>
+            <!-- Sindhi -->
+            <div class="language-card">
+                <div class="language-flag flag-sindhi">🇮🇳</div>
+                <div class="language-name">سنڌي</div>
+                <div class="language-count">{{ language_counts.sindhi|default(0) }}</div>
+                <div class="language-label">فعال سکندڙ</div>
+            </div>
+            <!-- Dogri -->
+            <div class="language-card">
+                <div class="language-flag flag-dogri">🇮🇳</div>
+                <div class="language-name">डोगरी</div>
+                <div class="language-count">{{ language_counts.dogri|default(0) }}</div>
+                <div class="language-label">सक्रिय शिक्षार्थी</div>
+            </div>
+            <!-- Konkani -->
+            <div class="language-card">
+                <div class="language-flag flag-konkani">🇮🇳</div>
+                <div class="language-name">कोंकणी</div>
+                <div class="language-count">{{ language_counts.konkani|default(0) }}</div>
+                <div class="language-label">सक्रिय शिकपी</div>
+            </div>
+            <!-- Manipuri -->
+            <div class="language-card">
+                <div class="language-flag flag-manipuri">🇮🇳</div>
+                <div class="language-name">মৈতৈলোন্</div>
+                <div class="language-count">{{ language_counts.manipuri|default(0) }}</div>
+                <div class="language-label">অ্যাক্টিভ লৈরিক্প</div>
+            </div>
+            <!-- Bodo -->
+            <div class="language-card">
+                <div class="language-flag flag-bodo">🇮🇳</div>
+                <div class="language-name">बर'</div>
+                <div class="language-count">{{ language_counts.bodo|default(0) }}</div>
+                <div class="language-label">सोमोइदै गोसोम</div>
+            </div>
+        </div>
+        
+        <div class="leaderboard-table" style="margin-top: 2rem;">
+            <div class="table-header">
+                <div>Rank</div>
+                <div>Student</div>
+                <div>Primary Language</div>
+                <div>Materials</div>
+                <div>Videos</div>
+                <div>Total</div>
+            </div>
+            
+            {% if language_leaders %}
+                {% for student in language_leaders %}
+                <div class="table-row" onclick="showStudentProfile('{{ student.id }}')">
+                    <div>
+                        <div class="rank-badge rank-{% if loop.index <= 3 %}{{ loop.index }}{% else %}other{% endif %}">
+                            {{ loop.index }}
+                        </div>
+                    </div>
+                    <div class="student-info">
+                        <div class="student-avatar" style="background: {% if student.language == 'english' %}#4299e1{% elif student.language == 'hindi' %}#ed8936{% elif student.language == 'telugu' %}#48bb78{% else %}#667eea{% endif %};">
+                            {{ student.name[0]|upper }}
+                        </div>
+                        <div>
+                            <strong>{{ student.name }}</strong><br>
+                            <small>Grade {{ student.grade|default('N/A') }}</small>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge-language" style="background: {% if student.language == 'english' %}#4299e1{% elif student.language == 'hindi' %}#ed8936{% elif student.language == 'telugu' %}#48bb78{% else %}#667eea{% endif %}; color: white; padding: 0.5rem 1rem; border-radius: 50px;">
+                            <i class="fas fa-language"></i> 
+                            {% if student.language == 'english' %}English
+                            {% elif student.language == 'hindi' %}हिंदी
+                            {% elif student.language == 'bengali' %}বাংলা
+                            {% elif student.language == 'telugu' %}తెలుగు
+                            {% elif student.language == 'marathi' %}मराठी
+                            {% elif student.language == 'tamil' %}தமிழ்
+                            {% else %}{{ student.language|title }}{% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <i class="fas fa-book" style="color: #48bb78;"></i> {{ student.material_count|default(0) }}
+                    </div>
+                    <div>
+                        <i class="fas fa-video" style="color: #f56565;"></i> {{ student.video_count|default(0) }}
+                    </div>
+                    <div>
+                        <strong style="color: #667eea;">{{ student.total_activities|default(0) }}</strong>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-language"></i>
+                    <h3>No Language Data Yet</h3>
+                    <p>Students learning in different languages will appear here!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Polyglots Leaderboard (NEW) -->
+    <div id="polyglots" class="leaderboard-content">
+        <div class="leaderboard-table">
+            <div class="table-header">
+                <div>Rank</div>
+                <div>Student</div>
+                <div>Languages Used</div>
+                <div>Primary Language</div>
+                <div>Total XP</div>
+                <div>Achievement</div>
+            </div>
+            
+            {% if polyglots %}
+                {% for student in polyglots %}
+                <div class="table-row" onclick="showStudentProfile('{{ student.id }}')">
+                    <div>
+                        <div class="rank-badge rank-{% if loop.index <= 3 %}{{ loop.index }}{% else %}other{% endif %}">
+                            {{ loop.index }}
+                        </div>
+                    </div>
+                    <div class="student-info">
+                        <div class="student-avatar" style="background: linear-gradient(135deg, #9f7aea, #805ad5);">
+                            {{ student.name[0]|upper }}
+                        </div>
+                        <div>
+                            <strong>{{ student.name }}</strong><br>
+                            <small>Grade {{ student.grade|default('N/A') }}</small>
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="color: #9f7aea; font-size: 1.2rem;">
+                            {{ student.language_count|default(1) }}
+                        </strong>
+                    </div>
+                    <div>
+                        <span class="badge-language" style="background: {% if student.primary_language == 'english' %}#4299e1{% elif student.primary_language == 'hindi' %}#ed8936{% else %}#667eea{% endif %}; color: white; padding: 0.25rem 0.75rem; border-radius: 50px;">
+                            <i class="fas fa-language"></i> 
+                            {% if student.primary_language == 'english' %}English
+                            {% elif student.primary_language == 'hindi' %}हिंदी
+                            {% elif student.primary_language == 'telugu' %}తెలుగు
+                            {% else %}{{ student.primary_language|title }}{% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <strong>{{ student.xp|default(0) }}</strong>
+                    </div>
+                    <div>
+                        {% if student.language_count >= 5 %}
+                        <span class="streak-badge" style="background: #FFD70020; color: #b8860b;">
+                            <i class="fas fa-crown"></i> Polyglot Master
+                        </span>
+                        {% elif student.language_count >= 3 %}
+                        <span class="streak-badge" style="background: #48bb7820; color: #2f855a;">
+                            <i class="fas fa-language"></i> Polyglot
+                        </span>
+                        {% else %}
+                        <span class="streak-badge" style="background: #667eea20; color: #5a67d8;">
+                            <i class="fas fa-star"></i> Language Learner
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-globe"></i>
+                    <h3>No Polyglots Yet</h3>
+                    <p>Learn in multiple languages to become a Polyglot!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Your Position -->
+    {% if current_user.is_authenticated and current_user.role == 'student' %}
+    <div class="your-position">
+        <h3><i class="fas fa-user"></i> Your Position</h3>
+        <p>You are currently ranked <strong>#{{ position|default('N/A') }}</strong> among <strong>{{ total_active|default(0) }}</strong> active students</p>
+        <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; flex-wrap: wrap;">
+            <div>
+                <strong style="font-size: 1.5rem; color: #667eea;">{{ current_user.xp|default(0) }}</strong><br>
+                <small>Total XP</small>
+            </div>
+            <div>
+                <strong style="font-size: 1.5rem; color: #48bb78;">{{ current_user.total_materials|default(0) }}</strong><br>
+                <small>Materials</small>
+            </div>
+            <div>
+                <strong style="font-size: 1.5rem; color: #f56565;">{{ current_user.total_videos|default(0) }}</strong><br>
+                <small>Videos</small>
+            </div>
+            <div>
+                <strong style="font-size: 1.5rem; color: #9f7aea;">{{ current_user.medals|length|default(0) }}</strong><br>
+                <small>Medals</small>
+            </div>
+        </div>
+        <p style="margin-top: 1rem;">Keep learning to climb higher!</p>
+    </div>
+    {% endif %}
+    
+    <!-- Study Material Leaderboards (GAMES REMOVED) -->
+    <div class="material-leaderboards">
+        <div class="material-leaderboard">
+            <h3><i class="fas fa-book"></i> Most Materials Studied</h3>
+            {% if material_masters %}
+                {% for student in material_masters[:5] %}
+                <div class="material-leader-row" onclick="showStudentProfile('{{ student.id }}')">
+                    <div class="material-rank">{{ loop.index }}</div>
+                    <div class="material-student">{{ student.name }}</div>
+                    <div class="material-count">{{ student.material_count|default(0) }} items</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="padding: 1rem;">
+                    <p>No data yet</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="material-leaderboard">
+            <h3><i class="fas fa-video"></i> Most Videos Watched</h3>
+            {% if video_learners %}
+                {% for student in video_learners[:5] %}
+                <div class="material-leader-row" onclick="showStudentProfile('{{ student.id }}')">
+                    <div class="material-rank">{{ loop.index }}</div>
+                    <div class="material-student">{{ student.name }}</div>
+                    <div class="material-count">{{ student.video_count|default(0) }} videos</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="padding: 1rem;">
+                    <p>No data yet</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="material-leaderboard">
+            <h3><i class="fas fa-language"></i> Most Languages Used</h3>
+            {% if polyglots %}
+                {% for student in polyglots[:5] %}
+                <div class="material-leader-row" onclick="showStudentProfile('{{ student.id }}')">
+                    <div class="material-rank">{{ loop.index }}</div>
+                    <div class="material-student">{{ student.name }}</div>
+                    <div class="material-count">{{ student.language_count|default(1) }} languages</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="padding: 1rem;">
+                    <p>No data yet</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="material-leaderboard">
+            <h3><i class="fas fa-medal"></i> Most Medals Earned</h3>
+            {% if top_students %}
+                {% for student in top_students[:5] %}
+                <div class="material-leader-row" onclick="showStudentProfile('{{ student.id }}')">
+                    <div class="material-rank">{{ loop.index }}</div>
+                    <div class="material-student">{{ student.name }}</div>
+                    <div class="material-count">{{ student.medal_count|default(0) }} medals</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="padding: 1rem;">
+                    <p>No data yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="trophy-animation" id="trophyAnimation">
+    <i class="fas fa-trophy"></i>
+</div>
+
+<script>
+    function switchTab(tabName, event) {
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Show selected tab content
+        document.querySelectorAll('.leaderboard-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(tabName).classList.add('active');
+        
+        // Play celebration animation
+        const trophyAnimation = document.getElementById('trophyAnimation');
+        trophyAnimation.classList.add('active');
+        setTimeout(() => trophyAnimation.classList.remove('active'), 2000);
+    }
+    
+    function showStudentProfile(studentId) {
+        // Redirect to student profile page
+        window.location.href = `/student/profile/${studentId}`;
+    }
+    
+    function searchStudents() {
+        const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('.table-row');
+        
+        rows.forEach(row => {
+            const studentName = row.querySelector('.student-name')?.textContent.toLowerCase() || '';
+            if (studentName.includes(searchTerm) || searchTerm === '') {
+                row.style.display = 'grid';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    // Animate progress circles on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const progressCircles = entry.target.querySelectorAll('.progress-circle-fill');
+                    progressCircles.forEach(circle => {
+                        const progress = circle.style.getPropertyValue('--progress');
+                        circle.style.strokeDashoffset = `calc(100 - ${progress})`;
+                    });
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        document.querySelectorAll('.leaderboard-content').forEach(content => {
+            observer.observe(content);
+        });
+        
+        // Add hover animation to table rows
+        document.querySelectorAll('.table-row').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(10px)';
+            });
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+            });
+        });
+        
+        // Animate rank badges
+        document.querySelectorAll('.rank-badge').forEach((badge, index) => {
+            badge.style.animation = `bounceIn 0.5s ease ${index * 0.1}s both`;
+        });
+    });
+    
+    // Add bounce animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Auto-refresh leaderboard every 60 seconds
+    setInterval(() => {
+        location.reload();
+    }, 60000);
+</script>
+{% endblock %}

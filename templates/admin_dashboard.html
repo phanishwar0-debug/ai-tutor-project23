@@ -1,0 +1,2442 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-dashboard {
+        padding: 1.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Welcome Header */
+    .welcome-header {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        color: white;
+        padding: 1.8rem 2.5rem;
+        border-radius: 25px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+
+    .welcome-header h1 {
+        font-size: 2rem;
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .date-badge {
+        background: rgba(255,255,255,0.15);
+        padding: 0.6rem 1.8rem;
+        border-radius: 50px;
+        font-size: 1rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* Quick Stats Row */
+    .quick-stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card-small {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem 1.2rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+        border: 1px solid #edf2f7;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card-small:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(102,126,234,0.15);
+        border-color: transparent;
+    }
+
+    .stat-icon-small {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .stat-content-small {
+        flex: 1;
+    }
+
+    .stat-label-small {
+        font-size: 0.8rem;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.2rem;
+        font-weight: 500;
+    }
+
+    .stat-value-small {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1a202c;
+        line-height: 1.2;
+    }
+
+    .stat-change {
+        font-size: 0.75rem;
+        color: #48bb78;
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+        margin-top: 0.3rem;
+        background: #f0fff4;
+        padding: 0.2rem 0.5rem;
+        border-radius: 50px;
+        width: fit-content;
+    }
+
+    /* Secondary Stats Grid - Favorites and Watch Hours Removed */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+        border: 1px solid #edf2f7;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.05);
+    }
+
+    .stat-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        color: white;
+    }
+
+    .stat-info h3 {
+        font-size: 0.9rem;
+        color: #718096;
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+    }
+
+    .stat-number {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: #1a202c;
+        line-height: 1.2;
+    }
+
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2.5rem 0 1.5rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
+        color: #1a202c;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .section-header h2 i {
+        color: #667eea;
+        font-size: 1.5rem;
+        background: #ebf4ff;
+        padding: 0.5rem;
+        border-radius: 12px;
+    }
+
+    .view-all {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #ebf4ff;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+    .view-all:hover {
+        background: #667eea;
+        color: white;
+        transform: translateX(5px);
+    }
+
+    /* Content Management Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 25px;
+        padding: 1.8rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        border: 1px solid #edf2f7;
+        transition: all 0.3s ease;
+    }
+
+    .content-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(102,126,234,0.1);
+    }
+
+    .content-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #667eea10, #764ba210);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .content-icon i {
+        font-size: 2.2rem;
+        color: #667eea;
+    }
+
+    .content-card h3 {
+        font-size: 1.3rem;
+        color: #1a202c;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+    }
+
+    .content-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.2rem;
+        flex-wrap: wrap;
+    }
+
+    .content-stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: #4a5568;
+        background: #f7fafc;
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+    }
+
+    .content-stat-item i {
+        color: #667eea;
+        font-size: 0.9rem;
+    }
+
+    /* Language Stats - Full Indian Languages */
+    .language-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        margin: 1.2rem 0;
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 16px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .lang-item {
+        text-align: center;
+        padding: 0.3rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .lang-item:hover {
+        background: #ebf4ff;
+    }
+
+    .lang-name {
+        font-size: 0.7rem;
+        color: #718096;
+        margin-bottom: 0.1rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .lang-count {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a202c;
+    }
+
+    .content-actions {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 0.8rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(102,126,234,0.4);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1.5px solid #e2e8f0;
+        color: #4a5568;
+    }
+
+    .btn-outline:hover {
+        background: #f7fafc;
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(72,187,120,0.4);
+    }
+
+    .btn-email {
+        background: linear-gradient(135deg, #9f7aea, #805ad5);
+        color: white;
+    }
+
+    .btn-email:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(159,122,234,0.4);
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #ed8936, #dd6b20);
+        color: white;
+    }
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(237,137,54,0.4);
+    }
+
+    /* Contact Messages Card */
+    .contact-messages-preview {
+        background: white;
+        border-radius: 25px;
+        padding: 1.8rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        border: 1px solid #edf2f7;
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-message-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #edf2f7;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .contact-message-item:hover {
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .contact-message-item.unread {
+        background: #fef5e7;
+        border-left: 3px solid #ed8936;
+    }
+
+    .contact-message-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .contact-message-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+    .contact-message-details {
+        flex: 1;
+    }
+
+    .contact-message-details h4 {
+        margin: 0;
+        font-size: 1rem;
+        color: #1a202c;
+        font-weight: 700;
+    }
+
+    .contact-message-details p {
+        margin: 0.3rem 0 0;
+        font-size: 0.85rem;
+        color: #718096;
+    }
+
+    .contact-message-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
+
+    .priority-badge {
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .priority-urgent {
+        background: #f5656520;
+        color: #c53030;
+    }
+
+    .priority-high {
+        background: #ed893620;
+        color: #c05621;
+    }
+
+    .priority-medium {
+        background: #4299e120;
+        color: #2c5282;
+    }
+
+    .priority-low {
+        background: #48bb7820;
+        color: #2f855a;
+    }
+
+    .status-badge {
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .status-pending {
+        background: #fef5e7;
+        color: #c05621;
+    }
+
+    .status-in_progress {
+        background: #4299e120;
+        color: #2c5282;
+    }
+
+    .status-resolved {
+        background: #48bb7820;
+        color: #2f855a;
+    }
+
+    .time-ago {
+        font-size: 0.7rem;
+        color: #a0aec0;
+    }
+
+    /* Students List */
+    .students-list {
+        background: white;
+        border-radius: 25px;
+        padding: 1.8rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        border: 1px solid #edf2f7;
+        height: fit-content;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .student-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px solid #edf2f7;
+        transition: all 0.3s ease;
+    }
+
+    .student-item:hover {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 12px;
+        border-bottom-color: transparent;
+    }
+
+    .student-item:last-child {
+        border-bottom: none;
+    }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .student-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.3rem;
+        text-transform: uppercase;
+    }
+
+    .student-details h4 {
+        margin: 0;
+        font-size: 1rem;
+        color: #1a202c;
+        font-weight: 700;
+    }
+
+    .student-details p {
+        margin: 0.3rem 0 0;
+        font-size: 0.8rem;
+        color: #718096;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .student-badge {
+        background: #f7fafc;
+        padding: 0.4rem 1.2rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        color: #4a5568;
+        border: 1px solid #e2e8f0;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .email-student-btn {
+        background: none;
+        border: none;
+        color: #9f7aea;
+        cursor: pointer;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    .email-student-btn:hover {
+        background: #9f7aea;
+        color: white;
+    }
+
+    /* Email Modal */
+    .email-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+
+    .email-modal-content {
+        background: white;
+        border-radius: 25px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 2rem;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .email-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .recipient-selector {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 15px;
+        margin-bottom: 1.5rem;
+    }
+
+    .email-type-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .email-type-btn {
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border: 1px solid #e2e8f0;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .email-type-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .email-template-select {
+        margin-bottom: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 150px;
+    }
+
+    /* Contact Reply Modal */
+    .contact-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1001;
+        backdrop-filter: blur(5px);
+    }
+
+    .contact-modal-content {
+        background: white;
+        border-radius: 25px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 2rem;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .message-detail {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    .message-detail p {
+        margin: 0.5rem 0;
+        line-height: 1.5;
+    }
+
+    .attachment-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #ebf4ff;
+        border-radius: 50px;
+        color: #667eea;
+        text-decoration: none;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+
+    .attachment-link:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #a0aec0;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #cbd5e0;
+    }
+
+    /* Activity Feed Card */
+    .activity-feed-card {
+        background: white;
+        border-radius: 25px;
+        padding: 1.8rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        border: 1px solid #edf2f7;
+        margin-bottom: 1.5rem;
+        grid-column: span 2;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem;
+        border-bottom: 1px solid #edf2f7;
+        transition: all 0.3s ease;
+    }
+
+    .activity-item:hover {
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .activity-icon.view { background: #667eea20; color: #667eea; }
+    .activity-icon.download { background: #48bb7820; color: #48bb78; }
+    .activity-icon.watch { background: #f5656520; color: #f56565; }
+    .activity-icon.favorite { background: #ed893620; color: #ed8936; }
+    .activity-icon.contact { background: #9f7aea20; color: #9f7aea; }
+    .activity-icon.ai_chat { background: #4299e120; color: #4299e1; }
+    .activity-icon.login { background: #48bb7820; color: #48bb78; }
+    .activity-icon.register { background: #ed893620; color: #ed8936; }
+
+    .activity-details {
+        flex: 1;
+    }
+
+    .activity-details h4 {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #1a202c;
+        font-weight: 600;
+    }
+
+    .activity-details p {
+        margin: 0.2rem 0 0;
+        font-size: 0.8rem;
+        color: #718096;
+    }
+
+    .activity-time {
+        font-size: 0.7rem;
+        color: #a0aec0;
+        white-space: nowrap;
+    }
+
+    .activity-xp {
+        background: #fef5e7;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #ed8936;
+    }
+
+    /* Performance Card */
+    .performance-card {
+        background: white;
+        border-radius: 25px;
+        padding: 1.8rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        border: 1px solid #edf2f7;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .subject-performance {
+        margin-top: 1.5rem;
+    }
+
+    .subject-item {
+        margin-bottom: 1.2rem;
+    }
+
+    .subject-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .subject-name {
+        color: #4a5568;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .subject-score {
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: #edf2f7;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    .summary-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .summary-item {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1.2rem;
+        text-align: center;
+    }
+
+    .summary-label {
+        font-size: 0.8rem;
+        color: #718096;
+        margin-bottom: 0.3rem;
+    }
+
+    .summary-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a202c;
+    }
+
+    .summary-sub {
+        font-size: 0.7rem;
+        color: #a0aec0;
+        margin-top: 0.2rem;
+    }
+
+    /* Study Material Stats */
+    .material-type-stats {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+    }
+
+    .type-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .type-pdf { background: #f5656520; color: #c53030; border: 1px solid #f56565; }
+    .type-image { background: #48bb7820; color: #2f855a; border: 1px solid #48bb78; }
+    .type-audio { background: #9f7aea20; color: #6b46c1; border: 1px solid #9f7aea; }
+    .type-document { background: #ed893620; color: #c05621; border: 1px solid #ed8936; }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .quick-stats-row {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .quick-stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .welcome-header {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .contact-message-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .contact-message-meta {
+            align-items: flex-start;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        [style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: 1fr !important;
+        }
+
+        .student-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .student-badge {
+            align-self: flex-start;
+        }
+        
+        .activity-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .activity-time {
+            align-self: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .quick-stats-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .stat-card-small {
+            padding: 1rem;
+        }
+    }
+
+    /* Animations */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card-small, .stat-card, .content-card, .students-list, .performance-card, .contact-messages-preview, .activity-feed-card {
+        animation: slideInUp 0.5s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .stat-card-small:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card-small:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card-small:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card-small:nth-child(4) { animation-delay: 0.4s; }
+    .stat-card-small:nth-child(5) { animation-delay: 0.5s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <!-- Welcome Header -->
+    <div class="welcome-header">
+        <div>
+            <h1>
+                <i class="fas fa-crown"></i>
+                Admin Dashboard
+            </h1>
+            <p style="margin: 0.7rem 0 0; opacity: 0.9; font-size: 1rem;">
+                <i class="fas fa-chart-line" style="margin-right: 8px;"></i>
+                Real-time platform analytics - All 22 Indian Languages
+            </p>
+        </div>
+        <div class="date-badge">
+            <i class="far fa-calendar-alt" style="margin-right: 8px;"></i>
+            {{ now.strftime('%B %d, %Y') }}
+        </div>
+    </div>
+
+    <!-- Quick Stats Row - REAL DATA ONLY -->
+    <div class="quick-stats-row">
+        <!-- Total Students -->
+        <div class="stat-card-small">
+            <div class="stat-icon-small" style="background: linear-gradient(135deg, #4299e1, #3182ce);">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content-small">
+                <div class="stat-label-small">Total Students</div>
+                <div class="stat-value-small">{{ total_students|default(0) }}</div>
+                {% if new_students_week and new_students_week > 0 %}
+                <div class="stat-change">
+                    <i class="fas fa-arrow-up"></i> +{{ new_students_week }} this week
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Study Materials -->
+        <div class="stat-card-small">
+            <div class="stat-icon-small" style="background: linear-gradient(135deg, #48bb78, #38a169);">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="stat-content-small">
+                <div class="stat-label-small">Study Materials</div>
+                <div class="stat-value-small">{{ total_materials|default(0) }}</div>
+                {% if new_materials_today and new_materials_today > 0 %}
+                <div class="stat-change">
+                    <i class="fas fa-arrow-up"></i> +{{ new_materials_today }} today
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Video Lectures -->
+        <div class="stat-card-small">
+            <div class="stat-icon-small" style="background: linear-gradient(135deg, #f56565, #e53e3e);">
+                <i class="fas fa-video"></i>
+            </div>
+            <div class="stat-content-small">
+                <div class="stat-label-small">Videos</div>
+                <div class="stat-value-small">{{ total_videos|default(0) }}</div>
+                {% if total_video_views and total_video_views > 0 %}
+                <div class="stat-change">
+                    <i class="fas fa-eye"></i> {{ total_video_views }} views
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Total Downloads -->
+        <div class="stat-card-small">
+            <div class="stat-icon-small" style="background: linear-gradient(135deg, #ed8936, #dd6b20);">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="stat-content-small">
+                <div class="stat-label-small">Downloads</div>
+                <div class="stat-value-small">{{ total_material_downloads|default(0) }}</div>
+                {% if downloads_today and downloads_today > 0 %}
+                <div class="stat-change">
+                    <i class="fas fa-arrow-up"></i> +{{ downloads_today }} today
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Total Views -->
+        <div class="stat-card-small">
+            <div class="stat-icon-small" style="background: linear-gradient(135deg, #9f7aea, #805ad5);">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-content-small">
+                <div class="stat-label-small">Total Views</div>
+                <div class="stat-value-small">{{ total_material_views|default(0) }}</div>
+                {% if material_views_today and material_views_today > 0 %}
+                <div class="stat-change">
+                    <i class="fas fa-arrow-up"></i> +{{ material_views_today }} today
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Stats Grid - Favorites and Watch Hours Removed -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Active Today</h3>
+                <div class="stat-number">{{ active_today|default(0) }}</div>
+                <small>{{ active_today }} students online</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #48bb78, #38a169);">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Material Views</h3>
+                <div class="stat-number">{{ total_material_views|default(0) }}</div>
+                <small>{{ material_views_today|default(0) }} today</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Activity Feed -->
+    <div class="section-header">
+        <h2>
+            <i class="fas fa-bell"></i>
+            Real-time Student Activity Feed
+        </h2>
+        <a href="{{ url_for('admin_activity_dashboard') }}" class="view-all">
+            View Full Activity Log <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <!-- Activity Feed Card -->
+    <div class="activity-feed-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 1rem;">
+                <div class="content-stat-item">
+                    <i class="fas fa-chart-line"></i> Total Activities: <strong>{{ activity_stats.total_activities|default(0) }}</strong>
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-eye"></i> Views: <strong>{{ activity_stats.by_type.view|default(0) }}</strong>
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-download"></i> Downloads: <strong>{{ activity_stats.by_type.download|default(0) }}</strong>
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-video"></i> Watches: <strong>{{ activity_stats.by_type.watch|default(0) }}</strong>
+                </div>
+            </div>
+            <button onclick="refreshActivityFeed()" class="btn-action btn-outline" style="width: auto; padding: 0.5rem 1rem;">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+
+        <div id="activityFeed">
+            {% if recent_activities_feed and recent_activities_feed|length > 0 %}
+                {% for activity in recent_activities_feed[:15] %}
+                <div class="activity-item">
+                    <div class="activity-icon {{ activity.activity_type }}">
+                        <i class="fas fa-{% if activity.activity_type == 'view' %}eye{% elif activity.activity_type == 'download' %}download{% elif activity.activity_type == 'watch' %}play{% elif activity.activity_type == 'favorite' %}star{% elif activity.activity_type == 'contact' %}envelope{% elif activity.activity_type == 'ai_chat' %}robot{% elif activity.activity_type == 'login' %}sign-in-alt{% elif activity.activity_type == 'register' %}user-plus{% else %}bell{% endif %}"></i>
+                    </div>
+                    <div class="activity-details">
+                        <h4>
+                            {{ activity.user_name }}
+                            {% if activity.activity_type == 'view' %}
+                                viewed "{{ activity.item_title }}"
+                            {% elif activity.activity_type == 'download' %}
+                                downloaded "{{ activity.item_title }}"
+                            {% elif activity.activity_type == 'watch' %}
+                                watched "{{ activity.item_title }}"
+                            {% elif activity.activity_type == 'favorite' %}
+                                favorited "{{ activity.item_title }}"
+                            {% elif activity.activity_type == 'contact' %}
+                                sent a support message: "{{ activity.item_title }}"
+                            {% elif activity.activity_type == 'ai_chat' %}
+                                asked AI Tutor: "{{ activity.item_title }}"
+                            {% elif activity.activity_type == 'login' %}
+                                logged in
+                            {% elif activity.activity_type == 'register' %}
+                                registered as a new student
+                            {% else %}
+                                performed an action
+                            {% endif %}
+                        </h4>
+                        {% if activity.details %}
+                        <p><small>{{ activity.details }}</small></p>
+                        {% endif %}
+                    </div>
+                    <div class="activity-time">
+                        <span class="activity-xp">+{{ activity.xp_earned }} XP</span>
+                        <br>
+                        <small>{{ activity.time_ago }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h3>No Recent Activity</h3>
+                    <p>Student activities will appear here in real-time</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if recent_activities_feed and recent_activities_feed|length > 15 %}
+        <div style="margin-top: 1rem; text-align: center;">
+            <a href="{{ url_for('admin_activity_dashboard') }}" class="btn-action btn-outline" style="width: auto; padding: 0.5rem 1.5rem;">
+                View All {{ recent_activities_feed|length }} Activities <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Contact Messages Section -->
+    <div class="section-header">
+        <h2>
+            <i class="fas fa-envelope-open-text"></i>
+            Student Support Messages
+        </h2>
+        <a href="{{ url_for('admin_contact_messages') }}" class="view-all">
+            View All Messages <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <!-- Contact Messages Preview -->
+    <div class="contact-messages-preview">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 1rem;">
+                <div class="content-stat-item">
+                    <i class="fas fa-clock"></i> Pending: <strong>{{ contact_pending|default(0) }}</strong>
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-spinner"></i> In Progress: <strong>{{ contact_in_progress|default(0) }}</strong>
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-check-circle"></i> Resolved: <strong>{{ contact_resolved|default(0) }}</strong>
+                </div>
+            </div>
+            <button onclick="window.location.href='{{ url_for('admin_contact_messages') }}'" class="btn-action btn-outline" style="width: auto; padding: 0.5rem 1rem;">
+                <i class="fas fa-cog"></i> Manage Messages
+            </button>
+        </div>
+
+        {% if recent_contact_messages and recent_contact_messages|length > 0 %}
+            {% for message in recent_contact_messages[:5] %}
+            <div class="contact-message-item {% if message.status == 'pending' %}unread{% endif %}" onclick="openContactModal('{{ message._id }}')">
+                <div class="contact-message-info">
+                    <div class="contact-message-avatar">
+                        {{ message.student_name[0]|upper if message.student_name else '?' }}
+                    </div>
+                    <div class="contact-message-details">
+                        <h4>{{ message.subject }}</h4>
+                        <p>
+                            <i class="fas fa-user"></i> {{ message.student_name }} ·
+                            <i class="fas fa-tag"></i> {{ message.category|title }} ·
+                            {{ message.message[:80] }}{% if message.message|length > 80 %}...{% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="contact-message-meta">
+                    <span class="priority-badge priority-{{ message.priority }}">
+                        <i class="fas fa-{% if message.priority == 'urgent' %}exclamation-triangle{% elif message.priority == 'high' %}arrow-up{% elif message.priority == 'low' %}arrow-down{% else %}minus{% endif %}"></i>
+                        {{ message.priority|title }}
+                    </span>
+                    <span class="status-badge status-{{ message.status }}">
+                        {{ message.status|replace('_', ' ')|title }}
+                    </span>
+                    <span class="time-ago">
+                        <i class="far fa-clock"></i> {{ get_time_ago(message.created_at) }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No Messages Yet</h3>
+                <p>When students contact support, messages will appear here</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Email Marketing Section -->
+    <div class="section-header">
+        <h2>
+            <i class="fas fa-envelope"></i>
+            Email Marketing
+        </h2>
+        <a href="{{ url_for('admin_emails') }}" class="view-all">
+            Manage Emails <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <!-- Email Quick Actions Card -->
+    <div class="content-grid">
+        <div class="content-card" style="grid-column: span 2;">
+            <div class="content-icon">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <h3>Send Emails to Students</h3>
+            <div class="content-stats">
+                <div class="content-stat-item">
+                    <i class="fas fa-users"></i> {{ total_students|default(0) }} students
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-envelope"></i> {{ total_emails_sent|default(0) }} sent
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-calendar-day"></i> {{ emails_sent_today|default(0) }} today
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin: 1rem 0; flex-wrap: wrap;">
+                <button onclick="openEmailModal('all')" class="btn-action btn-primary" style="flex: 1;">
+                    <i class="fas fa-envelope-open-text"></i> Send to All
+                </button>
+                <button onclick="openEmailModal('grade')" class="btn-action btn-outline">
+                    <i class="fas fa-graduation-cap"></i> By Grade
+                </button>
+                <button onclick="openEmailModal('language')" class="btn-action btn-outline">
+                    <i class="fas fa-language"></i> By Language
+                </button>
+            </div>
+
+            <!-- Email Templates Quick Access -->
+            <div style="margin-top: 1rem; background: #f8fafc; padding: 1rem; border-radius: 12px;">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Quick Templates:</div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button onclick="useTemplate('welcome')" class="type-badge" style="cursor: pointer;">Welcome Email</button>
+                    <button onclick="useTemplate('new_content')" class="type-badge" style="cursor: pointer;">New Content Alert</button>
+                    <button onclick="useTemplate('announcement')" class="type-badge" style="cursor: pointer;">Announcement</button>
+                    <button onclick="useTemplate('reminder')" class="type-badge" style="cursor: pointer;">Study Reminder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Management Section -->
+    <div class="section-header">
+        <h2>
+            <i class="fas fa-cubes"></i>
+            Content Management
+        </h2>
+        <a href="{{ url_for('admin_manage_content') }}" class="view-all">
+            Manage All Content <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <!-- Content Management Grid -->
+    <div class="content-grid">
+        <!-- Study Materials Card -->
+        <div class="content-card">
+            <div class="content-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <h3>Study Materials</h3>
+            <div class="content-stats">
+                <div class="content-stat-item">
+                    <i class="fas fa-layer-group"></i> {{ total_materials|default(0) }} total
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-download"></i> {{ total_material_downloads|default(0) }} downloads
+                </div>
+            </div>
+
+            <!-- Material Type Stats -->
+            <div class="material-type-stats">
+                {% if pdf_count and pdf_count > 0 %}
+                <span class="type-badge type-pdf">
+                    <i class="fas fa-file-pdf"></i> PDF: {{ pdf_count }}
+                </span>
+                {% endif %}
+                {% if image_count and image_count > 0 %}
+                <span class="type-badge type-image">
+                    <i class="fas fa-image"></i> Images: {{ image_count }}
+                </span>
+                {% endif %}
+                {% if audio_count and audio_count > 0 %}
+                <span class="type-badge type-audio">
+                    <i class="fas fa-headphones"></i> Audio: {{ audio_count }}
+                </span>
+                {% endif %}
+                {% if document_count and document_count > 0 %}
+                <span class="type-badge type-document">
+                    <i class="fas fa-file-word"></i> Docs: {{ document_count }}
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Language Stats - Full Indian Languages -->
+            {% if material_languages and material_languages|length > 0 %}
+            <div class="language-stats-grid">
+                {% for lang in material_languages[:12] %}
+                <div class="lang-item">
+                    <div class="lang-name">{{ lang.name }}</div>
+                    <div class="lang-count">{{ lang.count }}</div>
+                </div>
+                {% endfor %}
+                {% if material_languages|length > 12 %}
+                <div class="lang-item">
+                    <div class="lang-name">...</div>
+                    <div class="lang-count">+{{ material_languages|length - 12 }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div style="color: #a0aec0; text-align: center; padding: 1rem;">
+                No materials added yet
+            </div>
+            {% endif %}
+
+            <div class="content-actions">
+                <a href="{{ url_for('admin_manage_content') }}?tab=study&action=upload" class="btn-action btn-primary">
+                    <i class="fas fa-upload"></i> Upload Material
+                </a>
+                <a href="{{ url_for('admin_manage_content') }}?tab=study" class="btn-action btn-outline">
+                    <i class="fas fa-folder-open"></i> Browse
+                </a>
+            </div>
+        </div>
+
+        <!-- Video Lessons Card -->
+        <div class="content-card">
+            <div class="content-icon">
+                <i class="fas fa-video"></i>
+            </div>
+            <h3>Video Lessons</h3>
+            <div class="content-stats">
+                <div class="content-stat-item">
+                    <i class="fas fa-layer-group"></i> {{ total_videos|default(0) }} videos
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-eye"></i> {{ total_video_views|default(0) }} views
+                </div>
+            </div>
+
+            <!-- Video Stats - Watch Hours Removed -->
+            <div style="margin: 1rem 0; display: flex; gap: 1rem; justify-content: space-around;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2rem; font-weight: 700; color: #48bb78;">{{ total_video_downloads|default(0) }}</div>
+                    <div style="font-size: 0.7rem; color: #718096;">Downloads</div>
+                </div>
+            </div>
+
+            <!-- Language Stats -->
+            {% if video_languages and video_languages|length > 0 %}
+            <div class="language-stats-grid">
+                {% for lang in video_languages[:12] %}
+                <div class="lang-item">
+                    <div class="lang-name">{{ lang.name }}</div>
+                    <div class="lang-count">{{ lang.count }}</div>
+                </div>
+                {% endfor %}
+                {% if video_languages|length > 12 %}
+                <div class="lang-item">
+                    <div class="lang-name">...</div>
+                    <div class="lang-count">+{{ video_languages|length - 12 }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div style="color: #a0aec0; text-align: center; padding: 1rem;">
+                No videos uploaded yet
+            </div>
+            {% endif %}
+
+            <div class="content-actions">
+                <a href="{{ url_for('admin_manage_content') }}?tab=videos&action=upload" class="btn-action btn-primary">
+                    <i class="fas fa-upload"></i> Upload Video
+                </a>
+                <a href="{{ url_for('admin_manage_content') }}?tab=videos" class="btn-action btn-outline">
+                    <i class="fas fa-folder-open"></i> Browse
+                </a>
+            </div>
+        </div>
+
+        <!-- Language Analytics Card -->
+        <div class="content-card">
+            <div class="content-icon">
+                <i class="fas fa-language"></i>
+            </div>
+            <h3>Language Analytics</h3>
+            <div class="content-stats">
+                <div class="content-stat-item">
+                    <i class="fas fa-flag"></i> 22 Languages
+                </div>
+                <div class="content-stat-item">
+                    <i class="fas fa-book"></i> {{ total_materials|default(0) + total_videos|default(0) }} items
+                </div>
+            </div>
+
+            <!-- Top Languages -->
+            <div style="margin: 1rem 0;">
+                {% for lang in top_languages[:5] %}
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="min-width: 60px; font-size: 0.8rem;">{{ lang.name }}</span>
+                    <div style="flex: 1; height: 6px; background: #edf2f7; border-radius: 3px;">
+                        <div style="width: {{ lang.percentage }}%; height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 3px;"></div>
+                    </div>
+                    <span style="font-size: 0.8rem; font-weight: 600;">{{ lang.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Quick Language Counts -->
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                {% set hindi_count = all_languages_stats|selectattr('code', 'equalto', 'hindi')|map(attribute='materials')|sum + all_languages_stats|selectattr('code', 'equalto', 'hindi')|map(attribute='videos')|sum %}
+                {% if hindi_count and hindi_count > 0 %}
+                <span class="type-badge" style="background: #ed893620; color: #c05621;">हिंदी: {{ hindi_count }}</span>
+                {% endif %}
+                
+                {% set telugu_count = all_languages_stats|selectattr('code', 'equalto', 'telugu')|map(attribute='materials')|sum + all_languages_stats|selectattr('code', 'equalto', 'telugu')|map(attribute='videos')|sum %}
+                {% if telugu_count and telugu_count > 0 %}
+                <span class="type-badge" style="background: #48bb7820; color: #2f855a;">తెలుగు: {{ telugu_count }}</span>
+                {% endif %}
+                
+                {% set tamil_count = all_languages_stats|selectattr('code', 'equalto', 'tamil')|map(attribute='materials')|sum + all_languages_stats|selectattr('code', 'equalto', 'tamil')|map(attribute='videos')|sum %}
+                {% if tamil_count and tamil_count > 0 %}
+                <span class="type-badge" style="background: #f5656520; color: #c53030;">தமிழ்: {{ tamil_count }}</span>
+                {% endif %}
+                
+                {% set bengali_count = all_languages_stats|selectattr('code', 'equalto', 'bengali')|map(attribute='materials')|sum + all_languages_stats|selectattr('code', 'equalto', 'bengali')|map(attribute='videos')|sum %}
+                {% if bengali_count and bengali_count > 0 %}
+                <span class="type-badge" style="background: #9f7aea20; color: #6b46c1;">বাংলা: {{ bengali_count }}</span>
+                {% endif %}
+            </div>
+
+            <div class="content-actions">
+                <a href="{{ url_for('admin_languages') }}" class="btn-action btn-primary">
+                    <i class="fas fa-chart-pie"></i> Language Stats
+                </a>
+                <a href="{{ url_for('admin_reports') }}?type=language" class="btn-action btn-outline">
+                    <i class="fas fa-file-alt"></i> Reports
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; margin-top: 1rem;">
+        <!-- Recent Students - With Email Action -->
+        <div class="students-list">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-user-graduate" style="color: #667eea;"></i>
+                    Recently Joined Students
+                </h3>
+                <span class="student-badge">Total: {{ total_students|default(0) }}</span>
+            </div>
+           
+            {% if recent_students and recent_students|length > 0 %}
+                {% for student in recent_students %}
+                <div class="student-item">
+                    <div class="student-info">
+                        <div class="student-avatar">
+                            {{ student.name[0]|upper if student.name else '?' }}
+                        </div>
+                        <div class="student-details">
+                            <h4>{{ student.name|default('Unknown Student') }}</h4>
+                            <p>
+                                <i class="fas fa-star" style="color: #fbbf24;"></i>
+                                Level {{ student.level|default(1) }} ·
+                                <i class="fas fa-flag"></i>
+                                {{ student.language|default('english')|title }} ·
+                                Grade {{ student.grade|default('N/A') }}
+                                {% if student.school %}
+                                · 🏫 {{ student.school }}
+                                {% endif %}
+                                <button class="email-student-btn" onclick="openEmailModal('individual', '{{ student._id }}', '{{ student.name }}', '{{ student.email }}')">
+                                    <i class="fas fa-envelope"></i> Email
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="student-badge">
+                        <i class="far fa-calendar-alt"></i>
+                        {% if student.joined_date %}
+                            {{ student.joined_date.strftime('%b %d, %Y') }}
+                        {% else %}
+                            New
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-users-slash"></i>
+                    <h3>No Students Yet</h3>
+                    <p>Students who register will appear here</p>
+                </div>
+            {% endif %}
+
+            {% if total_students and total_students > 0 %}
+            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 2px dashed #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; color: #718096; font-size: 0.85rem;">
+                    <span><i class="fas fa-user-plus" style="color: #48bb78;"></i> New today: {{ new_students_today|default(0) }}</span>
+                    <span><i class="fas fa-user-check" style="color: #667eea;"></i> Active: {{ active_today|default(0) }}</span>
+                    <span><i class="fas fa-user-clock" style="color: #f56565;"></i> Total: {{ total_students }}</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Top Materials Analytics -->
+        <div class="performance-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-chart-line" style="color: #48bb78;"></i>
+                    Top Study Materials
+                </h3>
+                <span class="student-badge">Most Viewed</span>
+            </div>
+
+            {% if top_materials and top_materials|length > 0 %}
+                {% for material in top_materials %}
+                <div style="margin-bottom: 1rem; padding: 0.8rem; background: #f8fafc; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                        <span style="font-weight: 600; color: #1a202c;">{{ material.title }}</span>
+                        <span style="color: #667eea; font-weight: 600;">{{ material.views }} views</span>
+                    </div>
+                    <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: #718096;">
+                        <span><i class="fas fa-download"></i> {{ material.downloads|default(0) }}</span>
+                        <span><i class="fas fa-star"></i> {{ material.favorites|default(0) }}</span>
+                        <span><i class="fas fa-language"></i> {{ get_language_name(material.language) }}</span>
+                    </div>
+                    <div class="progress-bar" style="margin-top: 0.5rem;">
+                        {% set max_views = top_materials[0].views if top_materials else 1 %}
+                        <div class="progress-fill" style="width: {{ (material.views / max_views * 100) if max_views > 0 else 0 }}%; background: #48bb78;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>No Analytics Data</h3>
+                    <p>Data will appear once students start using materials</p>
+                </div>
+            {% endif %}
+
+            <!-- Grade Distribution -->
+            <div style="margin-top: 2rem;">
+                <h4 style="font-size: 1rem; color: #4a5568; margin-bottom: 1rem;">Content by Grade</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    {% for grade in grade_distribution[:5] %}
+                    <div style="background: #ebf4ff; padding: 0.5rem 1rem; border-radius: 50px; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Grade {{ grade.grade }}</span>
+                        <span style="background: #667eea; color: white; padding: 0.2rem 0.5rem; border-radius: 50px; font-size: 0.7rem;">{{ grade.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Subject Distribution -->
+            {% if material_by_subject and material_by_subject|length > 0 %}
+            <div style="margin-top: 1.5rem;">
+                <h4 style="font-size: 1rem; color: #4a5568; margin-bottom: 1rem;">Top Subjects</h4>
+                {% for subject in material_by_subject[:3] %}
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="min-width: 80px; font-size: 0.8rem;">{{ subject._id|title }}</span>
+                    <div style="flex: 1; height: 6px; background: #edf2f7; border-radius: 3px;">
+                        {% set max_subject = material_by_subject[0].views if material_by_subject else 1 %}
+                        <div style="width: {{ (subject.views / max_subject * 100) if max_subject > 0 else 0 }}%; height: 100%; background: #9f7aea; border-radius: 3px;"></div>
+                    </div>
+                    <span style="font-size: 0.8rem; font-weight: 600;">{{ subject.views }} views</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Language Overview Section -->
+    <div class="section-header" style="margin-top: 2rem;">
+        <h2>
+            <i class="fas fa-language"></i>
+            All 22 Indian Languages Overview
+        </h2>
+        <a href="{{ url_for('admin_languages') }}" class="view-all">
+            View Details <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <!-- Language Stats Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.8rem; background: white; border-radius: 25px; padding: 1.8rem; border: 1px solid #edf2f7;">
+        {% if all_languages_stats and all_languages_stats|length > 0 %}
+            {% for lang in all_languages_stats %}
+            <div style="background: #f8fafc; padding: 0.8rem; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0;">
+                <div style="font-size: 0.85rem; font-weight: 600; color: #1a202c;">{{ lang.name }}</div>
+                <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.3rem;">
+                    <span title="Materials"><i class="fas fa-book" style="color: #48bb78; font-size: 0.7rem;"></i> {{ lang.materials|default(0) }}</span>
+                    <span title="Videos"><i class="fas fa-video" style="color: #f56565; font-size: 0.7rem;"></i> {{ lang.videos|default(0) }}</span>
+                </div>
+                <div style="font-size: 0.6rem; color: #718096; margin-top: 0.2rem;">
+                    <i class="fas fa-eye"></i> {{ lang.views|default(0) }} views
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #a0aec0;">
+                <i class="fas fa-language" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h3>No Language Data Yet</h3>
+                <p>Start adding content in different languages to see statistics</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="section-header" style="margin-top: 2rem;">
+        <h2>
+            <i class="fas fa-history"></i>
+            Recent Admin Activities
+        </h2>
+        <a href="{{ url_for('admin_activity') }}" class="view-all">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <div style="background: white; border-radius: 25px; padding: 1.8rem; border: 1px solid #edf2f7;">
+        {% if recent_activities and recent_activities|length > 0 %}
+            {% for activity in recent_activities[:10] %}
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border-bottom: 1px solid #edf2f7;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background:
+                    {% if activity.type == 'material' %}#48bb7820
+                    {% elif activity.type == 'video' %}#f5656520
+                    {% elif activity.type == 'view' %}#667eea20
+                    {% elif activity.type == 'download' %}#ed893620
+                    {% elif activity.type == 'email' %}#9f7aea20
+                    {% else %}#667eea20{% endif %};
+                    display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-{{ activity.icon }}" style="color:
+                        {% if activity.type == 'material' %}#48bb78
+                        {% elif activity.type == 'video' %}#f56565
+                        {% elif activity.type == 'view' %}#667eea
+                        {% elif activity.type == 'download' %}#ed8936
+                        {% elif activity.type == 'email' %}#9f7aea
+                        {% else %}#667eea{% endif %};"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #1a202c;">{{ activity.text }}</div>
+                    <div style="font-size: 0.8rem; color: #718096; margin-top: 0.2rem;">
+                        <i class="far fa-clock"></i> {{ activity.time }} by {{ activity.user }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <h3>No Recent Activities</h3>
+                <p>Activities will appear here as users interact with content</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Refresh Button -->
+    <div style="margin-top: 2rem; text-align: right;">
+        <a href="#" onclick="refreshData()" class="btn-action btn-outline" style="padding: 0.8rem 1.5rem; width: auto; display: inline-flex;">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </a>
+    </div>
+</div>
+
+<!-- Email Modal -->
+<div id="emailModal" class="email-modal">
+    <div class="email-modal-content">
+        <div class="email-modal-header">
+            <h2><i class="fas fa-envelope"></i> Send Email to Students</h2>
+            <button class="btn-icon btn-delete" onclick="closeEmailModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="recipient-selector">
+            <div class="email-type-buttons">
+                <button class="email-type-btn active" onclick="setEmailType('all')">All Students</button>
+                <button class="email-type-btn" onclick="setEmailType('grade')">By Grade</button>
+                <button class="email-type-btn" onclick="setEmailType('language')">By Language</button>
+                <button class="email-type-btn" onclick="setEmailType('individual')">Individual</button>
+            </div>
+           
+            <div id="gradeSelector" style="display: none; margin-top: 1rem;">
+                <label class="form-label">Select Grade:</label>
+                <select id="emailGrade" class="form-control">
+                    <option value="5">Grade 5</option>
+                    <option value="6">Grade 6</option>
+                    <option value="7">Grade 7</option>
+                    <option value="8">Grade 8</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                </select>
+            </div>
+           
+            <div id="languageSelector" style="display: none; margin-top: 1rem;">
+                <label class="form-label">Select Language:</label>
+                <select id="emailLanguage" class="form-control">
+                    <option value="english">English</option>
+                    <option value="hindi">हिंदी</option>
+                    <option value="bengali">বাংলা</option>
+                    <option value="telugu">తెలుగు</option>
+                    <option value="marathi">मराठी</option>
+                    <option value="tamil">தமிழ்</option>
+                    <option value="urdu">اردو</option>
+                    <option value="gujarati">ગુજરાતી</option>
+                    <option value="kannada">ಕನ್ನಡ</option>
+                    <option value="malayalam">മലയാളം</option>
+                </select>
+            </div>
+           
+            <div id="individualSelector" style="display: none; margin-top: 1rem;">
+                <label class="form-label">Student:</label>
+                <input type="text" id="individualStudentName" class="form-control" readonly>
+                <input type="hidden" id="individualStudentId">
+                <input type="hidden" id="individualStudentEmail">
+            </div>
+        </div>
+        
+        <div class="email-template-select">
+            <label class="form-label">Email Template:</label>
+            <select id="emailTemplate" class="form-control" onchange="applyTemplate()">
+                <option value="custom">Custom Message</option>
+                <option value="welcome">Welcome Email</option>
+                <option value="new_content">New Content Alert</option>
+                <option value="announcement">Announcement</option>
+                <option value="reminder">Study Reminder</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Subject:</label>
+            <input type="text" id="emailSubject" class="form-control" placeholder="Enter email subject...">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Message:</label>
+            <textarea id="emailMessage" class="form-control" rows="6" placeholder="Enter your message here..."></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button onclick="sendEmail()" class="btn-action btn-primary" style="flex: 1;">
+                <i class="fas fa-paper-plane"></i> Send Email
+            </button>
+            <button onclick="closeEmailModal()" class="btn-action btn-outline" style="flex: 0.5;">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Message Modal -->
+<div id="contactModal" class="contact-modal">
+    <div class="contact-modal-content">
+        <div class="email-modal-header">
+            <h2><i class="fas fa-envelope-open-text"></i> Contact Message Details</h2>
+            <button class="btn-icon btn-delete" onclick="closeContactModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div id="contactMessageDetails" style="margin-bottom: 1.5rem;">
+            <!-- Dynamic content will be loaded here -->
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Admin Notes / Reply:</label>
+            <textarea id="adminReply" class="form-control" rows="4" placeholder="Write your response to the student..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Update Status:</label>
+            <select id="messageStatus" class="form-control">
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+            </select>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button onclick="sendReply()" class="btn-action btn-primary" style="flex: 1;">
+                <i class="fas fa-reply"></i> Send Reply & Update
+            </button>
+            <button onclick="closeContactModal()" class="btn-action btn-outline" style="flex: 0.5;">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentEmailType = 'all';
+    let currentStudentId = null;
+    let currentStudentName = null;
+    let currentStudentEmail = null;
+    let currentContactMessageId = null;
+   
+    // Templates Data
+    const templates = {
+        welcome: {
+            subject: "Welcome to AI Tutor! 🎓",
+            message: "Dear Student,\n\nWelcome to AI Tutor! We're excited to have you on board.\n\nYou now have access to thousands of study materials and video lectures in 22 Indian languages. Start your learning journey today!\n\nBest regards,\nAI Tutor Team"
+        },
+        new_content: {
+            subject: "New Learning Material Available! 📚",
+            message: "Hello Student,\n\nWe've added new study materials and videos to help you learn better. Check them out in your dashboard!\n\nHappy Learning!\nAI Tutor Team"
+        },
+        announcement: {
+            subject: "Important Announcement 📢",
+            message: "Dear Student,\n\nWe have an important announcement for you. Please check the platform for more details.\n\nThank you,\nAI Tutor Team"
+        },
+        reminder: {
+            subject: "Don't Forget to Study Today! 📖",
+            message: "Hi there,\n\nJust a friendly reminder to continue your learning journey on AI Tutor. Every day of learning brings you closer to your goals!\n\nKeep Learning,\nAI Tutor Team"
+        }
+    };
+   
+    function openEmailModal(type, studentId = null, studentName = null, studentEmail = null) {
+        currentEmailType = type;
+        currentStudentId = studentId;
+        currentStudentName = studentName;
+        currentStudentEmail = studentEmail;
+       
+        document.getElementById('emailModal').style.display = 'flex';
+       
+        // Reset form
+        document.getElementById('emailSubject').value = '';
+        document.getElementById('emailMessage').value = '';
+        document.getElementById('emailTemplate').value = 'custom';
+       
+        // Show/hide selectors
+        document.getElementById('gradeSelector').style.display = 'none';
+        document.getElementById('languageSelector').style.display = 'none';
+        document.getElementById('individualSelector').style.display = 'none';
+       
+        if (type === 'grade') {
+            document.getElementById('gradeSelector').style.display = 'block';
+        } else if (type === 'language') {
+            document.getElementById('languageSelector').style.display = 'block';
+        } else if (type === 'individual' && studentId) {
+            document.getElementById('individualSelector').style.display = 'block';
+            document.getElementById('individualStudentName').value = studentName;
+        }
+    }
+   
+    function closeEmailModal() {
+        document.getElementById('emailModal').style.display = 'none';
+    }
+   
+    function setEmailType(type) {
+        currentEmailType = type;
+       
+        // Update active button
+        document.querySelectorAll('.email-type-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+       
+        // Show/hide selectors
+        document.getElementById('gradeSelector').style.display = 'none';
+        document.getElementById('languageSelector').style.display = 'none';
+        document.getElementById('individualSelector').style.display = 'none';
+       
+        if (type === 'grade') {
+            document.getElementById('gradeSelector').style.display = 'block';
+        } else if (type === 'language') {
+            document.getElementById('languageSelector').style.display = 'block';
+        } else if (type === 'individual') {
+            document.getElementById('individualSelector').style.display = 'block';
+        }
+    }
+   
+    function applyTemplate() {
+        const templateValue = document.getElementById('emailTemplate').value;
+        if (templateValue !== 'custom' && templates[templateValue]) {
+            document.getElementById('emailSubject').value = templates[templateValue].subject;
+            document.getElementById('emailMessage').value = templates[templateValue].message;
+        } else if (templateValue === 'custom') {
+            document.getElementById('emailSubject').value = '';
+            document.getElementById('emailMessage').value = '';
+        }
+    }
+   
+    function useTemplate(templateName) {
+        if (templates[templateName]) {
+            document.getElementById('emailSubject').value = templates[templateName].subject;
+            document.getElementById('emailMessage').value = templates[templateName].message;
+            document.getElementById('emailTemplate').value = templateName;
+            showNotification('Template loaded: ' + templates[templateName].subject, 'success');
+        }
+    }
+   
+    function sendEmail() {
+        const subject = document.getElementById('emailSubject').value;
+        const message = document.getElementById('emailMessage').value;
+       
+        if (!subject || !message) {
+            showNotification('Please fill in both subject and message', 'error');
+            return;
+        }
+       
+        let data = {
+            type: currentEmailType,
+            subject: subject,
+            message: message
+        };
+       
+        if (currentEmailType === 'grade') {
+            data.grade = document.getElementById('emailGrade').value;
+        } else if (currentEmailType === 'language') {
+            data.language = document.getElementById('emailLanguage').value;
+        } else if (currentEmailType === 'individual') {
+            data.student_id = currentStudentId;
+        }
+       
+        showLoading('Sending email...');
+       
+        fetch('/api/admin/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                closeEmailModal();
+            } else {
+                showNotification('Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        });
+    }
+   
+    // Contact Message Functions
+    function openContactModal(messageId) {
+        currentContactMessageId = messageId;
+        showLoading('Loading message details...');
+       
+        fetch(`/api/admin/contact-message/${messageId}`)
+            .then(response => response.json())
+            .then(message => {
+                hideLoading();
+               
+                const detailsDiv = document.getElementById('contactMessageDetails');
+                detailsDiv.innerHTML = `
+                    <div class="message-detail">
+                        <h4>Student Information</h4>
+                        <p><strong>Name:</strong> ${message.student_name}</p>
+                        <p><strong>Email:</strong> ${message.student_email}</p>
+                        <p><strong>Student ID:</strong> ${message.student_id}</p>
+                    </div>
+                   
+                    <div class="message-detail">
+                        <h4>Message Details</h4>
+                        <p><strong>Category:</strong> ${message.category}</p>
+                        <p><strong>Priority:</strong> ${message.priority}</p>
+                        <p><strong>Subject:</strong> ${message.subject}</p>
+                        <p><strong>Message:</strong></p>
+                        <p style="background: white; padding: 1rem; border-radius: 8px; white-space: pre-wrap;">${message.message}</p>
+                    </div>
+                   
+                    ${message.attachment_filename ? `
+                    <div class="message-detail">
+                        <h4>Attachment</h4>
+                        <a href="/static/uploads/contact_attachments/${message.attachment_filename}" class="attachment-link" target="_blank">
+                            <i class="fas fa-paperclip"></i> Download ${message.attachment_filename}
+                        </a>
+                    </div>
+                    ` : ''}
+                   
+                    ${message.admin_notes ? `
+                    <div class="message-detail">
+                        <h4>Admin Notes</h4>
+                        <p style="background: #fef5e7; padding: 0.5rem; border-radius: 8px;">${message.admin_notes}</p>
+                    </div>
+                    ` : ''}
+                   
+                    ${message.admin_reply ? `
+                    <div class="message-detail">
+                        <h4>Previous Reply</h4>
+                        <p style="background: #f0fff4; padding: 0.5rem; border-radius: 8px;">${message.admin_reply}</p>
+                        <small>Sent on: ${new Date(message.admin_reply_at).toLocaleString()}</small>
+                    </div>
+                    ` : ''}
+                `;
+               
+                document.getElementById('adminReply').value = '';
+                document.getElementById('messageStatus').value = message.status;
+                document.getElementById('contactModal').style.display = 'flex';
+            })
+            .catch(error => {
+                hideLoading();
+                showNotification('Error loading message details', 'error');
+            });
+    }
+   
+    function closeContactModal() {
+        document.getElementById('contactModal').style.display = 'none';
+        currentContactMessageId = null;
+    }
+   
+    function sendReply() {
+        const replyMessage = document.getElementById('adminReply').value;
+        const status = document.getElementById('messageStatus').value;
+       
+        if (!replyMessage && status !== 'resolved') {
+            showNotification('Please write a reply before sending', 'warning');
+            return;
+        }
+       
+        showLoading('Sending reply...');
+       
+        fetch(`/api/admin/contact-message/${currentContactMessageId}/reply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reply_message: replyMessage,
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                closeContactModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        });
+    }
+   
+    // Refresh Activity Feed
+    function refreshActivityFeed() {
+        showLoading('Refreshing activity feed...');
+       
+        fetch('/api/admin/activity-feed?limit=15')
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.activities && data.activities.length > 0) {
+                    updateActivityFeed(data.activities);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error refreshing activity feed:', error);
+            });
+    }
+   
+    function updateActivityFeed(activities) {
+        const feedContainer = document.getElementById('activityFeed');
+        if (!feedContainer) return;
+       
+        if (activities.length === 0) {
+            feedContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h3>No Recent Activity</h3>
+                    <p>Student activities will appear here in real-time</p>
+                </div>
+            `;
+            return;
+        }
+       
+        let html = '';
+        for (const activity of activities.slice(0, 15)) {
+            const iconMap = {
+                'view': 'eye',
+                'download': 'download',
+                'watch': 'play',
+                'favorite': 'star',
+                'contact': 'envelope',
+                'ai_chat': 'robot',
+                'login': 'sign-in-alt',
+                'register': 'user-plus'
+            };
+            const icon = iconMap[activity.activity_type] || 'bell';
+           
+            let activityText = '';
+            switch(activity.activity_type) {
+                case 'view':
+                    activityText = `viewed "${activity.item_title}"`;
+                    break;
+                case 'download':
+                    activityText = `downloaded "${activity.item_title}"`;
+                    break;
+                case 'watch':
+                    activityText = `watched "${activity.item_title}"`;
+                    break;
+                case 'favorite':
+                    activityText = `favorited "${activity.item_title}"`;
+                    break;
+                case 'contact':
+                    activityText = `sent a support message: "${activity.item_title}"`;
+                    break;
+                case 'ai_chat':
+                    activityText = `asked AI Tutor: "${activity.item_title}"`;
+                    break;
+                case 'login':
+                    activityText = `logged in`;
+                    break;
+                case 'register':
+                    activityText = `registered as a new student`;
+                    break;
+                default:
+                    activityText = `performed an action`;
+            }
+           
+            html += `
+                <div class="activity-item">
+                    <div class="activity-icon ${activity.activity_type}">
+                        <i class="fas fa-${icon}"></i>
+                    </div>
+                    <div class="activity-details">
+                        <h4>${activity.user_name} ${activityText}</h4>
+                        ${activity.details ? `<p><small>${activity.details}</small></p>` : ''}
+                    </div>
+                    <div class="activity-time">
+                        <span class="activity-xp">+${activity.xp_earned} XP</span>
+                        <br>
+                        <small>${activity.time_ago || 'Just now'}</small>
+                    </div>
+                </div>
+            `;
+        }
+       
+        feedContainer.innerHTML = html;
+    }
+   
+    // Refresh Dashboard Data
+    function refreshData() {
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="loading-spinner"></span> Refreshing...';
+        btn.style.opacity = '0.7';
+        btn.style.pointerEvents = 'none';
+       
+        setTimeout(() => {
+            location.reload();
+        }, 500);
+    }
+   
+    function showLoading(message) {
+        let loading = document.getElementById('adminLoading');
+        if (!loading) {
+            loading = document.createElement('div');
+            loading.id = 'adminLoading';
+            loading.className = 'email-modal';
+            loading.style.display = 'flex';
+            loading.innerHTML = `
+                <div style="background: white; border-radius: 25px; padding: 2rem; text-align: center;">
+                    <div class="loading-spinner" style="width: 40px; height: 40px; margin-bottom: 1rem;"></div>
+                    <h3>${message}</h3>
+                </div>
+            `;
+            document.body.appendChild(loading);
+        } else {
+            loading.querySelector('h3').textContent = message;
+            loading.style.display = 'flex';
+        }
+    }
+   
+    function hideLoading() {
+        const loading = document.getElementById('adminLoading');
+        if (loading) {
+            loading.style.display = 'none';
+        }
+    }
+   
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.background = type === 'success' ? '#48bb78' : type === 'error' ? '#f56565' : type === 'warning' ? '#ed8936' : '#667eea';
+        notification.style.color = 'white';
+        notification.style.padding = '1rem 1.5rem';
+        notification.style.borderRadius = '10px';
+        notification.style.zIndex = '10000';
+        notification.style.animation = 'slideUp 0.3s ease-out';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(notification);
+       
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+   
+    // Auto-refresh activity feed every 30 seconds
+    let refreshInterval;
+   
+    function startAutoRefresh() {
+        refreshInterval = setInterval(() => {
+            refreshActivityFeed();
+        }, 30000);
+    }
+   
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    }
+   
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Admin dashboard loaded with real-time activity feed');
+        startAutoRefresh();
+    });
+   
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        stopAutoRefresh();
+    });
+</script>
+{% endblock %}
+       

@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+
+{% block title %}Student Registration{% endblock %}
+
+{% block extra_css %}
+<style>
+    .register-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .register-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        width: 100%;
+        max-width: 550px;
+        animation: slideUp 0.8s ease-out;
+    }
+    
+    .register-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    
+    .register-logo {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        color: white;
+        animation: bounce 2s infinite;
+    }
+    
+    .register-header h1 {
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+    
+    .register-header p {
+        color: #718096;
+    }
+    
+    .register-form .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-input, .form-select {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .register-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .register-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .register-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .register-footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .register-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    .password-requirements {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 0.25rem;
+        padding-left: 0.5rem;
+    }
+    
+    .password-strength {
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .strength-meter {
+        height: 100%;
+        width: 0%;
+        background: #f56565;
+        transition: width 0.3s ease, background 0.3s ease;
+    }
+    
+    .strength-meter.weak { width: 33%; background: #f56565; }
+    .strength-meter.medium { width: 66%; background: #ed8936; }
+    .strength-meter.strong { width: 100%; background: #48bb78; }
+    
+    .animated-field {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .animated-field::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: -100%;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #667eea, transparent);
+        animation: shimmer 3s infinite;
+    }
+    
+    /* Language Select Styling */
+    .language-select-wrapper {
+        position: relative;
+    }
+    
+    .language-select-wrapper i {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #667eea;
+        pointer-events: none;
+    }
+    
+    .language-preview {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: #718096;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .language-preview i {
+        font-size: 1rem;
+    }
+    
+    @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <div class="register-logo">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1>Join Our Learning Community</h1>
+            <p>Start your AI-powered learning journey today</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('student_register') }}" class="register-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name" class="form-label">
+                        <i class="fas fa-user"></i> Full Name
+                    </label>
+                    <input type="text" id="name" name="name" class="form-input" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="student@example.com" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" id="password" name="password" class="form-input" 
+                           placeholder="Create a strong password" required
+                           oninput="checkPasswordStrength(this.value)">
+                    <div class="password-strength">
+                        <div class="strength-meter" id="strengthMeter"></div>
+                    </div>
+                    <div class="password-requirements">
+                        Must be at least 8 characters with letters and numbers
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">
+                        <i class="fas fa-lock"></i> Confirm Password
+                    </label>
+                    <input type="password" id="confirm_password" name="confirm_password" 
+                           class="form-input" placeholder="Confirm your password" required
+                           oninput="checkPasswordMatch()">
+                    <div id="passwordMatch" class="password-requirements"></div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="grade" class="form-label">
+                        <i class="fas fa-graduation-cap"></i> Grade/Class
+                    </label>
+                    <select id="grade" name="grade" class="form-select" required>
+                        <option value="">Select your grade</option>
+                        <option value="5">Grade 5</option>
+                        <option value="6">Grade 6</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="language" class="form-label">
+                        <i class="fas fa-language"></i> Preferred Language
+                    </label>
+                    <div class="language-select-wrapper">
+                        <select id="language" name="language" class="form-select" required onchange="updateLanguagePreview(this.value)">
+                            <option value="">Select your preferred language</option>
+                            <option value="english">🇬🇧 English</option>
+                            <option value="hindi">🇮🇳 हिंदी</option>
+                            <option value="bengali">🇮🇳 বাংলা</option>
+                            <option value="telugu">🇮🇳 తెలుగు</option>
+                            <option value="marathi">🇮🇳 मराठी</option>
+                            <option value="tamil">🇮🇳 தமிழ்</option>
+                            <option value="urdu">🇮🇳 اردو</option>
+                            <option value="gujarati">🇮🇳 ગુજરાતી</option>
+                            <option value="kannada">🇮🇳 ಕನ್ನಡ</option>
+                            <option value="malayalam">🇮🇳 മലയാളം</option>
+                            <option value="oriya">🇮🇳 ଓଡ଼ିଆ</option>
+                            <option value="punjabi">🇮🇳 ਪੰਜਾਬੀ</option>
+                            <option value="assamese">🇮🇳 অসমীয়া</option>
+                            <option value="maithili">🇮🇳 मैथिली</option>
+                            <option value="santali">🇮🇳 ᱥᱟᱱᱛᱟᱲᱤ</option>
+                            <option value="kashmiri">🇮🇳 कॉशुर</option>
+                            <option value="nepali">🇳🇵 नेपाली</option>
+                            <option value="sindhi">🇮🇳 سنڌي</option>
+                            <option value="dogri">🇮🇳 डोगरी</option>
+                            <option value="konkani">🇮🇳 कोंकणी</option>
+                            <option value="manipuri">🇮🇳 মৈতৈলোন্</option>
+                            <option value="bodo">🇮🇳 बर'</option>
+                        </select>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="languagePreview" class="language-preview" style="display: none;">
+                        <i class="fas fa-info-circle"></i>
+                        <span>You'll learn in your preferred language</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="school" class="form-label">
+                    <i class="fas fa-school"></i> School Name
+                </label>
+                <input type="text" id="school" name="school" class="form-input" placeholder="Your school name (optional)">
+            </div>
+            
+            <div class="form-group">
+                <div style="background: #f0f7ff; padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="terms" name="terms" required style="width: auto;">
+                        <span>I agree to the <a href="#" style="color: #667eea;">Terms of Service</a> and <a href="#" style="color: #667eea;">Privacy Policy</a></span>
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="register-btn" id="submitBtn">
+                <i class="fas fa-rocket"></i> Create Account & Start Learning
+            </button>
+        </form>
+        
+        <div class="register-footer">
+            <p>Already have an account? <a href="{{ url_for('student_login') }}">Login here</a></p>
+            <p>Are you an administrator? <a href="{{ url_for('admin_login') }}">Admin Portal</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Language mapping for preview messages
+    const languageNames = {
+        'english': 'English',
+        'hindi': 'हिंदी',
+        'bengali': 'বাংলা',
+        'telugu': 'తెలుగు',
+        'marathi': 'मराठी',
+        'tamil': 'தமிழ்',
+        'urdu': 'اردو',
+        'gujarati': 'ગુજરાતી',
+        'kannada': 'ಕನ್ನಡ',
+        'malayalam': 'മലയാളം',
+        'oriya': 'ଓଡ଼ିଆ',
+        'punjabi': 'ਪੰਜਾਬੀ',
+        'assamese': 'অসমীয়া',
+        'maithili': 'मैथिली',
+        'santali': 'ᱥᱟᱱᱛᱟᱲᱤ',
+        'kashmiri': 'कॉशुर',
+        'nepali': 'नेपाली',
+        'sindhi': 'سنڌي',
+        'dogri': 'डोगरी',
+        'konkani': 'कोंकणी',
+        'manipuri': 'মৈতৈলোন্',
+        'bodo': 'बर\''
+    };
+    
+    const welcomeMessages = {
+        'english': 'Welcome! You will learn in English.',
+        'hindi': 'स्वागत है! आप हिंदी में सीखेंगे।',
+        'bengali': 'স্বাগতম! আপনি বাংলায় শিখবেন।',
+        'telugu': 'స్వాగతం! మీరు తెలుగులో నేర్చుకుంటారు।',
+        'marathi': 'स्वागत आहे! तुम्ही मराठीत शिकाल।',
+        'tamil': 'வரவேற்கிறோம்! நீங்கள் தமிழில் கற்கலாம்।',
+        'urdu': 'خوش آمدید! آپ اردو میں سیکھیں گے۔',
+        'gujarati': 'સ્વાગત છે! તમે ગુજરાતીમાં શીખશો।',
+        'kannada': 'ಸ್ವಾಗತ! ನೀವು ಕನ್ನಡದಲ್ಲಿ ಕಲಿಯುವಿರಿ।',
+        'malayalam': 'സ്വാഗതം! നിങ്ങൾ മലയാളത്തിൽ പഠിക്കും।',
+        'oriya': 'ସ୍ୱାଗତମ୍! ଆପଣ ଓଡ଼ିଆରେ ଶିଖିବେ।',
+        'punjabi': 'ਸਵਾਗਤ ਹੈ! ਤੁਸੀਂ ਪੰਜਾਬੀ ਵਿੱਚ ਸਿੱਖੋਗੇ।',
+        'assamese': 'আদৰণি! আপুনি অসমীয়াত শিকিব।',
+        'maithili': 'स्वागत! अहाँ मैथिलीमे सीखब।',
+        'santali': 'ᱚᱜᱚᱨ! ᱟᱢ ᱥᱟᱱᱛᱟᱲᱤ ᱛᱮ ᱪᱮᱫᱢᱟ।',
+        'kashmiri': 'आदाब! तोह कॉशुर मंज सीखख।',
+        'nepali': 'स्वागतम्! तपाईं नेपालीमा सिक्नुहुनेछ।',
+        'sindhi': 'ڀلي ڪري آيا! توهان سنڌي ۾ سکندا۔',
+        'dogri': 'स्वागत है! तुस डोगरी च सीखगे।',
+        'konkani': 'येवकार! तुमी कोंकणींत शिकतले।',
+        'manipuri': 'মনগুং! নাখোই মৈতৈলোন্ দা তমজবি।',
+        'bodo': 'जोहाय! नं थाइ बर'आव सोलायनो।'
+    };
+    
+    function updateLanguagePreview(lang) {
+        const previewDiv = document.getElementById('languagePreview');
+        if (lang && languageNames[lang]) {
+            previewDiv.style.display = 'flex';
+            previewDiv.innerHTML = `
+                <i class="fas fa-globe"></i>
+                <span><strong>${languageNames[lang]}</strong>: ${welcomeMessages[lang] || 'You will learn in ' + languageNames[lang]}</span>
+            `;
+        } else {
+            previewDiv.style.display = 'none';
+        }
+    }
+    
+    function checkPasswordStrength(password) {
+        const meter = document.getElementById('strengthMeter');
+        let strength = 0;
+        
+        // Length check
+        if (password.length >= 8) strength += 25;
+        if (password.length >= 12) strength += 25;
+        
+        // Complexity checks
+        if (/[A-Z]/.test(password)) strength += 25;
+        if (/[0-9]/.test(password)) strength += 25;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+        
+        // Cap at 100
+        strength = Math.min(strength, 100);
+        
+        // Update meter
+        meter.style.width = strength + '%';
+        
+        if (strength < 33) {
+            meter.className = 'strength-meter weak';
+        } else if (strength < 66) {
+            meter.className = 'strength-meter medium';
+        } else {
+            meter.className = 'strength-meter strong';
+        }
+    }
+    
+    function checkPasswordMatch() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const matchDiv = document.getElementById('passwordMatch');
+        
+        if (confirmPassword === '') {
+            matchDiv.textContent = '';
+            matchDiv.style.color = '#718096';
+        } else if (password === confirmPassword) {
+            matchDiv.textContent = '✓ Passwords match';
+            matchDiv.style.color = '#48bb78';
+        } else {
+            matchDiv.textContent = '✗ Passwords do not match';
+            matchDiv.style.color = '#f56565';
+        }
+    }
+    
+    // Form validation
+    document.querySelector('.register-form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const terms = document.getElementById('terms').checked;
+        const language = document.getElementById('language').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return false;
+        }
+        
+        if (!terms) {
+            e.preventDefault();
+            alert('Please agree to the Terms of Service and Privacy Policy');
+            return false;
+        }
+        
+        if (!language) {
+            e.preventDefault();
+            alert('Please select your preferred learning language');
+            return false;
+        }
+        
+        // Show loading animation
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        submitBtn.disabled = true;
+        
+        return true;
+    });
+    
+    // Add animation to form fields on focus
+    document.querySelectorAll('.form-input, .form-select').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('animated-field');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('animated-field');
+        });
+    });
+    
+    // Initialize preview if language is pre-selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const languageSelect = document.getElementById('language');
+        if (languageSelect.value) {
+            updateLanguagePreview(languageSelect.value);
+        }
+    });
+</script>
+{% endblock %}

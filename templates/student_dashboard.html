@@ -1,0 +1,1589 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Welcome Hero */
+    .welcome-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 30px;
+        margin-bottom: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.8s ease-out;
+    }
+
+    .welcome-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+
+    .welcome-text h1 {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+
+    .quick-stats {
+        display: flex;
+        gap: 2rem;
+        background: rgba(255,255,255,0.15);
+        padding: 1.5rem 2.5rem;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+    }
+
+    .quick-stat-item {
+        text-align: center;
+    }
+
+    .quick-stat-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .profile-avatar-large {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+    }
+
+    .profile-badges {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .profile-badge {
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-level { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+    .badge-xp { background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; }
+    .badge-rank { background: linear-gradient(135deg, #f56565, #e53e3e); color: white; }
+    .badge-language { background: #48bb78; color: white; }
+
+    .xp-progress-bar {
+        height: 12px;
+        background: #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .xp-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 6px;
+        transition: width 1s ease;
+    }
+
+    /* Language Cards - All 22 Indian Languages */
+    .language-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    .language-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+
+    .language-card {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .language-card:hover {
+        transform: translateY(-3px);
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 10px 20px rgba(102,126,234,0.1);
+    }
+
+    .language-card.active {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));
+    }
+
+    .language-flag {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    /* Language-specific flag colors */
+    .flag-english { background: linear-gradient(135deg, #4299e1, #3182ce); }
+    .flag-hindi { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+    .flag-bengali { background: linear-gradient(135deg, #f56565, #e53e3e); }
+    .flag-telugu { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .flag-marathi { background: linear-gradient(135deg, #9f7aea, #805ad5); }
+    .flag-tamil { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .flag-urdu { background: linear-gradient(135deg, #667eea, #5a67d8); }
+    .flag-gujarati { background: linear-gradient(135deg, #fc8181, #f56565); }
+    .flag-kannada { background: linear-gradient(135deg, #68d391, #48bb78); }
+    .flag-malayalam { background: linear-gradient(135deg, #b794f4, #9f7aea); }
+    .flag-oriya { background: linear-gradient(135deg, #f687b3, #ed64a6); }
+    .flag-punjabi { background: linear-gradient(135deg, #f6ad55, #ed8936); }
+    .flag-assamese { background: linear-gradient(135deg, #4fd1c5, #38b2ac); }
+    .flag-maithili { background: linear-gradient(135deg, #cbd5e0, #a0aec0); }
+    .flag-santali { background: linear-gradient(135deg, #90cdf4, #63b3ed); }
+    .flag-kashmiri { background: linear-gradient(135deg, #d53f8c, #b83280); }
+    .flag-nepali { background: linear-gradient(135deg, #fbbf24, #d69e2e); }
+    .flag-sindhi { background: linear-gradient(135deg, #b794f4, #9f7aea); }
+    .flag-dogri { background: linear-gradient(135deg, #f687b3, #ed64a6); }
+    .flag-konkani { background: linear-gradient(135deg, #4fd1c5, #319795); }
+    .flag-manipuri { background: linear-gradient(135deg, #f6ad55, #dd6b20); }
+    .flag-bodo { background: linear-gradient(135deg, #a0aec0, #718096); }
+
+    .language-info h4 {
+        margin: 0;
+        font-size: 1rem;
+        color: #2d3748;
+    }
+
+    .language-info p {
+        margin: 0.2rem 0 0;
+        font-size: 0.8rem;
+        color: #718096;
+    }
+
+    /* Stats Grid - Learning Score Removed */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .stat-icon-blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .stat-icon-green { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .stat-icon-orange { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+    .stat-icon-red { background: linear-gradient(135deg, #f56565, #e53e3e); }
+    .stat-icon-purple { background: linear-gradient(135deg, #9f7aea, #805ad5); }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d3748;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #718096;
+    }
+
+    /* Content Cards */
+    .content-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Study Material Cards */
+    .material-card, .video-card {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+        position: relative;
+    }
+
+    .material-card:hover, .video-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        background: white;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+
+    .card-meta {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+    }
+
+    .meta-tag {
+        background: #e2e8f0;
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        color: #4a5568;
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+
+    .material-type-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .type-pdf { background: #f5656520; color: #c53030; border: 1px solid #f56565; }
+    .type-image { background: #48bb7820; color: #2f855a; border: 1px solid #48bb78; }
+    .type-audio { background: #9f7aea20; color: #6b46c1; border: 1px solid #9f7aea; }
+    .type-document { background: #ed893620; color: #c05621; border: 1px solid #ed8936; }
+
+    .btn-start, .btn-watch, .btn-view, .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.2rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .btn-watch { background: linear-gradient(135deg, #f56565, #e53e3e); }
+    .btn-view { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .btn-download { background: linear-gradient(135deg, #9f7aea, #805ad5); }
+
+    .btn-start:hover, .btn-watch:hover, .btn-view:hover, .btn-download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #a0aec0;
+        grid-column: 1/-1;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #cbd5e0;
+    }
+
+    /* Medals Grid */
+    .medals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .medal-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .medal-item:hover {
+        transform: scale(1.05);
+        background: #ebf4ff;
+    }
+
+    .medal-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .medal-gold { background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b); }
+    .medal-silver { background: radial-gradient(circle at 30% 30%, #c0c0c0, #808080); }
+    .medal-bronze { background: radial-gradient(circle at 30% 30%, #cd7f32, #8b4513); }
+    .medal-blue { background: radial-gradient(circle at 30% 30%, #667eea, #5a67d8); }
+    .medal-green { background: radial-gradient(circle at 30% 30%, #48bb78, #38a169); }
+
+    /* Video Modal */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 15px;
+        padding: 0;
+        overflow: hidden;
+        max-width: 800px;
+        width: 90%;
+        position: relative;
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        z-index: 10;
+    }
+
+    .close-modal:hover {
+        background: rgba(0,0,0,0.7);
+    }
+
+    @media (max-width: 768px) {
+        .welcome-text h1 { font-size: 2rem; }
+        .quick-stats { width: 100%; justify-content: space-around; padding: 1rem; }
+        .profile-card { flex-direction: column; text-align: center; }
+        .content-grid { grid-template-columns: 1fr; }
+        .language-cards { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Welcome Hero -->
+    <div class="welcome-hero">
+        <div class="welcome-content">
+            <div class="welcome-text">
+                <h1>
+                    {% if student.language == 'english' %}
+                    👋 Welcome back, {{ student.name }}!
+                    {% elif student.language == 'hindi' %}
+                    👋 स्वागत है, {{ student.name }}!
+                    {% elif student.language == 'telugu' %}
+                    👋 స్వాగతం, {{ student.name }}!
+                    {% elif student.language == 'bengali' %}
+                    👋 স্বাগতম, {{ student.name }}!
+                    {% elif student.language == 'tamil' %}
+                    👋 வரவேற்கிறோம், {{ student.name }}!
+                    {% elif student.language == 'marathi' %}
+                    👋 स्वागत आहे, {{ student.name }}!
+                    {% elif student.language == 'gujarati' %}
+                    👋 સ્વાગત છે, {{ student.name }}!
+                    {% elif student.language == 'kannada' %}
+                    👋 ಸ್ವಾಗತ, {{ student.name }}!
+                    {% elif student.language == 'malayalam' %}
+                    👋 സ്വാഗതം, {{ student.name }}!
+                    {% elif student.language == 'punjabi' %}
+                    👋 ਸਵਾਗਤ ਹੈ, {{ student.name }}!
+                    {% elif student.language == 'assamese' %}
+                    👋 আদৰণি, {{ student.name }}!
+                    {% elif student.language == 'oriya' %}
+                    👋 ସ୍ୱାଗତମ୍, {{ student.name }}!
+                    {% elif student.language == 'maithili' %}
+                    👋 स्वागत, {{ student.name }}!
+                    {% elif student.language == 'santali' %}
+                    👋 ᱚᱜᱚᱨ, {{ student.name }}!
+                    {% elif student.language == 'kashmiri' %}
+                    👋 आदाब, {{ student.name }}!
+                    {% elif student.language == 'nepali' %}
+                    👋 स्वागतम्, {{ student.name }}!
+                    {% elif student.language == 'sindhi' %}
+                    👋 जी आइं, {{ student.name }}!
+                    {% elif student.language == 'dogri' %}
+                    👋 स्वागत है, {{ student.name }}!
+                    {% elif student.language == 'konkani' %}
+                    👋 येवकार, {{ student.name }}!
+                    {% elif student.language == 'manipuri' %}
+                    👋 মনগুং, {{ student.name }}!
+                    {% elif student.language == 'bodo' %}
+                    👋 जोहाय, {{ student.name }}!
+                    {% else %}
+                    👋 Welcome back, {{ student.name }}!
+                    {% endif %}
+                </h1>
+                <p>
+                    {% if student.language == 'english' %}
+                    Your personalized learning dashboard - Learn in 22 Indian languages
+                    {% elif student.language == 'hindi' %}
+                    आपका व्यक्तिगत शिक्षण डैशबोर्ड - 22 भारतीय भाषाओं में सीखें
+                    {% elif student.language == 'telugu' %}
+                    మీ వ్యక్తిగతీకరించిన అభ్యాస డ్యాష్‌బోర్డ్ - 22 భారతీయ భాషల్లో నేర్చుకోండి
+                    {% elif student.language == 'bengali' %}
+                    আপনার ব্যক্তিগত শিক্ষার ড্যাশবোর্ড - ২২ টি ভারতীয় ভাষায় শিখুন
+                    {% elif student.language == 'tamil' %}
+                    உங்கள் தனிப்பயனாக்கப்பட்ட கற்றல் டாஷ்போர்டு - 22 இந்திய மொழிகளில் கற்கவும்
+                    {% elif student.language == 'marathi' %}
+                    आपले वैयक्तिक शिक्षण डॅशबोर्ड - २२ भारतीय भाषांमध्ये शिका
+                    {% elif student.language == 'gujarati' %}
+                    તમારું વ્યક્તિગત શિક્ષણ ડેશબોર્ડ - 22 ભારતીય ભાષાઓમાં શીખો
+                    {% elif student.language == 'kannada' %}
+                    ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಕಲಿಕೆಯ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ - 22 ಭಾರತೀಯ ಭಾಷೆಗಳಲ್ಲಿ ಕಲಿಯಿರಿ
+                    {% elif student.language == 'malayalam' %}
+                    നിങ്ങളുടെ വ്യക്തിഗത ഡാഷ്ബോർഡ് - 22 ഇന്ത്യൻ ഭാഷകളിൽ പഠിക്കുക
+                    {% elif student.language == 'punjabi' %}
+                    ਤੁਹਾਡਾ ਨਿੱਜੀ ਸਿੱਖਣ ਡੈਸ਼ਬੋਰਡ - 22 ਭਾਰਤੀ ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਸਿੱਖੋ
+                    {% elif student.language == 'assamese' %}
+                    আপোনাৰ ব্যক্তিগত শিক্ষা ডেশ্ববৰ্ড - ২২ টা ভাৰতীয় ভাষাত শিকক
+                    {% elif student.language == 'oriya' %}
+                    ଆପଣଙ୍କର ବ୍ୟକ୍ତିଗତ ଶିକ୍ଷା ଡ୍ୟାସବୋର୍ଡ - ୨୨ ଭାରତୀୟ ଭାଷାରେ ଶିଖନ୍ତୁ
+                    {% else %}
+                    Your personalized learning dashboard - Learn in 22 Indian languages
+                    {% endif %}
+                </p>
+            </div>
+            <div class="quick-stats">
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ student.xp|default(0) }}</div>
+                    <div class="quick-stat-label">XP</div>
+                </div>
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ student.level|default(1) }}</div>
+                    <div class="quick-stat-label">Level</div>
+                </div>
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ streak|default(0) }}</div>
+                    <div class="quick-stat-label">Day Streak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="profile-card">
+        <div class="profile-avatar-large">
+            {{ student.name[0]|upper }}
+        </div>
+        <div class="profile-info">
+            <div class="profile-name" style="font-size: 2rem; font-weight: 700; color: #2d3748;">
+                {{ student.name }}
+            </div>
+            <div class="profile-badges">
+                <span class="profile-badge badge-level">
+                    <i class="fas fa-crown"></i> Level {{ student.level|default(1) }}
+                </span>
+                <span class="profile-badge badge-xp">
+                    <i class="fas fa-star"></i> {{ student.xp|default(0) }} XP
+                </span>
+                <span class="profile-badge badge-rank">
+                    <i class="fas fa-trophy"></i> Rank #{{ position|default('N/A') }}
+                </span>
+                <span class="profile-badge badge-language">
+                    <i class="fas fa-language"></i>
+                    {% if student.language == 'english' %}English
+                    {% elif student.language == 'hindi' %}हिंदी
+                    {% elif student.language == 'telugu' %}తెలుగు
+                    {% elif student.language == 'bengali' %}বাংলা
+                    {% elif student.language == 'tamil' %}தமிழ்
+                    {% elif student.language == 'marathi' %}मराठी
+                    {% elif student.language == 'gujarati' %}ગુજરાતી
+                    {% elif student.language == 'kannada' %}ಕನ್ನಡ
+                    {% elif student.language == 'malayalam' %}മലയാളം
+                    {% elif student.language == 'punjabi' %}ਪੰਜਾਬੀ
+                    {% elif student.language == 'assamese' %}অসমীয়া
+                    {% elif student.language == 'oriya' %}ଓଡ଼ିଆ
+                    {% elif student.language == 'maithili' %}मैथिली
+                    {% elif student.language == 'santali' %}ᱥᱟᱱᱛᱟᱲᱤ
+                    {% elif student.language == 'kashmiri' %}कॉशुर
+                    {% elif student.language == 'nepali' %}नेपाली
+                    {% elif student.language == 'sindhi' %}سنڌي
+                    {% elif student.language == 'dogri' %}डोगरी
+                    {% elif student.language == 'konkani' %}कोंकणी
+                    {% elif student.language == 'manipuri' %}মৈতৈলোন্
+                    {% elif student.language == 'bodo' %}बर'
+                    {% else %}{{ student.language|title }}{% endif %}
+                </span>
+            </div>
+            <div style="margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #718096;">
+                    <span>Progress to Level {{ student.level|default(1) + 1 }}</span>
+                    <span>{{ student.xp|default(0) % 1000 }}/1000 XP</span>
+                </div>
+                <div class="xp-progress-bar">
+                    <div class="xp-progress-fill" style="width: {{ (student.xp|default(0) % 1000) / 10 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Selection - All 22 Indian Languages with MongoDB counts -->
+    <div class="language-section">
+        <div class="section-title">
+            <i class="fas fa-language" style="color: #667eea;"></i>
+            {% if student.language == 'english' %}
+            Choose Your Learning Language (22 Indian Languages)
+            {% elif student.language == 'hindi' %}
+            अपनी सीखने की भाषा चुनें (22 भारतीय भाषाएँ)
+            {% elif student.language == 'telugu' %}
+            మీ అభ్యాస భాషను ఎంచుకోండి (22 భారతీయ భాషలు)
+            {% elif student.language == 'bengali' %}
+            আপনার শেখার ভাষা নির্বাচন করুন (২২টি ভারতীয় ভাষা)
+            {% elif student.language == 'tamil' %}
+            உங்கள் கற்றல் மொழியைத் தேர்வுசெய்க (22 இந்திய மொழிகள்)
+            {% elif student.language == 'marathi' %}
+            आपली शिक्षण भाषा निवडा (२२ भारतीय भाषा)
+            {% else %}
+            Choose Your Learning Language (22 Indian Languages)
+            {% endif %}
+        </div>
+        <div class="language-cards">
+            <!-- English -->
+            <div class="language-card {% if student.language == 'english' %}active{% endif %}" onclick="setLanguage('english')">
+                <div class="language-flag flag-english">🇬🇧</div>
+                <div class="language-info">
+                    <h4>English</h4>
+                    <p>{{ language_counts.get('english', 0) }} items</p>
+                </div>
+            </div>
+            <!-- Hindi -->
+            <div class="language-card {% if student.language == 'hindi' %}active{% endif %}" onclick="setLanguage('hindi')">
+                <div class="language-flag flag-hindi">🇮🇳</div>
+                <div class="language-info">
+                    <h4>हिंदी</h4>
+                    <p>{{ language_counts.get('hindi', 0) }} सामग्री</p>
+                </div>
+            </div>
+            <!-- Bengali -->
+            <div class="language-card {% if student.language == 'bengali' %}active{% endif %}" onclick="setLanguage('bengali')">
+                <div class="language-flag flag-bengali">🇮🇳</div>
+                <div class="language-info">
+                    <h4>বাংলা</h4>
+                    <p>{{ language_counts.get('bengali', 0) }} উপকরণ</p>
+                </div>
+            </div>
+            <!-- Telugu -->
+            <div class="language-card {% if student.language == 'telugu' %}active{% endif %}" onclick="setLanguage('telugu')">
+                <div class="language-flag flag-telugu">🇮🇳</div>
+                <div class="language-info">
+                    <h4>తెలుగు</h4>
+                    <p>{{ language_counts.get('telugu', 0) }} అంశాలు</p>
+                </div>
+            </div>
+            <!-- Marathi -->
+            <div class="language-card {% if student.language == 'marathi' %}active{% endif %}" onclick="setLanguage('marathi')">
+                <div class="language-flag flag-marathi">🇮🇳</div>
+                <div class="language-info">
+                    <h4>मराठी</h4>
+                    <p>{{ language_counts.get('marathi', 0) }} साहित्य</p>
+                </div>
+            </div>
+            <!-- Tamil -->
+            <div class="language-card {% if student.language == 'tamil' %}active{% endif %}" onclick="setLanguage('tamil')">
+                <div class="language-flag flag-tamil">🇮🇳</div>
+                <div class="language-info">
+                    <h4>தமிழ்</h4>
+                    <p>{{ language_counts.get('tamil', 0) }} உள்ளடக்கம்</p>
+                </div>
+            </div>
+            <!-- Urdu -->
+            <div class="language-card {% if student.language == 'urdu' %}active{% endif %}" onclick="setLanguage('urdu')">
+                <div class="language-flag flag-urdu">🇮🇳</div>
+                <div class="language-info">
+                    <h4>اردو</h4>
+                    <p>{{ language_counts.get('urdu', 0) }} مواد</p>
+                </div>
+            </div>
+            <!-- Gujarati -->
+            <div class="language-card {% if student.language == 'gujarati' %}active{% endif %}" onclick="setLanguage('gujarati')">
+                <div class="language-flag flag-gujarati">🇮🇳</div>
+                <div class="language-info">
+                    <h4>ગુજરાતી</h4>
+                    <p>{{ language_counts.get('gujarati', 0) }} સામગ્રી</p>
+                </div>
+            </div>
+            <!-- Kannada -->
+            <div class="language-card {% if student.language == 'kannada' %}active{% endif %}" onclick="setLanguage('kannada')">
+                <div class="language-flag flag-kannada">🇮🇳</div>
+                <div class="language-info">
+                    <h4>ಕನ್ನಡ</h4>
+                    <p>{{ language_counts.get('kannada', 0) }} ವಿಷಯ</p>
+                </div>
+            </div>
+            <!-- Malayalam -->
+            <div class="language-card {% if student.language == 'malayalam' %}active{% endif %}" onclick="setLanguage('malayalam')">
+                <div class="language-flag flag-malayalam">🇮🇳</div>
+                <div class="language-info">
+                    <h4>മലയാളം</h4>
+                    <p>{{ language_counts.get('malayalam', 0) }} ഉള്ളടക്കം</p>
+                </div>
+            </div>
+            <!-- Odia -->
+            <div class="language-card {% if student.language == 'oriya' %}active{% endif %}" onclick="setLanguage('oriya')">
+                <div class="language-flag flag-oriya">🇮🇳</div>
+                <div class="language-info">
+                    <h4>ଓଡ଼ିଆ</h4>
+                    <p>{{ language_counts.get('oriya', 0) }} ସାମଗ୍ରୀ</p>
+                </div>
+            </div>
+            <!-- Punjabi -->
+            <div class="language-card {% if student.language == 'punjabi' %}active{% endif %}" onclick="setLanguage('punjabi')">
+                <div class="language-flag flag-punjabi">🇮🇳</div>
+                <div class="language-info">
+                    <h4>ਪੰਜਾਬੀ</h4>
+                    <p>{{ language_counts.get('punjabi', 0) }} ਸਮੱਗਰੀ</p>
+                </div>
+            </div>
+            <!-- Assamese -->
+            <div class="language-card {% if student.language == 'assamese' %}active{% endif %}" onclick="setLanguage('assamese')">
+                <div class="language-flag flag-assamese">🇮🇳</div>
+                <div class="language-info">
+                    <h4>অসমীয়া</h4>
+                    <p>{{ language_counts.get('assamese', 0) }} সামগ্রী</p>
+                </div>
+            </div>
+            <!-- Maithili -->
+            <div class="language-card {% if student.language == 'maithili' %}active{% endif %}" onclick="setLanguage('maithili')">
+                <div class="language-flag flag-maithili">🇮🇳</div>
+                <div class="language-info">
+                    <h4>मैथिली</h4>
+                    <p>{{ language_counts.get('maithili', 0) }} सामग्री</p>
+                </div>
+            </div>
+            <!-- Santali -->
+            <div class="language-card {% if student.language == 'santali' %}active{% endif %}" onclick="setLanguage('santali')">
+                <div class="language-flag flag-santali">🇮🇳</div>
+                <div class="language-info">
+                    <h4>ᱥᱟᱱᱛᱟᱲᱤ</h4>
+                    <p>{{ language_counts.get('santali', 0) }} ᱥᱟᱢᱟᱱ</p>
+                </div>
+            </div>
+            <!-- Kashmiri -->
+            <div class="language-card {% if student.language == 'kashmiri' %}active{% endif %}" onclick="setLanguage('kashmiri')">
+                <div class="language-flag flag-kashmiri">🇮🇳</div>
+                <div class="language-info">
+                    <h4>कॉशुर</h4>
+                    <p>{{ language_counts.get('kashmiri', 0) }} مواد</p>
+                </div>
+            </div>
+            <!-- Nepali -->
+            <div class="language-card {% if student.language == 'nepali' %}active{% endif %}" onclick="setLanguage('nepali')">
+                <div class="language-flag flag-nepali">🇳🇵</div>
+                <div class="language-info">
+                    <h4>नेपाली</h4>
+                    <p>{{ language_counts.get('nepali', 0) }} सामग्री</p>
+                </div>
+            </div>
+            <!-- Sindhi -->
+            <div class="language-card {% if student.language == 'sindhi' %}active{% endif %}" onclick="setLanguage('sindhi')">
+                <div class="language-flag flag-sindhi">🇮🇳</div>
+                <div class="language-info">
+                    <h4>سنڌي</h4>
+                    <p>{{ language_counts.get('sindhi', 0) }} مواد</p>
+                </div>
+            </div>
+            <!-- Dogri -->
+            <div class="language-card {% if student.language == 'dogri' %}active{% endif %}" onclick="setLanguage('dogri')">
+                <div class="language-flag flag-dogri">🇮🇳</div>
+                <div class="language-info">
+                    <h4>डोगरी</h4>
+                    <p>{{ language_counts.get('dogri', 0) }} सामग्री</p>
+                </div>
+            </div>
+            <!-- Konkani -->
+            <div class="language-card {% if student.language == 'konkani' %}active{% endif %}" onclick="setLanguage('konkani')">
+                <div class="language-flag flag-konkani">🇮🇳</div>
+                <div class="language-info">
+                    <h4>कोंकणी</h4>
+                    <p>{{ language_counts.get('konkani', 0) }} साहित्य</p>
+                </div>
+            </div>
+            <!-- Manipuri -->
+            <div class="language-card {% if student.language == 'manipuri' %}active{% endif %}" onclick="setLanguage('manipuri')">
+                <div class="language-flag flag-manipuri">🇮🇳</div>
+                <div class="language-info">
+                    <h4>মৈতৈলোন্</h4>
+                    <p>{{ language_counts.get('manipuri', 0) }} উপকরণ</p>
+                </div>
+            </div>
+            <!-- Bodo -->
+            <div class="language-card {% if student.language == 'bodo' %}active{% endif %}" onclick="setLanguage('bodo')">
+                <div class="language-flag flag-bodo">🇮🇳</div>
+                <div class="language-info">
+                    <h4>बर'</h4>
+                    <p>{{ language_counts.get('bodo', 0) }} सोमोन</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid (Learning Score Card REMOVED) -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-purple">
+                <i class="fas fa-book"></i>
+            </div>
+            <div>
+                <div class="stat-label">Materials Studied</div>
+                <div class="stat-value">{{ student.total_materials|default(0) }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-red">
+                <i class="fas fa-video"></i>
+            </div>
+            <div>
+                <div class="stat-label">Videos Watched</div>
+                <div class="stat-value">{{ student.total_videos|default(0) }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">
+                <i class="fas fa-star"></i>
+            </div>
+            <div>
+                <div class="stat-label">Total XP</div>
+                <div class="stat-value">{{ student.xp|default(0) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ STUDY MATERIALS SECTION ============ -->
+    <div class="content-section">
+        <div class="section-title">
+            <i class="fas fa-book" style="color: #48bb78;"></i>
+            <span>📚 Study Materials</span>
+            <span style="background: #48bb78; color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.9rem; margin-left: 1rem;">
+                {{ materials_count }} Available
+            </span>
+        </div>
+
+        {% if available_materials and available_materials|length > 0 %}
+        <div class="content-grid">
+            {% for material in available_materials[:6] %}
+            {% if material.language == student.language %}
+            <div class="material-card">
+                <div class="material-type-badge
+                    {% if material.type == 'pdf' %}type-pdf
+                    {% elif material.type == 'image' %}type-image
+                    {% elif material.type == 'audio' %}type-audio
+                    {% elif material.type == 'document' %}type-document
+                    {% endif %}">
+                    <i class="fas fa-{% if material.type == 'pdf' %}file-pdf{% elif material.type == 'image' %}image{% elif material.type == 'audio' %}headphones{% elif material.type == 'document' %}file-word{% else %}file{% endif %}"></i>
+                    {{ material.type|upper }}
+                </div>
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #48bb78, #38a169);">
+                        {% if material.type == 'pdf' %}
+                        <i class="fas fa-file-pdf"></i>
+                        {% elif material.type == 'image' %}
+                        <i class="fas fa-image"></i>
+                        {% elif material.type == 'audio' %}
+                        <i class="fas fa-headphones"></i>
+                        {% elif material.type == 'document' %}
+                        <i class="fas fa-file-word"></i>
+                        {% else %}
+                        <i class="fas fa-book"></i>
+                        {% endif %}
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 class="card-title">{{ material.title }}</h3>
+                        <div class="card-meta">
+                            <span class="meta-tag">
+                                <i class="fas fa-language"></i>
+                                {% if material.language == 'english' %}English
+                                {% elif material.language == 'hindi' %}हिंदी
+                                {% elif material.language == 'telugu' %}తెలుగు
+                                {% elif material.language == 'bengali' %}বাংলা
+                                {% elif material.language == 'tamil' %}தமிழ்
+                                {% elif material.language == 'marathi' %}मराठी
+                                {% elif material.language == 'gujarati' %}ગુજરાતી
+                                {% elif material.language == 'kannada' %}ಕನ್ನಡ
+                                {% elif material.language == 'malayalam' %}മലയാളം
+                                {% elif material.language == 'punjabi' %}ਪੰਜਾਬੀ
+                                {% elif material.language == 'assamese' %}অসমীয়া
+                                {% elif material.language == 'oriya' %}ଓଡ଼ିଆ
+                                {% elif material.language == 'maithili' %}मैथिली
+                                {% elif material.language == 'santali' %}ᱥᱟᱱᱛᱟᱲᱤ
+                                {% elif material.language == 'kashmiri' %}कॉशुर
+                                {% elif material.language == 'nepali' %}नेपाली
+                                {% elif material.language == 'sindhi' %}سنڌي
+                                {% elif material.language == 'dogri' %}डोगरी
+                                {% elif material.language == 'konkani' %}कोंकणी
+                                {% elif material.language == 'manipuri' %}মৈতৈলোন্
+                                {% elif material.language == 'bodo' %}बर'
+                                {% else %}{{ material.language|title }}{% endif %}
+                            </span>
+                            <span class="meta-tag">
+                                <i class="fas fa-graduation-cap"></i> Grade {{ material.grade|default('All') }}
+                            </span>
+                            <span class="meta-tag">
+                                <i class="fas fa-bookmark"></i> {{ material.subject|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% if material.chapter %}
+                <div style="background: #ebf4ff; padding: 0.5rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                    <i class="fas fa-bookmark" style="color: #667eea;"></i> {{ material.chapter }}
+                </div>
+                {% endif %}
+                <p style="color: #718096; margin-bottom: 1rem; font-size: 0.9rem;">
+                    {{ material.description[:100] }}{% if material.description|length > 100 %}...{% endif %}
+                </p>
+               
+                <!-- Material Stats -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; justify-content: space-around; background: #f8f9fa; padding: 0.5rem; border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <i class="fas fa-eye" style="color: #667eea;"></i>
+                        <span style="font-size: 0.8rem; margin-left: 0.2rem;">{{ material.views|default(0) }}</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <i class="fas fa-download" style="color: #48bb78;"></i>
+                        <span style="font-size: 0.8rem; margin-left: 0.2rem;">{{ material.downloads|default(0) }}</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <i class="fas fa-star" style="color: #fbbf24;"></i>
+                        <span style="font-size: 0.8rem; margin-left: 0.2rem;">{{ material.favorites|default(0) }}</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons - FIXED PREVIEW URL -->
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('preview_study_material', material_id=material._id) }}"
+                       target="_blank"
+                       class="btn-view"
+                       style="flex: 1; text-decoration: none;"
+                       onclick="trackMaterialView('{{ material._id }}')">
+                        <i class="fas fa-eye"></i> Preview
+                    </a>
+                    <a href="{{ url_for('download_study_material', material_id=material._id) }}"
+                       class="btn-download"
+                       style="flex: 1; text-decoration: none;">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% if materials_count > 6 %}
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('student_learning') }}?tab=materials" style="color: #48bb78; font-weight: 600; text-decoration: none;">
+                View All {{ materials_count }} Study Materials <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-book-open"></i>
+            <h3 style="color: #4a5568; margin-bottom: 0.5rem;">No Study Materials Available</h3>
+            <p style="color: #718096; margin-bottom: 1.5rem;">Study materials uploaded by admin will appear here</p>
+            <a href="/contact-admin" style="color: #667eea; text-decoration: underline;">
+                Contact Admin to upload materials
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ============ VIDEOS SECTION ============ -->
+    <div class="content-section">
+        <div class="section-title">
+            <i class="fas fa-video" style="color: #f56565;"></i>
+            <span>📹 Video Lessons</span>
+            <span style="background: #f56565; color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.9rem; margin-left: 1rem;">
+                {{ videos_count }} Available
+            </span>
+        </div>
+
+        {% if available_videos and available_videos|length > 0 %}
+        <div class="content-grid">
+            {% for video in available_videos[:6] %}
+            {% if video.language == student.language %}
+            <div class="video-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #f56565, #e53e3e);">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 class="card-title">{{ video.title }}</h3>
+                        <div class="card-meta">
+                            <span class="meta-tag">
+                                <i class="fas fa-language"></i>
+                                {% if video.language == 'english' %}English
+                                {% elif video.language == 'hindi' %}हिंदी
+                                {% elif video.language == 'telugu' %}తెలుగు
+                                {% elif video.language == 'bengali' %}বাংলা
+                                {% elif video.language == 'tamil' %}தமிழ்
+                                {% elif video.language == 'marathi' %}मराठी
+                                {% elif video.language == 'gujarati' %}ગુજરાતી
+                                {% elif video.language == 'kannada' %}ಕನ್ನಡ
+                                {% elif video.language == 'malayalam' %}മലയാളം
+                                {% elif video.language == 'punjabi' %}ਪੰਜਾਬੀ
+                                {% elif video.language == 'assamese' %}অসমীয়া
+                                {% elif video.language == 'oriya' %}ଓଡ଼ିଆ
+                                {% elif video.language == 'maithili' %}मैथिली
+                                {% elif video.language == 'santali' %}ᱥᱟᱱᱛᱟᱲᱤ
+                                {% elif video.language == 'kashmiri' %}कॉशुर
+                                {% elif video.language == 'nepali' %}नेपाली
+                                {% elif video.language == 'sindhi' %}سنڌي
+                                {% elif video.language == 'dogri' %}डोगरी
+                                {% elif video.language == 'konkani' %}कोंकणी
+                                {% elif video.language == 'manipuri' %}মৈতৈলোন্
+                                {% elif video.language == 'bodo' %}बर'
+                                {% else %}{{ video.language|title }}{% endif %}
+                            </span>
+                            <span class="meta-tag">
+                                <i class="fas fa-graduation-cap"></i> Grade {{ video.grade|default('All') }}
+                            </span>
+                            <span class="meta-tag">
+                                <i class="fas fa-clock"></i> {{ video.duration|default(30) }} min
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% if video.chapter %}
+                <div style="background: #ebf4ff; padding: 0.5rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                    <i class="fas fa-bookmark" style="color: #667eea;"></i> {{ video.chapter }}
+                </div>
+                {% endif %}
+                <p style="color: #718096; margin-bottom: 1rem; font-size: 0.9rem;">
+                    {{ video.description[:100] }}{% if video.description|length > 100 %}...{% endif %}
+                </p>
+               
+                <!-- Video Stats -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; justify-content: space-around; background: #f8f9fa; padding: 0.5rem; border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <i class="fas fa-eye" style="color: #667eea;"></i>
+                        <span style="font-size: 0.8rem; margin-left: 0.2rem;">{{ video.views|default(0) }}</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <i class="fas fa-download" style="color: #48bb78;"></i>
+                        <span style="font-size: 0.8rem; margin-left: 0.2rem;">{{ video.downloads|default(0) }}</span>
+                    </div>
+                </div>
+               
+                <div style="display: flex; gap: 0.75rem;">
+                    <a href="{{ url_for('watch_video', video_id=video._id) }}"
+                       target="_blank"
+                       class="btn-watch"
+                       style="flex: 1; text-decoration: none;"
+                       onclick="trackVideoView('{{ video._id }}')">
+                        <i class="fas fa-play"></i> Watch Now
+                    </a>
+                    <a href="{{ url_for('download_video', video_id=video._id) }}"
+                       class="btn-download"
+                       style="flex: 1; text-decoration: none;">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% if videos_count > 6 %}
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('student_learning') }}?tab=videos" style="color: #f56565; font-weight: 600; text-decoration: none;">
+                View All {{ videos_count }} Videos <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-video-slash"></i>
+            <h3 style="color: #4a5568; margin-bottom: 0.5rem;">No Videos Available</h3>
+            <p style="color: #718096; margin-bottom: 1.5rem;">Videos uploaded by admin will appear here</p>
+            <a href="/contact-admin" style="color: #667eea; text-decoration: underline;">
+                Contact Admin to upload videos
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Medals Section (GAME CHAMPION MEDAL REMOVED) -->
+    <div class="content-section">
+        <div class="section-title">
+            <i class="fas fa-medal" style="color: #fbbf24;"></i>
+            <span>🏅 Your Achievements</span>
+            <span style="background: #fbbf24; color: #744210; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.9rem; margin-left: 1rem;">
+                {{ student.medals|length|default(0) }} Medals
+            </span>
+        </div>
+
+        {% if student.medals and student.medals|length > 0 %}
+        <div class="medals-grid">
+            {% for medal in student.medals %}
+            <div class="medal-item" onclick="showMedalDetails('{{ medal }}')">
+                <div class="medal-icon
+                    {% if loop.index == 1 %}medal-gold
+                    {% elif loop.index == 2 %}medal-silver
+                    {% elif loop.index == 3 %}medal-bronze
+                    {% elif loop.index <= 6 %}medal-blue
+                    {% else %}medal-green{% endif %}">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <div style="font-weight: 600; color: #2d3748; font-size: 0.85rem;">
+                    {% if medal == 'material_learner' %}Dedicated Learner
+                    {% elif medal == 'video_learner' %}Video Learner
+                    {% elif medal == 'polyglot' %}Polyglot (3+ Languages)
+                    {% elif medal == 'streak_7' %}7 Day Streak
+                    {% elif medal == 'streak_30' %}30 Day Streak
+                    {% elif medal == 'first_activity' %}First Steps
+                    {% elif medal == 'ten_activities' %}Active Learner
+                    {% elif medal == 'fifty_activities' %}Learning Master
+                    {% elif medal == 'hundred_activities' %}Learning Legend
+                    {% elif medal == 'perfect_score' %}Perfect Score
+                    {% elif medal == 'early_bird' %}Early Bird
+                    {% elif medal == 'night_owl' %}Night Owl
+                    {% elif medal == 'weekend_warrior' %}Weekend Warrior
+                    {% elif medal == 'hindi_learner' %}हिंदी Learner
+                    {% elif medal == 'telugu_learner' %}తెలుగు Learner
+                    {% elif medal == 'tamil_learner' %}தமிழ் Learner
+                    {% elif medal == 'bengali_learner' %}বাংলা Learner
+                    {% elif medal == 'marathi_learner' %}मराठी Learner
+                    {% elif medal == 'gujarati_learner' %}ગુજરાતી Learner
+                    {% elif medal == 'kannada_learner' %}ಕನ್ನಡ Learner
+                    {% elif medal == 'malayalam_learner' %}മലയാളം Learner
+                    {% elif medal == 'punjabi_learner' %}ਪੰਜਾਬੀ Learner
+                    {% elif medal == 'assamese_learner' %}অসমীয়া Learner
+                    {% elif medal == 'oriya_learner' %}ଓଡ଼ିଆ Learner
+                    {% elif medal == 'maithili_learner' %}मैथिली Learner
+                    {% elif medal == 'santali_learner' %}ᱥᱟᱱᱛᱟᱲᱤ Learner
+                    {% elif medal == 'kashmiri_learner' %}कॉशुर Learner
+                    {% elif medal == 'nepali_learner' %}नेपाली Learner
+                    {% elif medal == 'sindhi_learner' %}سنڌي Learner
+                    {% elif medal == 'dogri_learner' %}डोगरी Learner
+                    {% elif medal == 'konkani_learner' %}कोंकणी Learner
+                    {% elif medal == 'manipuri_learner' %}মৈতৈলোন্ Learner
+                    {% elif medal == 'bodo_learner' %}बर' Learner
+                    {% else %}{{ medal|replace('_', ' ')|title }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-medal"></i>
+            <h3 style="color: #4a5568; margin-bottom: 0.5rem;">No Medals Yet</h3>
+            <p style="color: #718096;">Study materials and watch videos to earn medals!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Activity (GAME ACTIVITIES REMOVED) -->
+    <div class="content-section">
+        <div class="section-title">
+            <i class="fas fa-history" style="color: #667eea;"></i>
+            <span>📊 Recent Activity</span>
+        </div>
+
+        {% if recent_activities and recent_activities|length > 0 %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 1rem; text-align: left;">Activity</th>
+                        <th style="padding: 1rem; text-align: left;">Date</th>
+                        <th style="padding: 1rem; text-align: left;">XP Earned</th>
+                        <th style="padding: 1rem; text-align: left;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in recent_activities %}
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-{{ activity.icon }}" style="color: {{ activity.color }};"></i>
+                                <span>{{ activity.title }}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1rem; color: #718096;">{{ activity.date.strftime('%b %d, %Y') }}</td>
+                        <td style="padding: 1rem;">
+                            <span style="background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 50px;">
+                                +{{ activity.xp }} XP
+                            </span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if activity.type == 'material' %}
+                            <a href="{{ url_for('preview_study_material', material_id=activity.id) }}"
+                               target="_blank"
+                               style="color: #48bb78; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
+                                <i class="fas fa-eye"></i> Preview
+                            </a>
+                            {% elif activity.type == 'video' %}
+                            <a href="{{ url_for('watch_video', video_id=activity.id) }}"
+                               target="_blank"
+                               style="color: #f56565; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
+                                <i class="fas fa-play"></i> Watch
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <h3 style="color: #4a5568; margin-bottom: 0.5rem;">No Activity Yet</h3>
+            <p style="color: #718096; margin-bottom: 1.5rem;">Start learning to see your activity here!</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('student_learning') }}?tab=materials" class="btn-view" style="width: auto; text-decoration: none;">📚 Study Materials</a>
+                <a href="{{ url_for('student_learning') }}?tab=videos" class="btn-watch" style="width: auto; text-decoration: none;">📹 Watch Videos</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Video Modal - FIXED: Initially hidden, only opens on user click -->
+<div class="modal" id="videoModal" style="display: none;">
+    <div class="modal-content">
+        <button class="close-modal" onclick="closeVideoModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        <video id="modalVideo" controls style="width: 100%;">
+            <source src="" type="video/mp4">
+        </video>
+    </div>
+</div>
+
+<!-- Confetti Canvas for Celebrations -->
+<canvas id="confettiCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none;"></canvas>
+
+<script>
+    // Set Language
+    function setLanguage(lang) {
+        fetch('/student/language', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({language: lang})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const messages = {
+                    'english': 'Language set to English',
+                    'hindi': 'भाषा हिंदी में सेट की गई',
+                    'telugu': 'భాష తెలుగులో సెట్ చేయబడింది',
+                    'bengali': 'ভাষা বাংলায় সেট করা হয়েছে',
+                    'tamil': 'மொழி தமிழில் அமைக்கப்பட்டது',
+                    'marathi': 'भाषा मराठीमध्ये सेट केली',
+                    'gujarati': 'ભાષા ગુજરાતીમાં સેટ કરી',
+                    'kannada': 'ಭಾಷೆ ಕನ್ನಡದಲ್ಲಿ ಹೊಂದಿಸಲಾಗಿದೆ',
+                    'malayalam': 'ഭാഷ മലയാളത്തിൽ സജ്ജമാക്കി',
+                    'punjabi': 'ਭਾਸ਼ਾ ਪੰਜਾਬੀ ਵਿੱਚ ਸੈੱਟ ਕੀਤੀ ਗਈ',
+                    'assamese': 'অসমীয়া ভাষা নিৰ্বাচন কৰা হৈছে',
+                    'oriya': 'ଓଡ଼ିଆ ଭାଷା ସେଟ ହେଲା',
+                    'maithili': 'मैथिली भाषा सेट कएल गेल',
+                    'santali': 'ᱥᱟᱱᱛᱟᱲᱤ ᱯᱟᱹᱨᱥᱤ ᱥᱮᱴ ᱮᱱᱟ',
+                    'kashmiri': 'कॉशुर भाषा सेट गव',
+                    'nepali': 'नेपाली भाषा सेट गरियो',
+                    'sindhi': 'سنڌي ٻولي سيٽ ڪئي وئي',
+                    'dogri': 'डोगरी भाषा सेट की गेई',
+                    'konkani': 'कोंकणी भास सेट केली',
+                    'manipuri': 'মৈতৈলোন্ লোল সেট তখলে',
+                    'bodo': 'बर\' राव सेट खालामबाय'
+                };
+                showNotification(messages[lang] || 'Language updated', 'success');
+                setTimeout(() => location.reload(), 1500);
+            }
+        });
+    }
+
+    // Track material view (for analytics without opening preview)
+    function trackMaterialView(materialId) {
+        fetch('/api/study-material/' + materialId + '/view', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('+5 XP earned for viewing!', 'success');
+            }
+        })
+        .catch(error => console.error('Error tracking view:', error));
+    }
+
+    // Track video view
+    function trackVideoView(videoId) {
+        fetch('/api/videos/' + videoId + '/view', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({duration: 0})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('+5 XP earned for watching!', 'success');
+            }
+        })
+        .catch(error => console.error('Error tracking view:', error));
+    }
+
+    // Play Video - FIXED: Only called when user clicks "Watch Now" button
+    function playVideo(videoId, videoSrc) {
+        const modal = document.getElementById('videoModal');
+        const modalVideo = document.getElementById('modalVideo');
+        const source = modalVideo.querySelector('source');
+       
+        source.src = videoSrc;
+        modalVideo.load();
+        modal.style.display = 'flex';
+        modalVideo.play();
+       
+        trackVideoView(videoId);
+    }
+
+    function closeVideoModal() {
+        const modal = document.getElementById('videoModal');
+        const modalVideo = document.getElementById('modalVideo');
+        if (modalVideo) {
+            modalVideo.pause();
+            modalVideo.currentTime = 0;
+        }
+        modal.style.display = 'none';
+    }
+
+    // Show Medal Details (GAME CHAMPION REMOVED)
+    function showMedalDetails(medal) {
+        const medalNames = {
+            'material_learner': '📚 Dedicated Learner',
+            'video_learner': '📹 Video Learner',
+            'polyglot': '🗣️ Polyglot',
+            'streak_7': '🔥 7 Day Streak',
+            'streak_30': '⚡ 30 Day Streak',
+            'first_activity': '🌟 First Steps',
+            'ten_activities': '⭐ Active Learner',
+            'fifty_activities': '🏅 Learning Master',
+            'hundred_activities': '🏆 Learning Legend',
+            'perfect_score': '💯 Perfect Score',
+            'early_bird': '🌅 Early Bird',
+            'night_owl': '🦉 Night Owl',
+            'weekend_warrior': '🎯 Weekend Warrior',
+            'hindi_learner': '🇮🇳 हिंदी Learner',
+            'telugu_learner': '🇮🇳 తెలుగు Learner',
+            'tamil_learner': '🇮🇳 தமிழ் Learner',
+            'bengali_learner': '🇮🇳 বাংলা Learner',
+            'marathi_learner': '🇮🇳 मराठी Learner',
+            'gujarati_learner': '🇮🇳 ગુજરાતી Learner',
+            'kannada_learner': '🇮🇳 ಕನ್ನಡ Learner',
+            'malayalam_learner': '🇮🇳 മലയാളം Learner',
+            'punjabi_learner': '🇮🇳 ਪੰਜਾਬੀ Learner',
+            'assamese_learner': '🇮🇳 অসমীয়া Learner',
+            'oriya_learner': '🇮🇳 ଓଡ଼ିଆ Learner',
+            'maithili_learner': '🇮🇳 मैथिली Learner',
+            'santali_learner': '🇮🇳 ᱥᱟᱱᱛᱟᱲᱤ Learner',
+            'kashmiri_learner': '🇮🇳 कॉशुर Learner',
+            'nepali_learner': '🇮🇳 नेपाली Learner',
+            'sindhi_learner': '🇮🇳 سنڌي Learner',
+            'dogri_learner': '🇮🇳 डोगरी Learner',
+            'konkani_learner': '🇮🇳 कोंकणी Learner',
+            'manipuri_learner': '🇮🇳 মৈতৈলোন্ Learner',
+            'bodo_learner': '🇮🇳 बर\' Learner'
+        };
+       
+        const medalDescs = {
+            'material_learner': 'Studied 30 study materials',
+            'video_learner': 'Watched 20 educational videos',
+            'polyglot': 'Learned in 3+ different languages',
+            'streak_7': 'Studied 7 days in a row',
+            'streak_30': 'Studied 30 days in a row',
+            'first_activity': 'Completed your first learning activity',
+            'ten_activities': 'Completed 10 learning activities',
+            'fifty_activities': 'Completed 50 learning activities',
+            'hundred_activities': 'Completed 100 learning activities',
+            'perfect_score': 'Got 100% on a quiz or assessment',
+            'early_bird': 'Completed 5 activities before 9 AM',
+            'night_owl': 'Completed 5 activities after 10 PM',
+            'weekend_warrior': 'Completed 10 activities on weekends',
+            'hindi_learner': 'Completed 10 activities in Hindi',
+            'telugu_learner': 'Completed 10 activities in Telugu',
+            'tamil_learner': 'Completed 10 activities in Tamil',
+            'bengali_learner': 'Completed 10 activities in Bengali',
+            'marathi_learner': 'Completed 10 activities in Marathi',
+            'gujarati_learner': 'Completed 10 activities in Gujarati',
+            'kannada_learner': 'Completed 10 activities in Kannada',
+            'malayalam_learner': 'Completed 10 activities in Malayalam',
+            'punjabi_learner': 'Completed 10 activities in Punjabi',
+            'assamese_learner': 'Completed 10 activities in Assamese',
+            'oriya_learner': 'Completed 10 activities in Odia',
+            'maithili_learner': 'Completed 10 activities in Maithili',
+            'santali_learner': 'Completed 10 activities in Santali',
+            'kashmiri_learner': 'Completed 10 activities in Kashmiri',
+            'nepali_learner': 'Completed 10 activities in Nepali',
+            'sindhi_learner': 'Completed 10 activities in Sindhi',
+            'dogri_learner': 'Completed 10 activities in Dogri',
+            'konkani_learner': 'Completed 10 activities in Konkani',
+            'manipuri_learner': 'Completed 10 activities in Manipuri',
+            'bodo_learner': 'Completed 10 activities in Bodo'
+        };
+       
+        alert(`${medalNames[medal] || medal}\n\n${medalDescs[medal] || 'Achievement unlocked!'}`);
+    }
+
+    // Show Notification
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.background = type === 'success' ? '#48bb78' : '#667eea';
+        notification.style.color = 'white';
+        notification.style.padding = '1rem 1.5rem';
+        notification.style.borderRadius = '10px';
+        notification.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+        notification.style.zIndex = '9999';
+        notification.style.animation = 'slideInRight 0.3s ease-out';
+        notification.style.maxWidth = '300px';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; margin-left: 1rem; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+
+    // Confetti Celebration for Achievements
+    function startConfetti() {
+        const canvas = document.getElementById('confettiCanvas');
+        canvas.style.display = 'block';
+        const ctx = canvas.getContext('2d');
+       
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+       
+        const confetti = [];
+        const colors = ['#667eea', '#764ba2', '#48bb78', '#fbbf24', '#f56565', '#ed8936', '#9f7aea', '#4299e1'];
+       
+        for (let i = 0; i < 150; i++) {
+            confetti.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 8 + 5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speed: Math.random() * 4 + 2,
+                angle: Math.random() * 360,
+                spin: Math.random() * 10 - 5
+            });
+        }
+       
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+           
+            confetti.forEach(c => {
+                c.y += c.speed;
+                c.angle += c.spin;
+               
+                if (c.y > canvas.height) {
+                    c.y = -10;
+                    c.x = Math.random() * canvas.width;
+                }
+               
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.rotate((c.angle * Math.PI) / 180);
+                ctx.fillStyle = c.color;
+                ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
+                ctx.restore();
+            });
+           
+            requestAnimationFrame(animate);
+        }
+       
+        animate();
+       
+        setTimeout(() => {
+            canvas.style.display = 'none';
+        }, 5000);
+    }
+
+    // Check URL parameters for celebration
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('celebration') === 'true') {
+            startConfetti();
+            showNotification('Congratulations on your achievement! 🎉', 'success');
+        }
+       
+        // FIX: Ensure video modal is hidden on page load
+        const videoModal = document.getElementById('videoModal');
+        if (videoModal) {
+            videoModal.style.display = 'none';
+        }
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const videoModal = document.getElementById('videoModal');
+        if (event.target === videoModal) {
+            closeVideoModal();
+        }
+    }
+
+    // Escape key to close modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeVideoModal();
+        }
+    });
+</script>
+
+<style>
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+{% endblock %}

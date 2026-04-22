@@ -1,0 +1,1340 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Messages - Admin Support Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contact-messages-container {
+        padding: 1.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Header Section */
+    .messages-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 2.5rem;
+        border-radius: 25px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .messages-header h1 {
+        font-size: 1.8rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .messages-stats {
+        display: flex;
+        gap: 1.5rem;
+        background: rgba(255,255,255,0.15);
+        padding: 0.8rem 1.5rem;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+    }
+
+    .stat-badge {
+        text-align: center;
+    }
+
+    .stat-badge .number {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .stat-badge .label {
+        font-size: 0.75rem;
+        opacity: 0.9;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: 20px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+        border: 1px solid #edf2f7;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f8fafc;
+        padding: 0.3rem 1rem;
+        border-radius: 50px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .filter-group label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .filter-select {
+        border: none;
+        background: transparent;
+        padding: 0.5rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        outline: none;
+        color: #2d3748;
+    }
+
+    .search-box {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f8fafc;
+        padding: 0.3rem 1rem;
+        border-radius: 50px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .search-box input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 0.5rem;
+        font-size: 0.85rem;
+        outline: none;
+    }
+
+    .search-box i {
+        color: #a0aec0;
+    }
+
+    .reset-filters {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+    .reset-filters:hover {
+        background: #edf2f7;
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    /* Messages Grid */
+    .messages-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .message-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid #edf2f7;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .message-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 10px 25px rgba(102,126,234,0.1);
+        border-color: #667eea;
+    }
+
+    .message-card.priority-urgent {
+        border-left: 4px solid #f56565;
+    }
+
+    .message-card.priority-high {
+        border-left: 4px solid #ed8936;
+    }
+
+    .message-card.priority-medium {
+        border-left: 4px solid #4299e1;
+    }
+
+    .message-card.priority-low {
+        border-left: 4px solid #48bb78;
+    }
+
+    .message-card.status-pending {
+        background: linear-gradient(135deg, #fff5eb, white);
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .message-info {
+        flex: 1;
+    }
+
+    .message-subject {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 0.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .message-subject i {
+        color: #667eea;
+        font-size: 0.9rem;
+    }
+
+    .message-student {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: #718096;
+        flex-wrap: wrap;
+    }
+
+    .message-student i {
+        font-size: 0.8rem;
+    }
+
+    .message-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .priority-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .priority-urgent {
+        background: #f5656520;
+        color: #c53030;
+    }
+
+    .priority-high {
+        background: #ed893620;
+        color: #c05621;
+    }
+
+    .priority-medium {
+        background: #4299e120;
+        color: #2c5282;
+    }
+
+    .priority-low {
+        background: #48bb7820;
+        color: #2f855a;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .status-pending {
+        background: #fef5e7;
+        color: #c05621;
+    }
+
+    .status-in_progress {
+        background: #4299e120;
+        color: #2c5282;
+    }
+
+    .status-resolved {
+        background: #48bb7820;
+        color: #2f855a;
+    }
+
+    .category-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: #ebf4ff;
+        color: #667eea;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .message-preview {
+        color: #718096;
+        font-size: 0.9rem;
+        margin: 0.8rem 0;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .message-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid #edf2f7;
+        font-size: 0.75rem;
+        color: #a0aec0;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .message-time {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .message-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        background: none;
+        border: none;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .action-btn:hover {
+        background: #f8fafc;
+    }
+
+    .action-btn.reply {
+        color: #667eea;
+    }
+
+    .action-btn.resolve {
+        color: #48bb78;
+    }
+
+    .action-btn.delete {
+        color: #f56565;
+    }
+
+    /* Modal Styles */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 25px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        border-bottom: 2px solid #edf2f7;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #a0aec0;
+        transition: color 0.3s ease;
+    }
+
+    .close-modal:hover {
+        color: #f56565;
+    }
+
+    .modal-body {
+        padding: 1.5rem 2rem;
+    }
+
+    .message-detail-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .message-detail-section h3 {
+        font-size: 1rem;
+        color: #4a5568;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .detail-card {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .detail-row {
+        display: flex;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        width: 120px;
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .detail-value {
+        flex: 1;
+        color: #1a202c;
+    }
+
+    .message-content {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    .attachment-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #ebf4ff;
+        border-radius: 50px;
+        color: #667eea;
+        text-decoration: none;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+
+    .attachment-link:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .reply-section {
+        margin-top: 1.5rem;
+    }
+
+    .reply-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+    }
+
+    .reply-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .status-select {
+        padding: 0.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 25px;
+        border: 1px solid #edf2f7;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e0;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #1a202c;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #718096;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .quick-action-btn {
+        padding: 0.5rem 1rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .quick-action-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .contact-messages-container {
+            padding: 1rem;
+        }
+
+        .messages-header {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-group {
+            justify-content: space-between;
+        }
+
+        .message-header {
+            flex-direction: column;
+        }
+
+        .message-badges {
+            align-self: flex-start;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        .detail-row {
+            flex-direction: column;
+        }
+
+        .detail-label {
+            width: 100%;
+            margin-bottom: 0.3rem;
+        }
+
+        .quick-actions {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-messages-container">
+    <!-- Header -->
+    <div class="messages-header">
+        <div>
+            <h1>
+                <i class="fas fa-envelope-open-text"></i>
+                Student Support Messages
+            </h1>
+            <p style="margin: 0.5rem 0 0; opacity: 0.9;">Manage and respond to student inquiries</p>
+        </div>
+        <div class="messages-stats">
+            <div class="stat-badge">
+                <div class="number">{{ total_messages|default(0) }}</div>
+                <div class="label">Total</div>
+            </div>
+            <div class="stat-badge">
+                <div class="number">{{ pending_messages|default(0) }}</div>
+                <div class="label">Pending</div>
+            </div>
+            <div class="stat-badge">
+                <div class="number">{{ in_progress_messages|default(0) }}</div>
+                <div class="label">In Progress</div>
+            </div>
+            <div class="stat-badge">
+                <div class="number">{{ resolved_messages|default(0) }}</div>
+                <div class="label">Resolved</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <button class="quick-action-btn" onclick="markAllAsRead()">
+            <i class="fas fa-check-double"></i> Mark All as Read
+        </button>
+        <button class="quick-action-btn" onclick="exportMessages()">
+            <i class="fas fa-download"></i> Export Messages
+        </button>
+        <button class="quick-action-btn" onclick="refreshMessages()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Category:</label>
+            <select id="categoryFilter" class="filter-select" onchange="applyFilters()">
+                <option value="all" {% if category_filter == 'all' %}selected{% endif %}>All</option>
+                <option value="technical" {% if category_filter == 'technical' %}selected{% endif %}>Technical</option>
+                <option value="academic" {% if category_filter == 'academic' %}selected{% endif %}>Academic</option>
+                <option value="account" {% if category_filter == 'account' %}selected{% endif %}>Account</option>
+                <option value="feedback" {% if category_filter == 'feedback' %}selected{% endif %}>Feedback</option>
+                <option value="other" {% if category_filter == 'other' %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Priority:</label>
+            <select id="priorityFilter" class="filter-select" onchange="applyFilters()">
+                <option value="all" {% if priority_filter == 'all' %}selected{% endif %}>All</option>
+                <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+            </select>
+        </div>
+
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search by name, email, or subject..." onkeyup="applyFilters()">
+        </div>
+
+        <button class="reset-filters" onclick="resetFilters()">
+            <i class="fas fa-undo-alt"></i> Reset
+        </button>
+    </div>
+
+    <!-- Messages Grid -->
+    <div class="messages-grid" id="messagesGrid">
+        {% if messages and messages|length > 0 %}
+            {% for message in messages %}
+            <div class="message-card priority-{{ message.priority }} status-{{ message.status }}" 
+                 data-id="{{ message._id }}"
+                 data-name="{{ message.student_name|lower }}"
+                 data-email="{{ message.student_email|lower }}"
+                 data-subject="{{ message.subject|lower }}"
+                 data-category="{{ message.category }}"
+                 data-priority="{{ message.priority }}"
+                 data-status="{{ message.status }}">
+                
+                <div class="message-header">
+                    <div class="message-info">
+                        <div class="message-subject">
+                            <i class="fas fa-comment"></i>
+                            {{ message.subject }}
+                            {% if message.status == 'pending' %}
+                            <span class="status-badge status-pending" style="font-size: 0.65rem;">New</span>
+                            {% endif %}
+                        </div>
+                        <div class="message-student">
+                            <i class="fas fa-user-circle"></i>
+                            {{ message.student_name }}
+                            <i class="fas fa-envelope"></i>
+                            {{ message.student_email }}
+                        </div>
+                    </div>
+                    <div class="message-badges">
+                        <span class="priority-badge priority-{{ message.priority }}">
+                            <i class="fas fa-{% if message.priority == 'urgent' %}exclamation-triangle{% elif message.priority == 'high' %}arrow-up{% elif message.priority == 'low' %}arrow-down{% else %}minus{% endif %}"></i>
+                            {{ message.priority|title }}
+                        </span>
+                        <span class="status-badge status-{{ message.status }}">
+                            <i class="fas fa-{% if message.status == 'pending' %}clock{% elif message.status == 'in_progress' %}spinner{% else %}check-circle{% endif %}"></i>
+                            {{ message.status|replace('_', ' ')|title }}
+                        </span>
+                        <span class="category-badge">
+                            <i class="fas fa-tag"></i>
+                            {{ message.category|title }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="message-preview">
+                    {{ message.message[:150] }}{% if message.message|length > 150 %}...{% endif %}
+                </div>
+                
+                <div class="message-footer">
+                    <div class="message-time">
+                        <i class="far fa-clock"></i>
+                        {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        <span class="time-ago">({{ get_time_ago(message.created_at) }})</span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="action-btn reply" onclick="event.stopPropagation(); openMessageModal('{{ message._id }}')">
+                            <i class="fas fa-reply"></i> Reply
+                        </button>
+                        {% if message.status != 'resolved' %}
+                        <button class="action-btn resolve" onclick="event.stopPropagation(); markResolved('{{ message._id }}')">
+                            <i class="fas fa-check-circle"></i> Mark Resolved
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No Messages Found</h3>
+                <p>{% if status_filter != 'all' or category_filter != 'all' or priority_filter != 'all' %}No messages match your filters. Try clearing the filters.{% else %}No support messages from students yet.{% endif %}</p>
+                {% if status_filter != 'all' or category_filter != 'all' or priority_filter != 'all' %}
+                <button onclick="resetFilters()" class="btn-primary" style="margin-top: 1rem;">
+                    <i class="fas fa-undo-alt"></i> Clear Filters
+                </button>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Message Detail Modal -->
+<div id="messageModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>
+                <i class="fas fa-envelope-open-text"></i>
+                Message Details
+            </h2>
+            <button class="close-modal" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Dynamic content will be loaded here -->
+            <div style="text-align: center; padding: 2rem;">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 1rem;">Loading message details...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentMessageId = null;
+    let refreshInterval;
+
+    // Filter Functions
+    function applyFilters() {
+        const status = document.getElementById('statusFilter').value;
+        const category = document.getElementById('categoryFilter').value;
+        const priority = document.getElementById('priorityFilter').value;
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        
+        const cards = document.querySelectorAll('.message-card');
+        let visibleCount = 0;
+        
+        cards.forEach(card => {
+            let show = true;
+            
+            // Status filter
+            if (status !== 'all' && card.dataset.status !== status) {
+                show = false;
+            }
+            
+            // Category filter
+            if (category !== 'all' && card.dataset.category !== category) {
+                show = false;
+            }
+            
+            // Priority filter
+            if (priority !== 'all' && card.dataset.priority !== priority) {
+                show = false;
+            }
+            
+            // Search filter
+            if (search) {
+                const name = card.dataset.name || '';
+                const email = card.dataset.email || '';
+                const subject = card.dataset.subject || '';
+                if (!name.includes(search) && !email.includes(search) && !subject.includes(search)) {
+                    show = false;
+                }
+            }
+            
+            card.style.display = show ? 'block' : 'none';
+            if (show) visibleCount++;
+        });
+        
+        // Show empty state if no results
+        const emptyState = document.querySelector('.empty-state');
+        if (visibleCount === 0 && cards.length > 0) {
+            if (!emptyState) {
+                const grid = document.getElementById('messagesGrid');
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'empty-state';
+                emptyDiv.innerHTML = `
+                    <i class="fas fa-search"></i>
+                    <h3>No Matching Messages</h3>
+                    <p>Try adjusting your filters or search term</p>
+                    <button onclick="resetFilters()" class="btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-undo-alt"></i> Clear Filters
+                    </button>
+                `;
+                grid.appendChild(emptyDiv);
+            }
+        } else if (emptyState && visibleCount > 0) {
+            emptyState.remove();
+        }
+    }
+    
+    function resetFilters() {
+        document.getElementById('statusFilter').value = 'all';
+        document.getElementById('categoryFilter').value = 'all';
+        document.getElementById('priorityFilter').value = 'all';
+        document.getElementById('searchInput').value = '';
+        applyFilters();
+        
+        // Update URL without reload
+        const url = new URL(window.location.href);
+        url.searchParams.delete('status');
+        url.searchParams.delete('category');
+        url.searchParams.delete('priority');
+        window.history.pushState({}, '', url);
+    }
+    
+    // Modal Functions
+    function openMessageModal(messageId) {
+        currentMessageId = messageId;
+        const modal = document.getElementById('messageModal');
+        modal.style.display = 'flex';
+        
+        // Load message details
+        loadMessageDetails(messageId);
+    }
+    
+    function closeModal() {
+        document.getElementById('messageModal').style.display = 'none';
+        currentMessageId = null;
+    }
+    
+    function loadMessageDetails(messageId) {
+        fetch(`/api/admin/contact-message/${messageId}`)
+            .then(response => response.json())
+            .then(message => {
+                displayMessageDetails(message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('modalBody').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #f56565;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem;"></i>
+                        <h3>Error Loading Message</h3>
+                        <p>Please try again later.</p>
+                        <button onclick="closeModal()" class="btn-primary">Close</button>
+                    </div>
+                `;
+            });
+    }
+    
+    function displayMessageDetails(message) {
+        const priorityIcon = {
+            'urgent': 'exclamation-triangle',
+            'high': 'arrow-up',
+            'medium': 'minus',
+            'low': 'arrow-down'
+        };
+        
+        const statusIcon = {
+            'pending': 'clock',
+            'in_progress': 'spinner',
+            'resolved': 'check-circle'
+        };
+        
+        const attachmentHtml = message.attachment_filename ? `
+            <div class="message-detail-section">
+                <h3><i class="fas fa-paperclip"></i> Attachment</h3>
+                <div class="detail-card">
+                    <a href="/static/uploads/contact_attachments/${message.attachment_filename}" class="attachment-link" target="_blank">
+                        <i class="fas fa-download"></i> Download ${message.attachment_filename}
+                    </a>
+                </div>
+            </div>
+        ` : '';
+        
+        const adminNotesHtml = message.admin_notes ? `
+            <div class="message-detail-section">
+                <h3><i class="fas fa-sticky-note"></i> Admin Notes</h3>
+                <div class="detail-card">
+                    <p>${escapeHtml(message.admin_notes)}</p>
+                    <small class="time-ago">Added: ${new Date(message.updated_at).toLocaleString()}</small>
+                </div>
+            </div>
+        ` : '';
+        
+        const previousReplyHtml = message.admin_reply ? `
+            <div class="message-detail-section">
+                <h3><i class="fas fa-reply"></i> Previous Reply</h3>
+                <div class="detail-card">
+                    <p>${escapeHtml(message.admin_reply)}</p>
+                    <small class="time-ago">Sent: ${new Date(message.admin_reply_at).toLocaleString()}</small>
+                </div>
+            </div>
+        ` : '';
+        
+        const html = `
+            <div class="message-detail-section">
+                <h3><i class="fas fa-user"></i> Student Information</h3>
+                <div class="detail-card">
+                    <div class="detail-row">
+                        <div class="detail-label">Name:</div>
+                        <div class="detail-value">${escapeHtml(message.student_name)}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Email:</div>
+                        <div class="detail-value">${escapeHtml(message.student_email)}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Student ID:</div>
+                        <div class="detail-value">${message.student_id}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="message-detail-section">
+                <h3><i class="fas fa-info-circle"></i> Message Details</h3>
+                <div class="detail-card">
+                    <div class="detail-row">
+                        <div class="detail-label">Category:</div>
+                        <div class="detail-value">${message.category|title}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Priority:</div>
+                        <div class="detail-value">
+                            <span class="priority-badge priority-${message.priority}">
+                                <i class="fas fa-${priorityIcon[message.priority]}"></i>
+                                ${message.priority|title}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Status:</div>
+                        <div class="detail-value">
+                            <span class="status-badge status-${message.status}">
+                                <i class="fas fa-${statusIcon[message.status]}"></i>
+                                ${message.status|replace('_', ' ')|title}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Subject:</div>
+                        <div class="detail-value"><strong>${escapeHtml(message.subject)}</strong></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Received:</div>
+                        <div class="detail-value">${new Date(message.created_at).toLocaleString()}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="message-detail-section">
+                <h3><i class="fas fa-envelope"></i> Message Content</h3>
+                <div class="message-content">
+                    ${escapeHtml(message.message).replace(/\n/g, '<br>')}
+                </div>
+            </div>
+            
+            ${attachmentHtml}
+            ${adminNotesHtml}
+            ${previousReplyHtml}
+            
+            <div class="reply-section">
+                <h3><i class="fas fa-reply"></i> Reply to Student</h3>
+                <textarea id="replyMessage" class="reply-textarea" placeholder="Write your response here..."></textarea>
+                
+                <div style="margin-top: 1rem;">
+                    <label class="form-label">Update Status:</label>
+                    <select id="messageStatus" class="status-select">
+                        <option value="pending" ${message.status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="in_progress" ${message.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="resolved" ${message.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button onclick="sendReply()" class="btn-primary" style="flex: 1;">
+                        <i class="fas fa-paper-plane"></i> Send Reply
+                    </button>
+                    <button onclick="closeModal()" class="btn-secondary" style="flex: 0.5;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('modalBody').innerHTML = html;
+    }
+    
+    function sendReply() {
+        const replyMessage = document.getElementById('replyMessage').value;
+        const status = document.getElementById('messageStatus').value;
+        
+        if (!replyMessage.trim()) {
+            showNotification('Please enter a reply message', 'warning');
+            return;
+        }
+        
+        showLoading('Sending reply...');
+        
+        fetch(`/api/admin/contact-message/${currentMessageId}/reply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reply_message: replyMessage,
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                closeModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        });
+    }
+    
+    function markResolved(messageId) {
+        if (confirm('Mark this message as resolved?')) {
+            showLoading('Updating status...');
+            
+            fetch(`/api/admin/contact-message/${messageId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: 'resolved',
+                    admin_notes: 'Marked as resolved from dashboard'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showNotification('Message marked as resolved', 'success');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showNotification('Error: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showNotification('Error: ' + error.message, 'error');
+            });
+        }
+    }
+    
+    function markAllAsRead() {
+        if (confirm('Mark all pending messages as read?')) {
+            showLoading('Updating messages...');
+            
+            fetch('/api/admin/contact-messages/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showNotification('All messages marked as read', 'success');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showNotification('Error: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showNotification('Error: ' + error.message, 'error');
+            });
+        }
+    }
+    
+    function exportMessages() {
+        const status = document.getElementById('statusFilter').value;
+        const category = document.getElementById('categoryFilter').value;
+        const priority = document.getElementById('priorityFilter').value;
+        
+        window.location.href = `/api/admin/contact-messages/export?status=${status}&category=${category}&priority=${priority}`;
+    }
+    
+    function refreshMessages() {
+        showLoading('Refreshing messages...');
+        setTimeout(() => {
+            location.reload();
+        }, 500);
+    }
+    
+    // Auto-refresh stats every 30 seconds
+    function startAutoRefresh() {
+        refreshInterval = setInterval(() => {
+            fetch('/api/admin/contact-stats')
+                .then(response => response.json())
+                .then(stats => {
+                    // Update stats in header
+                    const statNumbers = document.querySelectorAll('.stat-badge .number');
+                    if (statNumbers.length >= 4) {
+                        statNumbers[0].textContent = stats.total || 0;
+                        statNumbers[1].textContent = stats.pending || 0;
+                        statNumbers[2].textContent = stats.in_progress || 0;
+                        statNumbers[3].textContent = stats.resolved || 0;
+                    }
+                })
+                .catch(error => console.error('Error refreshing stats:', error));
+        }, 30000);
+    }
+    
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    }
+    
+    // Utility Functions
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function showLoading(message) {
+        let loading = document.getElementById('adminLoading');
+        if (!loading) {
+            loading = document.createElement('div');
+            loading.id = 'adminLoading';
+            loading.style.position = 'fixed';
+            loading.style.top = '0';
+            loading.style.left = '0';
+            loading.style.width = '100%';
+            loading.style.height = '100%';
+            loading.style.background = 'rgba(0,0,0,0.8)';
+            loading.style.display = 'flex';
+            loading.style.justifyContent = 'center';
+            loading.style.alignItems = 'center';
+            loading.style.zIndex = '10000';
+            loading.innerHTML = `
+                <div style="background: white; border-radius: 25px; padding: 2rem; text-align: center;">
+                    <div class="loading-spinner" style="width: 40px; height: 40px; margin-bottom: 1rem;"></div>
+                    <h3>${message}</h3>
+                </div>
+            `;
+            document.body.appendChild(loading);
+        } else {
+            loading.querySelector('h3').textContent = message;
+            loading.style.display = 'flex';
+        }
+    }
+    
+    function hideLoading() {
+        const loading = document.getElementById('adminLoading');
+        if (loading) {
+            loading.style.display = 'none';
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.background = type === 'success' ? '#48bb78' : type === 'error' ? '#f56565' : type === 'warning' ? '#ed8936' : '#667eea';
+        notification.style.color = 'white';
+        notification.style.padding = '1rem 1.5rem';
+        notification.style.borderRadius = '10px';
+        notification.style.zIndex = '10001';
+        notification.style.animation = 'slideUp 0.3s ease-out';
+        notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Contact messages admin page loaded');
+        startAutoRefresh();
+        
+        // Add keyboard shortcut for closing modal (Esc)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Add click handlers for message cards
+        document.querySelectorAll('.message-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't open modal if clicking on action buttons
+                if (e.target.closest('.action-btn')) {
+                    return;
+                }
+                const messageId = this.dataset.id;
+                if (messageId) {
+                    openMessageModal(messageId);
+                }
+            });
+        });
+    });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        stopAutoRefresh();
+    });
+</script>
+{% endblock %}
+

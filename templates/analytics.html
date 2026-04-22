@@ -1,0 +1,1351 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .analytics-header {
+        margin-bottom: 2rem;
+        animation: slideDown 1s ease-out;
+    }
+    
+    .analytics-header h1 {
+        font-size: 2.5rem;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+    
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card-analytics {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card-analytics:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+    }
+    
+    .stat-info h3 {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d3748;
+    }
+    
+    .stat-change {
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+    
+    .stat-change.positive {
+        color: #48bb78;
+    }
+    
+    .stat-change.negative {
+        color: #f56565;
+    }
+    
+    .stat-change.neutral {
+        color: #718096;
+    }
+    
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .chart-container-analytics {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chart-container-analytics h2 {
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .chart-wrapper {
+        height: 300px;
+        position: relative;
+    }
+    
+    .detailed-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    .detailed-table {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-analytics {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .table-analytics th {
+        text-align: left;
+        padding: 1rem;
+        background: #f8f9fa;
+        color: #4a5568;
+        font-weight: 600;
+    }
+    
+    .table-analytics td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .table-analytics tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .performance-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .performance-excellent {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+    
+    .performance-good {
+        background: #fed7d7;
+        color: #742a2a;
+    }
+    
+    .performance-average {
+        background: #feebc8;
+        color: #744210;
+    }
+    
+    .performance-poor {
+        background: #e2e8f0;
+        color: #4a5568;
+    }
+    
+    .quick-insights {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .insight-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .insight-item:last-child {
+        border-bottom: none;
+    }
+    
+    .insight-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+    
+    .insight-icon.success {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+    }
+    
+    .insight-icon.warning {
+        background: linear-gradient(135deg, #ed8936, #dd6b20);
+    }
+    
+    .insight-icon.info {
+        background: linear-gradient(135deg, #4299e1, #3182ce);
+    }
+    
+    .insight-icon.danger {
+        background: linear-gradient(135deg, #f56565, #e53e3e);
+    }
+    
+    .insight-content h4 {
+        margin-bottom: 0.25rem;
+        color: #2d3748;
+    }
+    
+    .insight-content p {
+        color: #718096;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    .insight-content small {
+        color: #a0aec0;
+        font-size: 0.8rem;
+    }
+    
+    .filters-bar {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .filter-select {
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        min-width: 200px;
+        background: white;
+    }
+    
+    .filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .filter-btn {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .filter-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .export-btn {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: 2px solid #667eea;
+        color: #667eea;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .export-btn:hover {
+        background: #667eea;
+        color: white;
+    }
+    
+    .export-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .loading-spinner-analytics {
+        width: 80px;
+        height: 80px;
+        border: 8px solid #e2e8f0;
+        border-top: 8px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    .data-point {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #667eea;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: pulse 2s infinite;
+        pointer-events: none;
+        opacity: 0.3;
+    }
+    
+    .date-range {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-left: auto;
+    }
+    
+    .date-input {
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .error-message {
+        background: #fed7d7;
+        color: #c53030;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        display: none;
+    }
+    
+    .error-message i {
+        margin-right: 0.5rem;
+    }
+    
+    .stat-subtitle {
+        font-size: 0.8rem;
+        color: #a0aec0;
+        margin-top: 0.25rem;
+    }
+    
+    .refresh-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #48bb78;
+        margin-left: 0.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    /* Material Type Badges */
+    .type-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .type-pdf { background: #f5656520; color: #c53030; border: 1px solid #f56565; }
+    .type-image { background: #48bb7820; color: #2f855a; border: 1px solid #48bb78; }
+    .type-audio { background: #9f7aea20; color: #6b46c1; border: 1px solid #9f7aea; }
+    .type-document { background: #ed893620; color: #c05621; border: 1px solid #ed8936; }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 0.7;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .analytics-container {
+            padding: 1rem;
+        }
+        
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .detailed-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .filters-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-select {
+            width: 100%;
+        }
+        
+        .date-range {
+            flex-direction: column;
+            margin-left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner-analytics"></div>
+</div>
+
+<div class="analytics-container">
+    <div class="analytics-header">
+        <h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+        <p>Comprehensive insights into student performance and platform usage <span class="refresh-indicator" id="liveIndicator" title="Live Data"></span></p>
+    </div>
+    
+    <div class="error-message" id="errorMessage">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="errorText"></span>
+    </div>
+    
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label><i class="fas fa-calendar"></i> Time Period:</label>
+            <select class="filter-select" id="timePeriod" onchange="updateDateRange()">
+                <option value="7days">Last 7 Days</option>
+                <option value="30days" selected>Last 30 Days</option>
+                <option value="90days">Last 90 Days</option>
+                <option value="year">This Year</option>
+                <option value="custom">Custom Range</option>
+            </select>
+        </div>
+        
+        <div class="date-range" id="customDateRange" style="display: none;">
+            <input type="date" class="date-input" id="startDate">
+            <span>to</span>
+            <input type="date" class="date-input" id="endDate">
+        </div>
+        
+        <div class="filter-group">
+            <label><i class="fas fa-graduation-cap"></i> Grade:</label>
+            <select class="filter-select" id="gradeFilter">
+                <option value="all">All Grades</option>
+                <option value="5">Grade 5</option>
+                <option value="6">Grade 6</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+                <option value="9">Grade 9</option>
+                <option value="10">Grade 10</option>
+                <option value="11">Grade 11</option>
+                <option value="12">Grade 12</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label><i class="fas fa-book"></i> Subject:</label>
+            <select class="filter-select" id="subjectFilter">
+                <option value="all">All Subjects</option>
+                <option value="mathematics">Mathematics</option>
+                <option value="science">Science</option>
+                <option value="english">English</option>
+                <option value="hindi">Hindi</option>
+                <option value="telugu">Telugu</option>
+                <option value="tamil">Tamil</option>
+                <option value="social">Social Studies</option>
+                <option value="computer">Computer Science</option>
+                <option value="general">General</option>
+            </select>
+        </div>
+        
+        <button class="filter-btn" onclick="applyFilters()" id="applyFiltersBtn">
+            <i class="fas fa-filter"></i> Apply Filters
+        </button>
+        
+        <button class="export-btn" onclick="exportData()" id="exportBtn">
+            <i class="fas fa-download"></i> Export Data
+        </button>
+    </div>
+    
+    <div class="analytics-grid" id="kpiGrid">
+        <!-- KPI cards will be populated by JavaScript -->
+    </div>
+    
+    <div class="charts-grid">
+        <div class="chart-container-analytics">
+            <h2><i class="fas fa-chart-bar"></i> Daily Study Material Views</h2>
+            <div class="chart-wrapper" id="dailyActivityChart">
+                <canvas id="dailyActivityCanvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-container-analytics">
+            <h2><i class="fas fa-chart-pie"></i> Content Type Distribution</h2>
+            <div class="chart-wrapper" id="subjectDistributionChart">
+                <canvas id="subjectDistributionCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="detailed-grid">
+        <div class="detailed-table">
+            <h2><i class="fas fa-trophy"></i> Top Performing Students</h2>
+            <div style="overflow-x: auto;">
+                <table class="table-analytics" id="topStudentsTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Student</th>
+                            <th>Grade</th>
+                            <th>XP</th>
+                            <th>Level</th>
+                            <th>Materials</th>
+                            <th>Videos</th>
+                            <th>Medals</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topStudentsBody">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="quick-insights">
+            <h2><i class="fas fa-lightbulb"></i> Quick Insights</h2>
+            <div id="insightsContainer">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="charts-grid" style="margin-top: 1.5rem;">
+        <div class="chart-container-analytics">
+            <h2><i class="fas fa-chart-area"></i> Student Growth</h2>
+            <div class="chart-wrapper" id="growthChart">
+                <canvas id="growthCanvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-container-analytics">
+            <h2><i class="fas fa-chart-bar"></i> Engagement by Subject</h2>
+            <div class="chart-wrapper" id="subjectPerformanceChart">
+                <canvas id="subjectPerformanceCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chart-container-analytics" style="margin-top: 1.5rem;">
+        <h2><i class="fas fa-chart-pie"></i> Grade Distribution</h2>
+        <div class="chart-wrapper" id="gradeDistributionChart">
+            <canvas id="gradeDistributionCanvas"></canvas>
+        </div>
+    </div>
+    
+    <div class="detailed-table" style="margin-top: 1.5rem;">
+        <h2><i class="fas fa-history"></i> Recent Student Activity</h2>
+        <div style="overflow-x: auto;">
+            <table class="table-analytics" id="recentActivityTable">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Student</th>
+                        <th>Activity</th>
+                        <th>Subject</th>
+                        <th>Language</th>
+                        <th>XP Earned</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="recentActivityBody">
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Chart instances
+    let dailyActivityChart, subjectDistributionChart, growthChart, subjectPerformanceChart, gradeDistributionChart;
+    
+    // Current analytics data
+    let currentAnalyticsData = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default date range
+        setDefaultDateRange();
+        
+        // Show loading
+        showLoading();
+        
+        // Load real analytics data
+        loadAnalyticsData();
+        
+        // Add floating data points for visual effect
+        addDataPoints();
+        
+        // Auto-refresh every 60 seconds
+        setInterval(refreshData, 60000);
+    });
+    
+    function setDefaultDateRange() {
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        
+        document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    }
+    
+    function updateDateRange() {
+        const timePeriod = document.getElementById('timePeriod').value;
+        const customRange = document.getElementById('customDateRange');
+        const today = new Date();
+        
+        if (timePeriod === 'custom') {
+            customRange.style.display = 'flex';
+        } else {
+            customRange.style.display = 'none';
+            
+            // Set dates based on period
+            let startDate = new Date();
+            switch(timePeriod) {
+                case '7days':
+                    startDate.setDate(today.getDate() - 7);
+                    break;
+                case '30days':
+                    startDate.setDate(today.getDate() - 30);
+                    break;
+                case '90days':
+                    startDate.setDate(today.getDate() - 90);
+                    break;
+                case 'year':
+                    startDate = new Date(today.getFullYear(), 0, 1);
+                    break;
+            }
+            
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        }
+    }
+    
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('applyFiltersBtn').disabled = true;
+        document.getElementById('exportBtn').disabled = true;
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('applyFiltersBtn').disabled = false;
+        document.getElementById('exportBtn').disabled = false;
+    }
+    
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        document.getElementById('errorText').textContent = message;
+        errorDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    }
+    
+    async function loadAnalyticsData() {
+        try {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const grade = document.getElementById('gradeFilter').value;
+            const subject = document.getElementById('subjectFilter').value;
+            
+            // Build query string
+            let url = `/api/admin/analytics?startDate=${startDate}&endDate=${endDate}`;
+            if (grade !== 'all') url += `&grade=${grade}`;
+            if (subject !== 'all') url += `&subject=${subject}`;
+            
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            currentAnalyticsData = data;
+            
+            // Update all components with real data
+            updateKPIs(data.kpis);
+            initializeCharts(data);
+            updateTopStudents(data.topStudents.students);
+            updateInsights(data);
+            updateRecentActivity(data.recentInteractions);
+            
+            hideLoading();
+            
+        } catch (error) {
+            console.error('Error loading analytics:', error);
+            showError('Failed to load analytics data: ' + error.message);
+            hideLoading();
+        }
+    }
+    
+    function updateKPIs(kpis) {
+        const kpiGrid = document.getElementById('kpiGrid');
+        
+        // Calculate trends
+        const studentTrendClass = kpis.studentTrend > 0 ? 'positive' : (kpis.studentTrend < 0 ? 'negative' : 'neutral');
+        const materialTrendClass = kpis.materialTrend > 0 ? 'positive' : (kpis.materialTrend < 0 ? 'negative' : 'neutral');
+        const videoTrendClass = kpis.videoTrend > 0 ? 'positive' : (kpis.videoTrend < 0 ? 'negative' : 'neutral');
+        
+        kpiGrid.innerHTML = `
+            <div class="stat-card-analytics">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Students</h3>
+                    <div class="stat-value">${kpis.totalStudents.toLocaleString()}</div>
+                    <div class="stat-change ${studentTrendClass}">
+                        ${kpis.studentTrend > 0 ? '↑' : (kpis.studentTrend < 0 ? '↓' : '→')} 
+                        ${Math.abs(kpis.studentTrend)}% vs last period
+                    </div>
+                    <div class="stat-subtitle">${kpis.newStudents} new this period</div>
+                </div>
+            </div>
+            
+            <div class="stat-card-analytics">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #48bb78, #38a169);">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Material Views</h3>
+                    <div class="stat-value">${kpis.totalMaterialViews.toLocaleString()}</div>
+                    <div class="stat-change ${materialTrendClass}">
+                        ${kpis.materialTrend > 0 ? '↑' : (kpis.materialTrend < 0 ? '↓' : '→')} 
+                        ${Math.abs(kpis.materialTrend)}% vs last period
+                    </div>
+                    <div class="stat-subtitle">${kpis.materialDownloads} downloads</div>
+                </div>
+            </div>
+            
+            <div class="stat-card-analytics">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f56565, #e53e3e);">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Video Views</h3>
+                    <div class="stat-value">${kpis.totalVideoViews.toLocaleString()}</div>
+                    <div class="stat-change ${videoTrendClass}">
+                        ${kpis.videoTrend > 0 ? '↑' : (kpis.videoTrend < 0 ? '↓' : '→')} 
+                        ${Math.abs(kpis.videoTrend)}% vs last period
+                    </div>
+                    <div class="stat-subtitle">${kpis.watchHours} hours watched</div>
+                </div>
+            </div>
+            
+            <div class="stat-card-analytics">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #9f7aea, #805ad5);">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Medals</h3>
+                    <div class="stat-value">${kpis.totalMedals.toLocaleString()}</div>
+                    <div class="stat-change neutral">
+                        → ${kpis.medalGrowth}% growth
+                    </div>
+                    <div class="stat-subtitle">${kpis.activeToday} active today</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function initializeCharts(data) {
+        // Destroy existing charts if they exist
+        if (dailyActivityChart) dailyActivityChart.destroy();
+        if (subjectDistributionChart) subjectDistributionChart.destroy();
+        if (growthChart) growthChart.destroy();
+        if (subjectPerformanceChart) subjectPerformanceChart.destroy();
+        if (gradeDistributionChart) gradeDistributionChart.destroy();
+        
+        // Daily Activity Chart (Material Views + Video Views - GAMES REMOVED)
+        const dailyCtx = document.getElementById('dailyActivityCanvas').getContext('2d');
+        dailyActivityChart = new Chart(dailyCtx, {
+            type: 'bar',
+            data: {
+                labels: data.dailyInteractions.dates,
+                datasets: [{
+                    label: 'Material Views',
+                    data: data.dailyInteractions.materialViews,
+                    backgroundColor: 'rgba(72, 187, 120, 0.7)',
+                    borderColor: '#48bb78',
+                    borderWidth: 2,
+                    borderRadius: 5
+                }, {
+                    label: 'Video Views',
+                    data: data.dailyInteractions.videoViews,
+                    backgroundColor: 'rgba(245, 101, 101, 0.7)',
+                    borderColor: '#f56565',
+                    borderWidth: 2,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Subject Distribution Chart (Content Type - GAMES REMOVED)
+        const subjectDistCtx = document.getElementById('subjectDistributionCanvas').getContext('2d');
+        subjectDistributionChart = new Chart(subjectDistCtx, {
+            type: 'pie',
+            data: {
+                labels: data.contentDistribution.labels.filter(l => l !== 'Games'),
+                datasets: [{
+                    data: data.contentDistribution.values.filter((_, i) => data.contentDistribution.labels[i] !== 'Games'),
+                    backgroundColor: [
+                        'rgba(72, 187, 120, 0.8)',  // PDF
+                        'rgba(102, 126, 234, 0.8)', // Image
+                        'rgba(159, 122, 234, 0.8)', // Audio
+                        'rgba(237, 137, 54, 0.8)',  // Document
+                        'rgba(245, 101, 101, 0.8)'  // Video
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.raw} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Growth Chart
+        const growthCtx = document.getElementById('growthCanvas').getContext('2d');
+        growthChart = new Chart(growthCtx, {
+            type: 'line',
+            data: {
+                labels: data.userGrowth.dates,
+                datasets: [{
+                    label: 'New Students',
+                    data: data.userGrowth.newUsers,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Total Students',
+                    data: data.userGrowth.totalUsers,
+                    borderColor: '#48bb78',
+                    backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Subject Performance Chart (Engagement by Subject - GAMES REMOVED)
+        const perfCtx = document.getElementById('subjectPerformanceCanvas').getContext('2d');
+        subjectPerformanceChart = new Chart(perfCtx, {
+            type: 'bar',
+            data: {
+                labels: data.subjectEngagement.subjects,
+                datasets: [{
+                    label: 'Material Views',
+                    data: data.subjectEngagement.materialViews,
+                    backgroundColor: 'rgba(72, 187, 120, 0.7)',
+                    borderColor: '#48bb78',
+                    borderWidth: 2
+                }, {
+                    label: 'Video Views',
+                    data: data.subjectEngagement.videoViews,
+                    backgroundColor: 'rgba(245, 101, 101, 0.7)',
+                    borderColor: '#f56565',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Grade Distribution Chart
+        const gradeCtx = document.getElementById('gradeDistributionCanvas').getContext('2d');
+        
+        gradeDistributionChart = new Chart(gradeCtx, {
+            type: 'pie',
+            data: {
+                labels: data.gradeDistribution.labels,
+                datasets: [{
+                    data: data.gradeDistribution.values,
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(72, 187, 120, 0.8)',
+                        'rgba(237, 137, 54, 0.8)',
+                        'rgba(245, 101, 101, 0.8)',
+                        'rgba(159, 122, 234, 0.8)',
+                        'rgba(236, 72, 153, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw} students`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateTopStudents(students) {
+        const tbody = document.getElementById('topStudentsBody');
+        
+        if (!students || students.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No data available</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = students.map((student, index) => {
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>
+                        <strong>${student.name}</strong><br>
+                        <small>${student.language || 'English'}</small>
+                    </td>
+                    <td>${student.grade}</td>
+                    <td>${student.xp.toLocaleString()}</td>
+                    <td>${student.level}</td>
+                    <td>${student.materialCount}</td>
+                    <td>${student.videoCount}</td>
+                    <td>${student.medalCount}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    function updateInsights(data) {
+        const insightsContainer = document.getElementById('insightsContainer');
+        
+        // Generate insights based on real data
+        const insights = [];
+        
+        // Most viewed content type
+        if (data.contentDistribution.labels && data.contentDistribution.labels.length > 0) {
+            const nonGameLabels = data.contentDistribution.labels.filter(l => l !== 'Games');
+            const nonGameValues = data.contentDistribution.values.filter((_, i) => data.contentDistribution.labels[i] !== 'Games');
+            
+            if (nonGameLabels.length > 0) {
+                const mostViewed = nonGameLabels[0];
+                insights.push({
+                    iconClass: 'success',
+                    icon: 'fa-chart-bar',
+                    title: `Most Viewed: ${mostViewed}`,
+                    description: `${mostViewed} content has the most views this period.`,
+                    detail: `${nonGameValues[0]} total views`
+                });
+            }
+        }
+        
+        // Most active subject
+        if (data.subjectEngagement.subjects && data.subjectEngagement.subjects.length > 0) {
+            let maxEngagement = 0;
+            let bestSubject = '';
+            data.subjectEngagement.subjects.forEach((subject, i) => {
+                const total = (data.subjectEngagement.materialViews[i] || 0) + 
+                             (data.subjectEngagement.videoViews[i] || 0);
+                if (total > maxEngagement) {
+                    maxEngagement = total;
+                    bestSubject = subject;
+                }
+            });
+            
+            if (bestSubject) {
+                insights.push({
+                    iconClass: 'info',
+                    icon: 'fa-trophy',
+                    title: `Most Popular Subject: ${bestSubject.charAt(0).toUpperCase() + bestSubject.slice(1)}`,
+                    description: `${bestSubject} has the highest student engagement.`,
+                    detail: `${maxEngagement} total interactions`
+                });
+            }
+        }
+        
+        // Growth insight
+        if (data.userGrowth.newUsers && data.userGrowth.newUsers.length > 0) {
+            const totalNew = data.userGrowth.newUsers.reduce((a, b) => a + b, 0);
+            insights.push({
+                iconClass: 'info',
+                icon: 'fa-user-plus',
+                title: 'Student Growth',
+                description: `${totalNew} new students joined this period.`,
+                detail: `${data.kpis.activeToday} active today`
+            });
+        }
+        
+        // Video engagement
+        if (data.kpis.totalVideoViews > 0) {
+            insights.push({
+                iconClass: 'danger',
+                icon: 'fa-video',
+                title: 'Video Engagement',
+                description: `${data.kpis.totalVideoViews} video views this period.`,
+                detail: `${data.kpis.watchHours} hours watched`
+            });
+        }
+        
+        // Material engagement
+        if (data.kpis.totalMaterialViews > 0) {
+            insights.push({
+                iconClass: 'success',
+                icon: 'fa-book',
+                title: 'Material Engagement',
+                description: `${data.kpis.totalMaterialViews} study materials viewed.`,
+                detail: `${data.kpis.materialDownloads} downloads`
+            });
+        }
+        
+        // Medal insights
+        if (data.kpis.totalMedals > 0) {
+            insights.push({
+                iconClass: 'warning',
+                icon: 'fa-medal',
+                title: 'Achievement Unlocked',
+                description: `Students earned ${data.kpis.totalMedals} medals this period.`,
+                detail: `${data.kpis.medalGrowth}% growth in achievements`
+            });
+        }
+        
+        // Comparison insight
+        if (data.comparison) {
+            const studentChange = data.comparison.students.change;
+            insights.push({
+                iconClass: studentChange > 0 ? 'success' : (studentChange < 0 ? 'danger' : 'info'),
+                icon: studentChange > 0 ? 'fa-arrow-up' : (studentChange < 0 ? 'fa-arrow-down' : 'fa-minus'),
+                title: 'Student Activity Trend',
+                description: `Student engagement is ${studentChange > 0 ? 'up' : (studentChange < 0 ? 'down' : 'stable')} compared to last period.`,
+                detail: `${Math.abs(studentChange)}% ${studentChange > 0 ? 'increase' : (studentChange < 0 ? 'decrease' : 'change')}`
+            });
+        }
+        
+        insightsContainer.innerHTML = insights.map(insight => `
+            <div class="insight-item">
+                <div class="insight-icon ${insight.iconClass}">
+                    <i class="fas ${insight.icon}"></i>
+                </div>
+                <div class="insight-content">
+                    <h4>${insight.title}</h4>
+                    <p>${insight.description}</p>
+                    <small>${insight.detail}</small>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function updateRecentActivity(interactions) {
+        const tbody = document.getElementById('recentActivityBody');
+        
+        if (!interactions || interactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No recent activity</td></tr>';
+            return;
+        }
+        
+        // Filter out game interactions
+        const filteredInteractions = interactions.filter(i => i.type !== 'game');
+        
+        tbody.innerHTML = filteredInteractions.slice(0, 10).map(interaction => {
+            let icon = '';
+            let statusClass = '';
+            
+            if (interaction.type === 'material') {
+                icon = '📚';
+                statusClass = 'performance-excellent';
+            } else if (interaction.type === 'video') {
+                icon = '📹';
+                statusClass = 'performance-good';
+            }
+            
+            return `
+                <tr>
+                    <td>
+                        <div>${interaction.time}</div>
+                        <small>${interaction.date}</small>
+                    </td>
+                    <td>
+                        <strong>${interaction.student}</strong><br>
+                        <small>Grade ${interaction.grade}</small>
+                    </td>
+                    <td>
+                        ${icon} ${interaction.activity}
+                    </td>
+                    <td>${interaction.subject}</td>
+                    <td>
+                        <span class="badge-language" style="background: ${interaction.language === 'english' ? '#4299e1' : (interaction.language === 'hindi' ? '#ed8936' : (interaction.language === 'telugu' ? '#48bb78' : '#667eea'))}; color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem;">
+                            ${interaction.language === 'english' ? 'English' : 
+                              interaction.language === 'hindi' ? 'हिंदी' : 
+                              interaction.language === 'telugu' ? 'తెలుగు' : 
+                              interaction.language === 'tamil' ? 'தமிழ்' : 
+                              interaction.language || 'English'}
+                        </span>
+                    </td>
+                    <td><strong>+${interaction.xp}</strong> XP</td>
+                    <td><span class="performance-badge ${statusClass}">Completed</span></td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    async function applyFilters() {
+        showLoading();
+        await loadAnalyticsData();
+    }
+    
+    async function exportData() {
+        try {
+            showLoading();
+            
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const type = 'analytics';
+            
+            const response = await fetch(`/api/admin/export-analytics?startDate=${startDate}&endDate=${endDate}&type=${type}`);
+            
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics_export_${startDate}_to_${endDate}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+            
+            showNotification('Data exported successfully!');
+            
+        } catch (error) {
+            console.error('Export error:', error);
+            showError('Failed to export data');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function refreshData() {
+        // Check if we should refresh based on user activity
+        const lastFilterChange = localStorage.getItem('lastFilterChange');
+        const now = Date.now();
+        
+        if (lastFilterChange && (now - parseInt(lastFilterChange)) < 5000) {
+            return; // Don't refresh if user just changed filters
+        }
+        
+        await loadAnalyticsData();
+        
+        // Visual feedback
+        const indicator = document.getElementById('liveIndicator');
+        indicator.style.animation = 'none';
+        indicator.offsetHeight;
+        indicator.style.animation = 'pulse 2s infinite';
+    }
+    
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'flash-message success animate-pop';
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '1000';
+        notification.style.maxWidth = '300px';
+        notification.style.background = '#48bb78';
+        notification.style.color = 'white';
+        notification.style.padding = '1rem';
+        notification.style.borderRadius = '10px';
+        notification.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-check-circle"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; margin-left: auto; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+    
+    function addDataPoints() {
+        const containers = ['dailyActivityChart', 'growthChart', 'gradeDistributionChart'];
+        
+        containers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            for (let i = 0; i < 5; i++) {
+                const point = document.createElement('div');
+                point.className = 'data-point';
+                point.style.left = Math.random() * 90 + 5 + '%';
+                point.style.top = Math.random() * 90 + 5 + '%';
+                point.style.animationDelay = Math.random() * 2 + 's';
+                point.style.background = `rgba(${Math.random() * 100 + 100}, ${Math.random() * 100 + 100}, ${Math.random() * 100 + 100}, 0.3)`;
+                container.appendChild(point);
+            }
+        });
+    }
+    
+    // Save filter change timestamp
+    document.getElementById('timePeriod').addEventListener('change', () => {
+        localStorage.setItem('lastFilterChange', Date.now().toString());
+    });
+    
+    document.getElementById('gradeFilter').addEventListener('change', () => {
+        localStorage.setItem('lastFilterChange', Date.now().toString());
+    });
+    
+    document.getElementById('subjectFilter').addEventListener('change', () => {
+        localStorage.setItem('lastFilterChange', Date.now().toString());
+    });
+</script>
+{% endblock %}

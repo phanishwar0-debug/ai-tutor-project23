@@ -1,0 +1,1447 @@
+{% extends "base.html" %}
+
+{% block title %}Email Management - Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .email-management {
+        padding: 1.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Header Section */
+    .email-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 2.5rem;
+        border-radius: 25px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .email-header h1 {
+        font-size: 1.8rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .email-stats {
+        display: flex;
+        gap: 1.5rem;
+        background: rgba(255,255,255,0.15);
+        padding: 0.8rem 1.5rem;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+    }
+
+    .email-stat {
+        text-align: center;
+    }
+
+    .email-stat .number {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .email-stat .label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+
+    /* Tabs */
+    .email-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.5rem;
+    }
+
+    .email-tab {
+        padding: 0.8rem 1.8rem;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #718096;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .email-tab:hover {
+        color: #667eea;
+        background: #f7fafc;
+    }
+
+    .email-tab.active {
+        color: #667eea;
+        background: #ebf4ff;
+    }
+
+    /* Compose Section */
+    .compose-section {
+        background: white;
+        border-radius: 25px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        border: 1px solid #edf2f7;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 200px;
+    }
+
+    .recipient-selector {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+    }
+
+    .recipient-buttons {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .recipient-btn {
+        padding: 0.6rem 1.2rem;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .recipient-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .recipient-btn.active {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+    }
+
+    .recipient-options {
+        display: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 15px;
+    }
+
+    .recipient-options.active {
+        display: block;
+    }
+
+    .template-selector {
+        margin-bottom: 1.5rem;
+    }
+
+    .template-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    .template-btn {
+        padding: 0.5rem 1rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .template-btn:hover {
+        background: #ebf4ff;
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    /* Campaign Cards */
+    .campaigns-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .campaign-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid #edf2f7;
+        transition: all 0.3s ease;
+    }
+
+    .campaign-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(102,126,234,0.1);
+    }
+
+    .campaign-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .campaign-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+    }
+
+    .campaign-status {
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-sent {
+        background: #48bb7820;
+        color: #2f855a;
+    }
+
+    .status-draft {
+        background: #ed893620;
+        color: #c05621;
+    }
+
+    .status-scheduled {
+        background: #4299e120;
+        color: #2c5282;
+    }
+
+    .campaign-stats {
+        display: flex;
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 0.8rem 0;
+        border-top: 1px solid #edf2f7;
+        border-bottom: 1px solid #edf2f7;
+    }
+
+    .campaign-stat {
+        flex: 1;
+        text-align: center;
+    }
+
+    .campaign-stat .number {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1a202c;
+    }
+
+    .campaign-stat .label {
+        font-size: 0.7rem;
+        color: #718096;
+    }
+
+    .campaign-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    /* Email Logs Table */
+    .logs-table-container {
+        background: white;
+        border-radius: 20px;
+        overflow-x: auto;
+        border: 1px solid #edf2f7;
+    }
+
+    .logs-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .logs-table th {
+        padding: 1rem;
+        text-align: left;
+        background: #f8fafc;
+        font-weight: 600;
+        color: #4a5568;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .logs-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #edf2f7;
+    }
+
+    .logs-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .email-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .email-status.delivered {
+        background: #48bb7820;
+        color: #2f855a;
+    }
+
+    .email-status.failed {
+        background: #f5656520;
+        color: #c53030;
+    }
+
+    .email-status.opened {
+        background: #4299e120;
+        color: #2c5282;
+    }
+
+    /* Analytics Cards */
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .analytics-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #edf2f7;
+    }
+
+    .analytics-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea20, #764ba220);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .analytics-icon i {
+        font-size: 1.5rem;
+        color: #667eea;
+    }
+
+    .analytics-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a202c;
+    }
+
+    .analytics-label {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 0.3rem;
+    }
+
+    /* Button Styles */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+    }
+
+    .btn-secondary {
+        background: #f7fafc;
+        color: #4a5568;
+        padding: 0.8rem 1.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+        background: #edf2f7;
+    }
+
+    .btn-danger {
+        background: #f56565;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .btn-danger:hover {
+        background: #e53e3e;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #a0aec0;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #cbd5e0;
+    }
+
+    /* Modal */
+    .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    display: none !important;   /* 🔥 FORCE HIDE */
+
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    background: rgba(0,0,0,0.8);
+}
+
+    .modal-content {
+        background: white;
+        border-radius: 25px;
+        width: 90%;
+        max-width: 500px;
+        padding: 2rem;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .email-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .campaigns-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .analytics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .recipient-buttons {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="email-management">
+    <!-- Header -->
+    <div class="email-header">
+        <div>
+            <h1>
+                <i class="fas fa-envelope"></i>
+                Email Management
+            </h1>
+            <p style="margin: 0.5rem 0 0; opacity: 0.9;">Send emails, manage campaigns, and track communication with students</p>
+        </div>
+        <div class="email-stats">
+            <div class="email-stat">
+                <div class="number">{{ total_emails_sent|default(0) }}</div>
+                <div class="label">Total Sent</div>
+            </div>
+            <div class="email-stat">
+                <div class="number">{{ emails_sent_today|default(0) }}</div>
+                <div class="label">Today</div>
+            </div>
+            <div class="email-stat">
+                <div class="number">{{ open_rate|default(0) }}%</div>
+                <div class="label">Open Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="email-tabs">
+    <button class="email-tab active" onclick="switchTab('compose', this)">
+        <i class="fas fa-pen-alt"></i> Compose
+    </button>
+    <button class="email-tab" onclick="switchTab('campaigns', this)">
+        <i class="fas fa-bullhorn"></i> Campaigns
+    </button>
+    <button class="email-tab" onclick="switchTab('logs', this)">
+        <i class="fas fa-history"></i> Email Logs
+    </button>
+    <button class="email-tab" onclick="switchTab('analytics', this)">
+        <i class="fas fa-chart-line"></i> Analytics
+    </button>
+</div>
+
+    <!-- Compose Tab -->
+    <div id="composeTab" class="compose-section">
+        <h2 style="margin-bottom: 1.5rem;">Compose New Email</h2>
+        
+        <div class="recipient-selector">
+           <div class="recipient-buttons">
+    <button class="recipient-btn active" onclick="setRecipientType('all', this)">
+        <i class="fas fa-users"></i> All Students
+    </button>
+    <button class="recipient-btn" onclick="setRecipientType('grade', this)">
+        <i class="fas fa-graduation-cap"></i> By Grade
+    </button>
+    <button class="recipient-btn" onclick="setRecipientType('language', this)">
+        <i class="fas fa-language"></i> By Language
+    </button>
+    <button class="recipient-btn" onclick="setRecipientType('individual', this)">
+        <i class="fas fa-user"></i> Individual
+    </button>
+</div>
+            
+            <div id="gradeOptions" class="recipient-options">
+                <label class="form-label">Select Grade:</label>
+                <select id="emailGrade" class="form-control">
+                    <option value="5">Grade 5</option>
+                    <option value="6">Grade 6</option>
+                    <option value="7">Grade 7</option>
+                    <option value="8">Grade 8</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                </select>
+                <div class="recipient-count" style="margin-top: 0.5rem; font-size: 0.85rem; color: #718096;">
+                    <i class="fas fa-users"></i> <span id="gradeCount">0</span> students in this grade
+                </div>
+            </div>
+            
+            <div id="languageOptions" class="recipient-options">
+                <label class="form-label">Select Language:</label>
+                <select id="emailLanguage" class="form-control">
+                    <option value="english">English</option>
+                    <option value="hindi">हिंदी (Hindi)</option>
+                    <option value="bengali">বাংলা (Bengali)</option>
+                    <option value="telugu">తెలుగు (Telugu)</option>
+                    <option value="marathi">मराठी (Marathi)</option>
+                    <option value="tamil">தமிழ் (Tamil)</option>
+                    <option value="urdu">اردو (Urdu)</option>
+                    <option value="gujarati">ગુજરાતી (Gujarati)</option>
+                    <option value="kannada">ಕನ್ನಡ (Kannada)</option>
+                    <option value="malayalam">മലയാളം (Malayalam)</option>
+                    <option value="punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="odia">ଓଡ଼ିଆ (Odia)</option>
+                </select>
+                <div class="recipient-count" style="margin-top: 0.5rem; font-size: 0.85rem; color: #718096;">
+                    <i class="fas fa-users"></i> <span id="languageCount">0</span> students in this language
+                </div>
+            </div>
+            
+            <div id="individualOptions" class="recipient-options">
+                <label class="form-label">Search Student:</label>
+                <input type="text" id="studentSearch" class="form-control" placeholder="Type student name or email..." onkeyup="searchStudents()">
+                <div id="studentResults" style="margin-top: 0.5rem; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+        </div>
+        
+        <div class="template-selector">
+            <label class="form-label">Email Template:</label>
+            <div class="template-buttons">
+                <button class="template-btn" onclick="loadTemplate('welcome')">Welcome Email</button>
+                <button class="template-btn" onclick="loadTemplate('new_content')">New Content Alert</button>
+                <button class="template-btn" onclick="loadTemplate('announcement')">Announcement</button>
+                <button class="template-btn" onclick="loadTemplate('reminder')">Study Reminder</button>
+                <button class="template-btn" onclick="loadTemplate('feedback')">Feedback Request</button>
+                <button class="template-btn" onclick="clearForm()">Clear All</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Subject:</label>
+            <input type="text" id="emailSubject" class="form-control" placeholder="Enter email subject...">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Message:</label>
+            <textarea id="emailMessage" class="form-control" placeholder="Enter your message here..."></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button onclick="saveAsDraft()" class="btn-secondary">
+                <i class="fas fa-save"></i> Save as Draft
+            </button>
+            <button onclick="scheduleEmail()" class="btn-secondary">
+                <i class="far fa-calendar-alt"></i> Schedule
+            </button>
+            <button onclick="sendEmail()" class="btn-primary">
+                <i class="fas fa-paper-plane"></i> Send Now
+            </button>
+        </div>
+    </div>
+
+    <!-- Campaigns Tab -->
+    <div id="campaignsTab" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2>Email Campaigns</h2>
+            <button onclick="openCreateCampaignModal()" class="btn-primary">
+                <i class="fas fa-plus"></i> New Campaign
+            </button>
+        </div>
+        
+        <div class="campaigns-grid">
+            {% if campaigns and campaigns|length > 0 %}
+                {% for campaign in campaigns %}
+                <div class="campaign-card">
+                    <div class="campaign-header">
+                        <h3 class="campaign-title">{{ campaign.name }}</h3>
+                        <span class="campaign-status status-{{ campaign.status }}">
+                            {{ campaign.status|title }}
+                        </span>
+                    </div>
+                    <p style="color: #718096; margin-bottom: 0.5rem;">{{ campaign.subject }}</p>
+                    <div class="campaign-stats">
+                        <div class="campaign-stat">
+                            <div class="number">{{ campaign.sent_count|default(0) }}</div>
+                            <div class="label">Sent</div>
+                        </div>
+                        <div class="campaign-stat">
+                            <div class="number">{{ campaign.open_count|default(0) }}</div>
+                            <div class="label">Opened</div>
+                        </div>
+                        <div class="campaign-stat">
+                            <div class="number">{{ campaign.click_count|default(0) }}</div>
+                            <div class="label">Clicked</div>
+                        </div>
+                    </div>
+                    <div class="campaign-actions">
+                        <button onclick="viewCampaign('{{ campaign._id }}')" class="btn-secondary" style="flex: 1;">
+                            <i class="fas fa-chart-line"></i> View Stats
+                        </button>
+                        <button onclick="duplicateCampaign('{{ campaign._id }}')" class="btn-secondary">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button onclick="deleteCampaign('{{ campaign._id }}')" class="btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <i class="fas fa-bullhorn"></i>
+                    <h3>No Campaigns Yet</h3>
+                    <p>Create your first email campaign to engage with students</p>
+                    <button onclick="openCreateCampaignModal()" class="btn-primary" style="margin-top: 1rem;">
+                        Create Campaign
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Logs Tab -->
+    <div id="logsTab" style="display: none;">
+        <h2 style="margin-bottom: 1.5rem;">Email Sending History</h2>
+        
+        <div style="margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <input type="text" id="logSearch" class="form-control" style="width: 300px;" placeholder="Search by email or subject..." onkeyup="searchLogs()">
+            <select id="logStatusFilter" class="form-control" style="width: 150px;" onchange="filterLogs()">
+                <option value="all">All Status</option>
+                <option value="delivered">Delivered</option>
+                <option value="failed">Failed</option>
+                <option value="opened">Opened</option>
+            </select>
+        </div>
+        
+        <div class="logs-table-container">
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>To</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+    {% if email_logs and email_logs|length > 0 %}
+        {% for log in email_logs %}
+        <tr>
+            <td style="white-space: nowrap;">
+                {% if log.sent_date %}
+                    {% if log.sent_date.__class__.__name__ == 'datetime' %}
+                        {{ log.sent_date.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        {{ log.sent_date }}
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+
+            <td>{{ log.recipient_email|default('N/A') }}</td>
+            <td>{{ log.subject|default('No Subject') }}</td>
+
+            <td>
+                <span class="email-status {{ log.status|default('unknown') }}">
+                    <i class="fas fa-
+                        {% if log.status == 'delivered' %}check-circle
+                        {% elif log.status == 'failed' %}exclamation-circle
+                        {% elif log.status == 'opened' %}envelope-open-text
+                        {% else %}question-circle
+                        {% endif %}
+                    "></i>
+                    {{ log.status|default('unknown')|title }}
+                </span>
+            </td>
+
+            <td>
+                <button onclick="viewEmailDetails('{{ log._id }}')" class="btn-secondary" style="padding: 0.3rem 0.8rem;">
+                    <i class="fas fa-eye"></i> View
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="5" class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No emails sent yet</p>
+            </td>
+        </tr>
+    {% endif %}
+</tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analyticsTab" style="display: none;">
+        <h2 style="margin-bottom: 1.5rem;">Email Analytics</h2>
+        
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <div class="analytics-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="analytics-value">{{ total_emails_sent|default(0) }}</div>
+                <div class="analytics-label">Total Emails Sent</div>
+            </div>
+            
+            <div class="analytics-card">
+                <div class="analytics-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <div class="analytics-value">{{ total_opened|default(0) }}</div>
+                <div class="analytics-label">Total Opens</div>
+            </div>
+            
+            <div class="analytics-card">
+                <div class="analytics-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="analytics-value">{{ open_rate|default(0) }}%</div>
+                <div class="analytics-label">Open Rate</div>
+            </div>
+            
+            <div class="analytics-card">
+                <div class="analytics-icon">
+                    <i class="fas fa-mouse-pointer"></i>
+                </div>
+                <div class="analytics-value">{{ click_rate|default(0) }}%</div>
+                <div class="analytics-label">Click Rate</div>
+            </div>
+        </div>
+        
+        <!-- Daily Email Stats -->
+        <div style="background: white; border-radius: 20px; padding: 1.5rem; margin-top: 1.5rem;">
+            <h3 style="margin-bottom: 1rem;">Daily Email Statistics</h3>
+            <canvas id="emailChart" style="max-height: 300px; width: 100%;"></canvas>
+        </div>
+        
+        <!-- Top Performing Emails -->
+        <div style="background: white; border-radius: 20px; padding: 1.5rem; margin-top: 1.5rem;">
+            <h3 style="margin-bottom: 1rem;">Top Performing Emails</h3>
+            <div class="logs-table-container">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Sent Date</th>
+                            <th>Opens</th>
+                            <th>Open Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topEmailsBody">
+    {% if top_emails and top_emails|length > 0 %}
+        {% for email in top_emails %}
+        <tr>
+            <td>{{ email.subject|default('No Subject') }}</td>
+
+            <td>
+                {% if email.sent_date %}
+                    {% if email.sent_date.__class__.__name__ == 'datetime' %}
+                        {{ email.sent_date.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        {{ email.sent_date }}
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+
+            <td>{{ email.opens|default(0) }}</td>
+            <td>{{ email.open_rate|default(0) }}%</td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="4" class="empty-state">No data available</td>
+        </tr>
+    {% endif %}
+</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Campaign Modal -->
+<div id="campaignModal" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-bottom: 1rem;">Create Email Campaign</h2>
+        <div class="form-group">
+            <label class="form-label">Campaign Name:</label>
+            <input type="text" id="campaignName" class="form-control" placeholder="e.g., Weekly Newsletter">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Subject:</label>
+            <input type="text" id="campaignSubject" class="form-control" placeholder="Email subject">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Message:</label>
+            <textarea id="campaignMessage" class="form-control" rows="4" placeholder="Email content"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Schedule (Optional):</label>
+            <input type="datetime-local" id="campaignSchedule" class="form-control">
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button onclick="createCampaign()" class="btn-primary" style="flex: 1;">Create Campaign</button>
+            <button onclick="closeCampaignModal()" class="btn-secondary" style="flex: 0.5;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let currentRecipientType = 'all';
+    let selectedStudentId = null;
+    let emailChart = null;
+    
+    // Template Data
+    const emailTemplates = {
+        welcome: {
+            subject: "Welcome to AI Tutor! 🎓",
+            message: "Dear Student,\n\nWelcome to AI Tutor! We're excited to have you on board.\n\nYou now have access to thousands of study materials and video lectures in 22 Indian languages. Start your learning journey today!\n\nBest regards,\nAI Tutor Team"
+        },
+        new_content: {
+            subject: "New Learning Material Available! 📚",
+            message: "Hello Student,\n\nWe've added new study materials and videos to help you learn better. Check them out in your dashboard!\n\nHappy Learning!\nAI Tutor Team"
+        },
+        announcement: {
+            subject: "Important Announcement 📢",
+            message: "Dear Student,\n\nWe have an important announcement for you. Please check the platform for more details.\n\nThank you,\nAI Tutor Team"
+        },
+        reminder: {
+            subject: "Don't Forget to Study Today! 📖",
+            message: "Hi there,\n\nJust a friendly reminder to continue your learning journey on AI Tutor. Every day of learning brings you closer to your goals!\n\nKeep Learning,\nAI Tutor Team"
+        },
+        feedback: {
+            subject: "We'd Love Your Feedback! 💭",
+            message: "Hello Student,\n\nYour opinion matters to us! Please take a moment to share your feedback about your learning experience on AI Tutor.\n\nThank you for helping us improve!\n\nBest regards,\nAI Tutor Team"
+        }
+    };
+    
+    // Tab Switching
+    function switchTab(tabName, element) {
+    // Remove active class from all tabs
+    document.querySelectorAll('.email-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Add active to clicked tab
+    if (element) {
+        element.classList.add('active');
+    }
+
+    // Hide all sections
+    document.getElementById('composeTab').style.display = 'none';
+    document.getElementById('campaignsTab').style.display = 'none';
+    document.getElementById('logsTab').style.display = 'none';
+    document.getElementById('analyticsTab').style.display = 'none';
+
+    // Show selected tab
+    const selectedTab = document.getElementById(tabName + 'Tab');
+    if (selectedTab) {
+        selectedTab.style.display = 'block';
+    }
+
+    // Load chart only once
+    if (tabName === 'analytics' && emailChart === null) {
+        initChart();
+    }
+}
+    
+    // Recipient Type
+    function setRecipientType(type, element) {
+    currentRecipientType = type;
+
+    // Remove active from all buttons
+    document.querySelectorAll('.recipient-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Add active to clicked
+    if (element) {
+        element.classList.add('active');
+    }
+
+    // Hide all options
+    document.querySelectorAll('.recipient-options').forEach(opt => {
+        opt.classList.remove('active');
+    });
+
+    // Show selected option
+    if (type === 'grade') {
+        document.getElementById('gradeOptions').classList.add('active');
+        updateGradeCount();
+    } else if (type === 'language') {
+        document.getElementById('languageOptions').classList.add('active');
+        updateLanguageCount();
+    } else if (type === 'individual') {
+        document.getElementById('individualOptions').classList.add('active');
+    }
+}
+    
+    function updateGradeCount() {
+        const grade = document.getElementById('emailGrade').value;
+        fetch(`/api/admin/students/count?grade=${grade}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('gradeCount').textContent = data.count;
+            });
+    }
+    
+    function updateLanguageCount() {
+        const language = document.getElementById('emailLanguage').value;
+        fetch(`/api/admin/students/count?language=${language}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('languageCount').textContent = data.count;
+            });
+    }
+    
+    function searchStudents() {
+        const query = document.getElementById('studentSearch').value;
+        if (query.length < 2) return;
+        
+        fetch(`/api/admin/students/search?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(students => {
+                const resultsDiv = document.getElementById('studentResults');
+                if (students.length === 0) {
+                    resultsDiv.innerHTML = '<div class="empty-state" style="padding: 1rem;">No students found</div>';
+                    return;
+                }
+                
+                resultsDiv.innerHTML = students.map(student => `
+                    <div style="padding: 0.8rem; border-bottom: 1px solid #edf2f7; cursor: pointer;" onclick="selectStudent('${student._id}', '${student.name}', '${student.email}')">
+                        <strong>${student.name}</strong><br>
+                        <small style="color: #718096;">${student.email}</small>
+                    </div>
+                `).join('');
+            });
+    }
+    
+    function selectStudent(id, name, email) {
+        selectedStudentId = id;
+        document.getElementById('studentSearch').value = name;
+        document.getElementById('studentResults').innerHTML = '';
+    }
+    
+    // Template Loading
+    function loadTemplate(templateName) {
+        if (emailTemplates[templateName]) {
+            document.getElementById('emailSubject').value = emailTemplates[templateName].subject;
+            document.getElementById('emailMessage').value = emailTemplates[templateName].message;
+            showNotification('Template loaded: ' + emailTemplates[templateName].subject, 'success');
+        }
+    }
+    
+    function clearForm() {
+        document.getElementById('emailSubject').value = '';
+        document.getElementById('emailMessage').value = '';
+        showNotification('Form cleared', 'info');
+    }
+    
+    // Send Email
+    function sendEmail() {
+        const subject = document.getElementById('emailSubject').value;
+        const message = document.getElementById('emailMessage').value;
+        
+        if (!subject || !message) {
+            showNotification('Please fill in both subject and message', 'error');
+            return;
+        }
+        
+        let data = {
+            type: currentRecipientType,
+            subject: subject,
+            message: message
+        };
+        
+        if (currentRecipientType === 'grade') {
+            data.grade = document.getElementById('emailGrade').value;
+        } else if (currentRecipientType === 'language') {
+            data.language = document.getElementById('emailLanguage').value;
+        } else if (currentRecipientType === 'individual') {
+            if (!selectedStudentId) {
+                showNotification('Please select a student first', 'error');
+                return;
+            }
+            data.student_id = selectedStudentId;
+        }
+        
+        showLoading('Sending email...');
+        
+        fetch('/api/admin/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                clearForm();
+            } else {
+                showNotification('Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        });
+    }
+    
+    function saveAsDraft() {
+        const subject = document.getElementById('emailSubject').value;
+        const message = document.getElementById('emailMessage').value;
+        
+        if (!subject && !message) {
+            showNotification('Nothing to save', 'info');
+            return;
+        }
+        
+        const draft = {
+            subject: subject,
+            message: message,
+            recipient_type: currentRecipientType,
+            timestamp: new Date().toISOString()
+        };
+        
+        localStorage.setItem('emailDraft', JSON.stringify(draft));
+        showNotification('Draft saved successfully', 'success');
+    }
+    
+    function scheduleEmail() {
+        const subject = document.getElementById('emailSubject').value;
+        const message = document.getElementById('emailMessage').value;
+        
+        if (!subject || !message) {
+            showNotification('Please fill in subject and message', 'error');
+            return;
+        }
+        
+        const scheduleDate = prompt('Enter schedule date and time (YYYY-MM-DD HH:MM):');
+        if (!scheduleDate) return;
+        
+        showLoading('Scheduling email...');
+        
+        const data = {
+            type: currentRecipientType,
+            subject: subject,
+            message: message,
+            schedule: scheduleDate
+        };
+        
+        if (currentRecipientType === 'grade') {
+            data.grade = document.getElementById('emailGrade').value;
+        } else if (currentRecipientType === 'language') {
+            data.language = document.getElementById('emailLanguage').value;
+        } else if (currentRecipientType === 'individual') {
+            data.student_id = selectedStudentId;
+        }
+        
+        fetch('/api/admin/schedule-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification('Email scheduled successfully', 'success');
+                clearForm();
+            } else {
+                showNotification('Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        });
+    }
+    
+    // Campaign Functions
+    function openCreateCampaignModal() {
+        document.getElementById('campaignModal').style.display = 'flex';
+    }
+    
+    function closeCampaignModal() {
+        document.getElementById('campaignModal').style.display = 'none';
+    }
+    
+    function createCampaign() {
+        const name = document.getElementById('campaignName').value;
+        const subject = document.getElementById('campaignSubject').value;
+        const message = document.getElementById('campaignMessage').value;
+        const schedule = document.getElementById('campaignSchedule').value;
+        
+        if (!name || !subject || !message) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        showLoading('Creating campaign...');
+        
+        fetch('/api/admin/campaigns', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                subject: subject,
+                message: message,
+                schedule: schedule
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification('Campaign created successfully', 'success');
+                closeCampaignModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        });
+    }
+    
+    function viewCampaign(campaignId) {
+        window.location.href = `/admin/emails/campaign/${campaignId}`;
+    }
+    
+    function duplicateCampaign(campaignId) {
+        showLoading('Duplicating campaign...');
+        fetch(`/api/admin/campaigns/${campaignId}/duplicate`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification('Campaign duplicated successfully', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Error: ' + data.error, 'error');
+            }
+        });
+    }
+    
+    function deleteCampaign(campaignId) {
+        if (confirm('Are you sure you want to delete this campaign?')) {
+            showLoading('Deleting campaign...');
+            fetch(`/api/admin/campaigns/${campaignId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showNotification('Campaign deleted successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification('Error: ' + data.error, 'error');
+                }
+            });
+        }
+    }
+    
+    // Logs Functions
+    function searchLogs() {
+        const query = document.getElementById('logSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('#logsTableBody tr');
+        
+        rows.forEach(row => {
+            if (row.cells && row.cells.length > 0) {
+                const email = row.cells[1]?.textContent.toLowerCase() || '';
+                const subject = row.cells[2]?.textContent.toLowerCase() || '';
+                const match = email.includes(query) || subject.includes(query);
+                row.style.display = match ? '' : 'none';
+            }
+        });
+    }
+    
+    function filterLogs() {
+        const status = document.getElementById('logStatusFilter').value;
+        const rows = document.querySelectorAll('#logsTableBody tr');
+        
+        rows.forEach(row => {
+            if (row.cells && row.cells.length > 0) {
+                const statusCell = row.cells[3]?.textContent.toLowerCase() || '';
+                if (status === 'all' || statusCell.includes(status)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+    
+    function viewEmailDetails(logId) {
+        window.location.href = `/admin/emails/log/${logId}`;
+    }
+    
+    // Chart Initialization
+    function initChart() {
+        const ctx = document.getElementById('emailChart').getContext('2d');
+        emailChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels|default([])|tojson }},
+                datasets: [{
+                    label: 'Emails Sent',
+                    data: {{ chart_data|default([])|tojson }},
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+    
+    // Utility Functions
+    function showLoading(message) {
+        let loading = document.getElementById('adminLoading');
+        if (!loading) {
+            loading = document.createElement('div');
+            loading.id = 'adminLoading';
+            loading.style.position = 'fixed';
+            loading.style.top = '0';
+            loading.style.left = '0';
+            loading.style.width = '100%';
+            loading.style.height = '100%';
+            loading.style.background = 'rgba(0,0,0,0.8)';
+            loading.style.display = 'flex';
+            loading.style.justifyContent = 'center';
+            loading.style.alignItems = 'center';
+            loading.style.zIndex = '10000';
+            loading.innerHTML = `
+                <div style="background: white; border-radius: 25px; padding: 2rem; text-align: center;">
+                    <div class="loading-spinner" style="width: 40px; height: 40px; margin-bottom: 1rem;"></div>
+                    <h3>${message}</h3>
+                </div>
+            `;
+            document.body.appendChild(loading);
+        } else {
+            loading.querySelector('h3').textContent = message;
+            loading.style.display = 'flex';
+        }
+    }
+    
+    function hideLoading() {
+        const loading = document.getElementById('adminLoading');
+        if (loading) {
+            loading.style.display = 'none';
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.background = type === 'success' ? '#48bb78' : type === 'error' ? '#f56565' : '#667eea';
+        notification.style.color = 'white';
+        notification.style.padding = '1rem 1.5rem';
+        notification.style.borderRadius = '10px';
+        notification.style.zIndex = '10001';
+        notification.style.animation = 'slideUp 0.3s ease-out';
+        notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+    
+    // Load saved draft on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const draft = localStorage.getItem('emailDraft');
+        if (draft) {
+            const data = JSON.parse(draft);
+            if (confirm('You have a saved draft. Load it?')) {
+                document.getElementById('emailSubject').value = data.subject;
+                document.getElementById('emailMessage').value = data.message;
+                localStorage.removeItem('emailDraft');
+            }
+        }
+        
+        document.getElementById('emailGrade').addEventListener('change', updateGradeCount);
+        document.getElementById('emailLanguage').addEventListener('change', updateLanguageCount);
+        
+        updateGradeCount();
+        updateLanguageCount();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Activity Log{% endblock %}
+
+{% block extra_css %}
+<style>
+    .activity-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        animation: slideDown 1s ease-out;
+    }
+
+    .activity-header h1 {
+        font-size: 2.5rem;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .activity-header h1 i {
+        color: #667eea;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .stat-icon.views { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .stat-icon.downloads { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .stat-icon.materials { background: linear-gradient(135deg, #f56565, #e53e3e); }
+    .stat-icon.videos { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+
+    .stat-info h3 {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-info .value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d3748;
+    }
+
+    .stat-info .trend {
+        font-size: 0.85rem;
+        color: #48bb78;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .filters-bar {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-select {
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        min-width: 180px;
+    }
+
+    .filter-btn {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .refresh-btn {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: 2px solid #667eea;
+        color: #667eea;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .activity-feed {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .feed-header {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .feed-header h2 {
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #48bb7820;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        color: #48bb78;
+        font-weight: 600;
+    }
+
+    .live-dot {
+        width: 10px;
+        height: 10px;
+        background: #48bb78;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    .activity-list {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .activity-item {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: background 0.3s ease;
+        animation: slideIn 0.5s ease-out;
+    }
+
+    .activity-item:hover {
+        background: #f8f9fa;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .activity-icon.upload { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .activity-icon.view { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .activity-icon.download { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+    .activity-icon.video { background: linear-gradient(135deg, #f56565, #e53e3e); }
+    .activity-icon.material { background: linear-gradient(135deg, #9f7aea, #805ad5); }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-title {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+
+    .activity-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: #718096;
+    }
+
+    .activity-time {
+        color: #a0aec0;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .activity-time i {
+        font-size: 0.7rem;
+    }
+
+    .activity-user {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        background: #f8f9fa;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        color: #4a5568;
+    }
+
+    .activity-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-material { background: #9f7aea20; color: #805ad5; }
+    .badge-video { background: #f5656520; color: #c53030; }
+    .badge-view { background: #48bb7820; color: #2f855a; }
+    .badge-download { background: #ed893620; color: #c05621; }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        color: #a0aec0;
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        color: #cbd5e0;
+    }
+
+    .pagination {
+        padding: 1.5rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .page-btn {
+        width: 40px;
+        height: 40px;
+        border: 2px solid #e2e8f0;
+        background: white;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .page-btn:hover:not(:disabled) {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .page-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: transparent;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+        .activity-container {
+            padding: 1rem;
+        }
+
+        .activity-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .filters-bar {
+            flex-direction: column;
+        }
+
+        .filter-group {
+            width: 100%;
+        }
+
+        .filter-select {
+            width: 100%;
+        }
+
+        .activity-item {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="activity-container">
+    <div class="activity-header">
+        <h1>
+            <i class="fas fa-history"></i>
+            Activity Log
+        </h1>
+        <div class="live-indicator">
+            <span class="live-dot"></span>
+            <span>LIVE</span>
+            <span>{{ activities|length }}</span>
+            <span>activities</span>
+        </div>
+    </div>
+
+    <div class="stats-cards">
+        {% set total_views = 0 %}
+        {% set total_downloads = 0 %}
+        {% set material_uploads = 0 %}
+        {% set video_uploads = 0 %}
+        
+        {% for activity in activities %}
+            {% if activity.type == 'view' %}
+                {% set total_views = total_views + 1 %}
+            {% elif activity.type == 'download' %}
+                {% set total_downloads = total_downloads + 1 %}
+            {% elif activity.type == 'material' %}
+                {% set material_uploads = material_uploads + 1 %}
+            {% elif activity.type == 'video' %}
+                {% set video_uploads = video_uploads + 1 %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="stat-card">
+            <div class="stat-icon views">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Views</h3>
+                <div class="value">{{ total_views }}</div>
+                <div class="trend">
+                    <i class="fas fa-arrow-up"></i> Real-time
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon downloads">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Downloads</h3>
+                <div class="value">{{ total_downloads }}</div>
+                <div class="trend">
+                    <i class="fas fa-arrow-up"></i> Real-time
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon materials">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Materials Uploaded</h3>
+                <div class="value">{{ material_uploads }}</div>
+                <div class="trend">
+                    <i class="fas fa-arrow-up"></i> Total
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon videos">
+                <i class="fas fa-video"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Videos Uploaded</h3>
+                <div class="value">{{ video_uploads }}</div>
+                <div class="trend">
+                    <i class="fas fa-arrow-up"></i> Total
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label><i class="fas fa-filter"></i> Type:</label>
+            <select class="filter-select" id="typeFilter">
+                <option value="all">All Activities</option>
+                <option value="material">Materials</option>
+                <option value="video">Videos</option>
+                <option value="view">Views</option>
+                <option value="download">Downloads</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label><i class="fas fa-calendar"></i> Period:</label>
+            <select class="filter-select" id="timeFilter">
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="week" selected>Last 7 Days</option>
+                <option value="month">Last 30 Days</option>
+                <option value="all">All Time</option>
+            </select>
+        </div>
+        <button class="filter-btn" onclick="applyFilters()">
+            <i class="fas fa-search"></i> Apply Filters
+        </button>
+        <button class="refresh-btn" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+
+    <div class="activity-feed">
+        <div class="feed-header">
+            <h2><i class="fas fa-stream"></i> Recent Activities</h2>
+            <span class="badge" style="background: #667eea; color: white; padding: 0.5rem 1rem; border-radius: 50px;">
+                <i class="fas fa-clock"></i> {{ now.strftime('%Y-%m-%d %H:%M:%S') }}
+            </span>
+        </div>
+
+        <div class="activity-list" id="activityList">
+            {% if activities %}
+                {% for activity in activities %}
+                <div class="activity-item" data-type="{{ activity.type }}" data-time="{{ activity.timestamp }}">
+                    <div class="activity-icon {{ activity.icon }}">
+                        <i class="fas fa-{% if activity.icon == 'upload' %}cloud-upload-alt{% elif activity.icon == 'view' %}eye{% elif activity.icon == 'download' %}download{% elif activity.icon == 'video' %}video{% elif activity.icon == 'material' %}book{% endif %}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">{{ activity.text }}</div>
+                        <div class="activity-meta">
+                            <span class="activity-user">
+                                <i class="fas fa-user"></i> {{ activity.user }}
+                            </span>
+                            <span class="activity-badge 
+                                {% if activity.type == 'material' %}badge-material
+                                {% elif activity.type == 'video' %}badge-video
+                                {% elif activity.type == 'view' %}badge-view
+                                {% elif activity.type == 'download' %}badge-download
+                                {% endif %}">
+                                {{ activity.type|upper }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="activity-time">
+                        <i class="far fa-clock"></i> {{ activity.time_ago }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <h3>No Activities Found</h3>
+                    <p>There are no recent activities to display</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if activities|length > 20 %}
+        <div class="pagination">
+            <button class="page-btn" disabled>&laquo;</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">&raquo;</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function applyFilters() {
+        const typeFilter = document.getElementById('typeFilter').value;
+        const timeFilter = document.getElementById('timeFilter').value;
+
+        document.querySelectorAll('.activity-item').forEach(item => {
+            let show = true;
+
+            // Type filter
+            if (typeFilter !== 'all' && item.dataset.type !== typeFilter) {
+                show = false;
+            }
+
+            // Time filter (simplified for demo - you can enhance this)
+            const timeText = item.querySelector('.activity-time').textContent;
+            if (timeFilter === 'today' && !timeText.includes('just now') && !timeText.includes('minute')) {
+                show = false;
+            } else if (timeFilter === 'yesterday' && !timeText.includes('day')) {
+                show = false;
+            }
+
+            item.style.display = show ? 'flex' : 'none';
+        });
+    }
+</script>
+{% endblock %}

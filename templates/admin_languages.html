@@ -1,0 +1,512 @@
+{% extends "base.html" %}
+
+{% block title %}Language Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .languages-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .languages-header {
+        margin-bottom: 2rem;
+        animation: slideDown 1s ease-out;
+    }
+
+    .languages-header h1 {
+        font-size: 2.5rem;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .languages-header h1 i {
+        color: #667eea;
+    }
+
+    .languages-header p {
+        color: #718096;
+    }
+
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .stat-icon.primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .stat-icon.success { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .stat-icon.warning { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+    .stat-icon.info { background: linear-gradient(135deg, #4299e1, #3182ce); }
+
+    .stat-info h3 {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-info .value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d3748;
+    }
+
+    .language-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .language-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .language-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: #667eea;
+    }
+
+    .language-header {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .language-flag {
+        width: 50px;
+        height: 50px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .language-title {
+        flex: 1;
+    }
+
+    .language-title h3 {
+        font-size: 1.4rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .language-title p {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .language-stats {
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-item-small {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .stat-item-small .number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-item-small .label {
+        color: #718096;
+        font-size: 0.8rem;
+    }
+
+    .progress-container {
+        padding: 0 1.5rem 1.5rem;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 4px;
+        transition: width 1s ease;
+    }
+
+    .language-actions {
+        padding: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-view {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: #5a67d8;
+        transform: translateY(-2px);
+    }
+
+    .btn-edit {
+        background: #48bb78;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: #38a169;
+        transform: translateY(-2px);
+    }
+
+    .language-table {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-top: 2rem;
+    }
+
+    .table-header {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-header h2 {
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 1rem;
+        background: #f8f9fa;
+        color: #4a5568;
+        font-weight: 600;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: #2d3748;
+    }
+
+    tr:hover {
+        background: #f8f9fa;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .badge-success { background: #48bb7820; color: #2f855a; }
+    .badge-warning { background: #ed893620; color: #c05621; }
+    .badge-danger { background: #f5656520; color: #c53030; }
+    .badge-info { background: #667eea20; color: #4c51bf; }
+
+    .language-indicator {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .languages-container {
+            padding: 1rem;
+        }
+
+        .language-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .language-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .language-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="languages-container">
+    <div class="languages-header">
+        <h1>
+            <i class="fas fa-language"></i>
+            Language Management
+        </h1>
+        <p>Manage content across 22 Indian languages</p>
+    </div>
+
+    <div class="stats-overview">
+
+    <!-- values come from app.py -->
+    
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i class="fas fa-language"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Total Languages</h3>
+            <div class="value">22</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Materials</h3>
+            <div class="value">{{ total_materials }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-video"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Videos</h3>
+            <div class="value">{{ total_videos }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon info">
+            <i class="fas fa-eye"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Total Views</h3>
+            <div class="value">{{ total_views }}</div>
+        </div>
+    </div>
+
+</div>
+<div class="language-grid">
+
+{% for lang in languages %}
+
+<div class="language-card">
+    <div class="language-header">
+        <div class="language-flag">🌐</div>
+        <div class="language-title">
+            <h3>{{ get_language_name(lang.code) }}</h3>
+            <p>{{ lang.code|title }}</p>
+        </div>
+    </div>
+
+    <div class="language-stats">
+        <div class="stat-item-small">
+            <div class="number">{{ lang.materials }}</div>
+            <div class="label">Materials</div>
+        </div>
+        <div class="stat-item-small">
+            <div class="number">{{ lang.videos }}</div>
+            <div class="label">Videos</div>
+        </div>
+        <div class="stat-item-small">
+            <div class="number">{{ lang.views }}</div>
+            <div class="label">Views</div>
+        </div>
+        <div class="stat-item-small">
+            <div class="number">{{ lang.downloads }}</div>
+            <div class="label">Downloads</div>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-label">
+            <span>Content Coverage</span>
+            <span>{{ lang.total }} items</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ (lang.total / 100 * 100) if (lang.total / 100 * 100) < 100 else 100 }}%"></div>
+        </div>
+    </div>
+
+    <div class="language-actions">
+        <button class="action-btn btn-view" onclick="viewLanguage('{{ lang.code }}')">
+            <i class="fas fa-eye"></i> View
+        </button>
+        <button class="action-btn btn-edit" onclick="editLanguage('{{ lang.code }}')">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+    </div>
+</div>
+
+{% endfor %}
+
+</div>
+    
+           
+    </div>
+
+    <div class="language-table">
+        <div class="table-header">
+            <h2><i class="fas fa-table"></i> Detailed Language Statistics</h2>
+            <span class="badge badge-info">{{ now.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Language</th>
+                        <th>Code</th>
+                        <th>Materials</th>
+                        <th>Videos</th>
+                        <th>Total Content</th>
+                        <th>Views</th>
+                        <th>Downloads</th>
+                        <th>Students</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+               <tbody>
+{% for lang in languages %}
+<tr>
+    <td>
+        <span class="language-indicator" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+            {{ get_language_name(lang.code)[0] }}
+        </span>
+        {{ get_language_name(lang.code) }}
+    </td>
+    <td><span class="badge badge-info">{{ lang.code }}</span></td>
+    <td><strong>{{ lang.materials }}</strong></td>
+    <td><strong>{{ lang.videos }}</strong></td>
+    <td><span class="badge badge-success">{{ lang.total }}</span></td>
+    <td>{{ lang.views }}</td>
+    <td>{{ lang.downloads }}</td>
+    <td>{{ lang.students }}</td>
+    <td>
+        {% if lang.total > 50 %}
+        <span class="badge badge-success">High Activity</span>
+        {% elif lang.total > 20 %}
+        <span class="badge badge-warning">Medium Activity</span>
+        {% elif lang.total > 0 %}
+        <span class="badge badge-info">Low Activity</span>
+        {% else %}
+        <span class="badge badge-danger">No Content</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewLanguage(code) {
+        window.location.href = `/admin/language/${code}`;
+    }
+
+    function editLanguage(code) {
+        window.location.href = `/admin/language/${code}/edit`;
+    }
+</script>
+{% endblock %}

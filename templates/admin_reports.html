@@ -1,0 +1,853 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reports-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .reports-header {
+        margin-bottom: 2rem;
+        animation: slideDown 1s ease-out;
+    }
+
+    .reports-header h1 {
+        font-size: 2.5rem;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .reports-header h1 i {
+        color: #667eea;
+    }
+
+    .reports-header p {
+        color: #718096;
+    }
+
+    .report-tabs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .report-tab {
+        padding: 1rem;
+        background: transparent;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: #718096;
+    }
+
+    .report-tab i {
+        font-size: 1.1rem;
+    }
+
+    .report-tab:hover {
+        background: #f8f9fa;
+        color: #667eea;
+    }
+
+    .report-tab.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+    }
+
+    .report-section {
+        display: none;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .report-section.active {
+        display: block;
+    }
+
+    .date-range-picker {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .date-input {
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .generate-btn {
+        padding: 0.75rem 2rem;
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .generate-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+    }
+
+    .export-btn {
+        padding: 0.75rem 2rem;
+        background: transparent;
+        border: 2px solid #667eea;
+        color: #667eea;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-left: auto;
+    }
+
+    .export-btn:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .summary-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .summary-icon.primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .summary-icon.success { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .summary-icon.warning { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+    .summary-icon.danger { background: linear-gradient(135deg, #f56565, #e53e3e); }
+
+    .summary-info h3 {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .summary-info .value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+
+    .summary-info .change {
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .change.positive { color: #48bb78; }
+    .change.negative { color: #f56565; }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .chart-card h3 {
+        color: #2d3748;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chart-wrapper {
+        height: 300px;
+        position: relative;
+    }
+
+    .data-table {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .table-header {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-header h3 {
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 1rem;
+        background: #f8f9fa;
+        color: #4a5568;
+        font-weight: 600;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: #2d3748;
+    }
+
+    tr:hover {
+        background: #f8f9fa;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-success { background: #48bb7820; color: #2f855a; }
+    .badge-warning { background: #ed893620; color: #c05621; }
+    .badge-danger { background: #f5656520; color: #c53030; }
+    .badge-info { background: #667eea20; color: #4c51bf; }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        display: none;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #e2e8f0;
+        border-top: 5px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .reports-container {
+            padding: 1rem;
+        }
+
+        .report-tabs {
+            grid-template-columns: 1fr;
+        }
+
+        .date-range-picker {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .export-btn {
+            margin-left: 0;
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
+<div class="reports-container">
+    <div class="reports-header">
+        <h1>
+            <i class="fas fa-chart-pie"></i>
+            Reports & Analytics
+        </h1>
+        <p>Generate detailed reports for student activities, content performance, and platform usage</p>
+    </div>
+
+    <div class="report-tabs">
+        <button class="report-tab active" onclick="switchReportTab('overview')">
+            <i class="fas fa-chart-line"></i> Overview
+        </button>
+        <button class="report-tab" onclick="switchReportTab('materials')">
+            <i class="fas fa-book"></i> Study Materials
+        </button>
+        <button class="report-tab" onclick="switchReportTab('videos')">
+            <i class="fas fa-video"></i> Video Lessons
+        </button>
+        <button class="report-tab" onclick="switchReportTab('students')">
+            <i class="fas fa-users"></i> Student Progress
+        </button>
+    </div>
+
+    <div class="date-range-picker">
+        <input type="date" class="date-input" id="startDate" value="{{ now.strftime('%Y-%m-%d') }}">
+        <span>to</span>
+        <input type="date" class="date-input" id="endDate" value="{{ now.strftime('%Y-%m-%d') }}">
+        <button class="generate-btn" onclick="generateReport()">
+            <i class="fas fa-sync-alt"></i> Generate
+        </button>
+        <button class="export-btn" onclick="exportReport()">
+            <i class="fas fa-download"></i> Export CSV
+        </button>
+    </div>
+
+    <!-- Overview Section -->
+<div id="overview-section" class="report-section active">
+
+    <div class="summary-cards">
+
+        <!-- Total Students -->
+        <div class="summary-card">
+            <div class="summary-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Total Students</h3>
+                <div class="value">{{ total_students }}</div>
+                <div class="change positive">
+                    <i class="fas fa-arrow-up"></i> Active users
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Materials -->
+        <div class="summary-card">
+            <div class="summary-icon success">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Study Materials</h3>
+                <div class="value">{{ total_materials }}</div>
+                <div class="change positive">
+                    <i class="fas fa-arrow-up"></i> Total items
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Videos -->
+        <div class="summary-card">
+            <div class="summary-icon warning">
+                <i class="fas fa-video"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Video Lessons</h3>
+                <div class="value">{{ total_videos }}</div>
+                <div class="change positive">
+                    <i class="fas fa-arrow-up"></i> Total videos
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Views -->
+        <div class="summary-card">
+            <div class="summary-icon danger">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Total Views</h3>
+                <div class="value">{{ total_views }}</div>
+                <div class="change positive">
+                    <i class="fas fa-arrow-up"></i> All time
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Top Students Table -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3><i class="fas fa-trophy"></i> Top Performing Students</h3>
+            <span class="badge badge-info">All Time</span>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Grade</th>
+                        <th>XP</th>
+                        <th>Level</th>
+                        <th>Materials</th>
+                        <th>Videos</th>
+                        <th>Medals</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for student in top_students %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.grade }}</td>
+                        <td>{{ student.xp }}</td>
+                        <td>{{ student.level }}</td>
+                        <td>{{ student.total_materials|default(0) }}</td>
+                        <td>{{ student.total_videos|default(0) }}</td>
+                        <td>
+                            <span class="badge badge-success">
+                                {{ student.medals|length }} 🏅
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+  <!-- Materials Section -->
+<div id="materials-section" class="report-section">
+
+    <div class="summary-cards">
+
+        <!-- PDF Count -->
+        <div class="summary-card">
+            <div class="summary-icon primary">
+                <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="summary-info">
+                <h3>PDF Documents</h3>
+                <div class="value">{{ pdf_count }}</div>
+            </div>
+        </div>
+
+        <!-- Image Count -->
+        <div class="summary-card">
+            <div class="summary-icon success">
+                <i class="fas fa-image"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Images</h3>
+                <div class="value">{{ image_count }}</div>
+            </div>
+        </div>
+
+        <!-- Audio Count -->
+        <div class="summary-card">
+            <div class="summary-icon warning">
+                <i class="fas fa-headphones"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Audio Files</h3>
+                <div class="value">{{ audio_count }}</div>
+            </div>
+        </div>
+
+        <!-- Document Count -->
+        <div class="summary-card">
+            <div class="summary-icon danger">
+                <i class="fas fa-file-word"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Documents</h3>
+                <div class="value">{{ document_count }}</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Table -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3><i class="fas fa-chart-line"></i> Most Viewed Materials</h3>
+            <span class="badge badge-info">All Time</span>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Grade</th>
+                        <th>Language</th>
+                        <th>Type</th>
+                        <th>Views</th>
+                        <th>Downloads</th>
+                        <th>Favorites</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for material in top_materials %}
+                    <tr>
+                        <td>{{ material.title }}</td>
+                        <td>{{ material.subject|title }}</td>
+                        <td>{{ material.grade }}</td>
+                        <td>{{ material.language|title }}</td>
+                        <td>
+                            <span class="badge badge-info">
+                                {{ material.type|upper }}
+                            </span>
+                        </td>
+                        <td>{{ material.views }}</td>
+                        <td>{{ material.downloads }}</td>
+                        <td>{{ material.favorites|default(0) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+    <!-- Videos Section -->
+<div id="videos-section" class="report-section">
+
+    <div class="summary-cards">
+
+        <!-- Total Videos -->
+        <div class="summary-card">
+            <div class="summary-icon primary">
+                <i class="fas fa-video"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Total Videos</h3>
+                <div class="value">{{ total_videos }}</div>
+            </div>
+        </div>
+
+        <!-- Total Views -->
+        <div class="summary-card">
+            <div class="summary-icon success">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Total Views</h3>
+                <div class="value">{{ total_video_views }}</div>
+            </div>
+        </div>
+
+        <!-- Total Downloads -->
+        <div class="summary-card">
+            <div class="summary-icon warning">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Total Downloads</h3>
+                <div class="value">{{ total_video_downloads }}</div>
+            </div>
+        </div>
+
+        <!-- Watch Hours -->
+        <div class="summary-card">
+            <div class="summary-icon danger">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Watch Hours</h3>
+                <div class="value">
+                    {{ (total_video_views|default(0)) // 60 }}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Table -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3><i class="fas fa-chart-line"></i> Most Watched Videos</h3>
+            <span class="badge badge-info">All Time</span>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Grade</th>
+                        <th>Language</th>
+                        <th>Duration</th>
+                        <th>Views</th>
+                        <th>Downloads</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for video in top_videos %}
+                    <tr>
+                        <td>{{ video.title }}</td>
+                        <td>{{ video.subject|title }}</td>
+                        <td>{{ video.grade }}</td>
+                        <td>{{ video.language|title }}</td>
+                        <td>{{ video.duration|default(30) }} min</td>
+                        <td>{{ video.views }}</td>
+                        <td>{{ video.downloads }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+ <!-- Students Section -->
+<div id="students-section" class="report-section">
+
+    <div class="summary-cards">
+
+        <!-- Active Today -->
+        <div class="summary-card">
+            <div class="summary-icon primary">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Active Today</h3>
+                <div class="value">{{ active_today }}</div>
+            </div>
+        </div>
+
+        <!-- Average XP -->
+        <div class="summary-card">
+            <div class="summary-icon success">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Avg. XP</h3>
+                <div class="value">{{ avg_xp }}</div>
+            </div>
+        </div>
+
+        <!-- Total Medals -->
+        <div class="summary-card">
+            <div class="summary-icon warning">
+                <i class="fas fa-medal"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Total Medals</h3>
+                <div class="value">{{ total_medals }}</div>
+            </div>
+        </div>
+
+        <!-- Avg Streak -->
+        <div class="summary-card">
+            <div class="summary-icon danger">
+                <i class="fas fa-fire"></i>
+            </div>
+            <div class="summary-info">
+                <h3>Avg. Streak</h3>
+                <div class="value">{{ avg_streak }} days</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Student Table -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3><i class="fas fa-users"></i> Student Activity Summary</h3>
+            <span class="badge badge-info">Recent</span>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Grade</th>
+                        <th>Language</th>
+                        <th>XP</th>
+                        <th>Level</th>
+                        <th>Materials</th>
+                        <th>Videos</th>
+                        <th>Streak</th>
+                        <th>Last Active</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for student in recent_students %}
+                    <tr>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.grade }}</td>
+                        <td>{{ student.language|title }}</td>
+                        <td>{{ student.xp }}</td>
+                        <td>{{ student.level }}</td>
+                        <td>{{ student.total_materials|default(0) }}</td>
+                        <td>{{ student.total_videos|default(0) }}</td>
+
+                        <td>
+                            <span class="badge 
+                                {% if student.streak >= 30 %}badge-success
+                                {% elif student.streak >= 7 %}badge-warning
+                                {% else %}badge-info{% endif %}">
+                                {{ student.streak|default(0) }} days
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if student.last_login %}
+                                {% set days_ago = (now - student.last_login).days %}
+                                {% if days_ago == 0 %}
+                                    Today
+                                {% elif days_ago == 1 %}
+                                    Yesterday
+                                {% else %}
+                                    {{ days_ago }} days ago
+                                {% endif %}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script>
+    function switchReportTab(tab) {
+        document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        document.querySelectorAll('.report-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(tab + '-section').classList.add('active');
+    }
+
+    function generateReport() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+
+    function exportReport() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        
+        // Create CSV content
+        let csv = "Report Type,Value,Date\n";
+        csv += `Total Students,{{ total_students }},{{ now.strftime('%Y-%m-%d') }}\n`;
+        csv += `Total Materials,{{ total_materials }},{{ now.strftime('%Y-%m-%d') }}\n`;
+        csv += `Total Videos,{{ total_videos }},{{ now.strftime('%Y-%m-%d') }}\n`;
+        csv += `Total Views,{{ total_views }},{{ now.strftime('%Y-%m-%d') }}\n`;
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `report_{{ now.strftime('%Y%m%d_%H%M%S') }}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            alert('Report exported successfully!');
+        }, 1000);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,1221 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Dashboard - AI Tutor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .activity-dashboard {
+        padding: 1.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .activity-header {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        color: white;
+        padding: 1.8rem 2.5rem;
+        border-radius: 25px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .activity-header h1 {
+        font-size: 2rem;
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .date-badge {
+        background: rgba(255,255,255,0.15);
+        padding: 0.6rem 1.8rem;
+        border-radius: 50px;
+        font-size: 1rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* Stats Cards - Favorites and AI Chats Removed */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+        border: 1px solid #edf2f7;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.05);
+    }
+
+    .stat-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        color: white;
+    }
+
+    .stat-info h3 {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1a202c;
+        line-height: 1.2;
+    }
+
+    .stat-trend {
+        font-size: 0.75rem;
+        margin-top: 0.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .trend-up { color: #48bb78; }
+    .trend-down { color: #f56565; }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #edf2f7;
+    }
+
+    .filter-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a202c;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .filter-group label {
+        display: block;
+        font-size: 0.8rem;
+        color: #718096;
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+    }
+
+    .filter-select, .filter-input {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 0.6rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(102,126,234,0.4);
+    }
+
+    .btn-reset {
+        background: #f7fafc;
+        color: #4a5568;
+        border: 1px solid #e2e8f0;
+        padding: 0.6rem 1.5rem;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-reset:hover {
+        background: #edf2f7;
+    }
+
+    .btn-refresh {
+        background: #48bb78;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-refresh:hover {
+        background: #38a169;
+        transform: translateY(-2px);
+    }
+
+    /* Activity Table */
+    .activity-table-container {
+        background: white;
+        border-radius: 20px;
+        overflow-x: auto;
+        border: 1px solid #edf2f7;
+        margin-bottom: 2rem;
+    }
+
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .activity-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #4a5568;
+        border-bottom: 2px solid #e2e8f0;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .activity-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #edf2f7;
+        vertical-align: middle;
+    }
+
+    .activity-table tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Activity Type Badges - Favorites and AI Chats Removed */
+    .activity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        width: fit-content;
+    }
+
+    .badge-view { background: #4299e120; color: #2c5282; }
+    .badge-download { background: #ed893620; color: #c05621; }
+    .badge-watch { background: #f5656520; color: #c53030; }
+    .badge-contact { background: #9f7aea20; color: #6b46c1; }
+    .badge-login { background: #667eea20; color: #4c51bf; }
+    .badge-register { background: #38a16920; color: #276749; }
+    .badge-upload { background: #4299e120; color: #2c5282; }
+    .badge-reply { background: #9f7aea20; color: #6b46c1; }
+    .badge-email_campaign { background: #ed893620; color: #c05621; }
+
+    /* User Avatar */
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+    /* XP Badge */
+    .xp-badge {
+        background: #fef5e7;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #ed8936;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        width: fit-content;
+    }
+
+    /* Student Activity Section */
+    .student-activity-section {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #edf2f7;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .student-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    .student-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .student-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        border-color: #667eea;
+    }
+
+    .student-info {
+        flex: 1;
+    }
+
+    .student-name {
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 0.3rem;
+        font-size: 1rem;
+    }
+
+    .student-email {
+        font-size: 0.7rem;
+        color: #718096;
+    }
+
+    .student-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .student-stats span {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: #4a5568;
+    }
+
+    .activity-count {
+        background: #667eea;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #e2e8f0;
+        background: white;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .page-btn:hover {
+        background: #f7fafc;
+        border-color: #667eea;
+    }
+
+    .page-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: transparent;
+    }
+
+    .page-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        color: #a0aec0;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #cbd5e0;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Notification */
+    .notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        z-index: 1001;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .notification.success { border-left: 4px solid #48bb78; }
+    .notification.error { border-left: 4px solid #f56565; }
+    .notification.info { border-left: 4px solid #667eea; }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .activity-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .filter-controls {
+            flex-direction: column;
+        }
+
+        .filter-group {
+            width: 100%;
+        }
+
+        .activity-table th, .activity-table td {
+            padding: 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .activity-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+        }
+
+        .student-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .student-stats {
+            justify-content: center;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card, .activity-table-container, .student-activity-section {
+        animation: fadeInUp 0.5s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="activity-dashboard">
+    <!-- Header -->
+    <div class="activity-header">
+        <div>
+            <h1>
+                <i class="fas fa-chart-line"></i>
+                Student Activity Dashboard
+            </h1>
+            <p style="margin: 0.7rem 0 0; opacity: 0.9;">
+                <i class="fas fa-database"></i> Real-time activity data from MongoDB
+            </p>
+        </div>
+        <div class="date-badge">
+            <i class="far fa-calendar-alt"></i>
+            {{ now.strftime('%B %d, %Y') }}
+        </div>
+    </div>
+
+    <!-- Stats Cards - Favorites and AI Chats Removed -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Activities</h3>
+                <div class="stat-number" id="totalActivities">{{ activity_stats.total_activities|default(0) }}</div>
+                <div class="stat-trend" id="activityTrend">
+                    <i class="fas fa-chart-line"></i> Last 7 days
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #48bb78, #38a169);">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Views</h3>
+                <div class="stat-number">{{ activity_stats.by_type.view|default(0) }}</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #ed8936, #dd6b20);">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Downloads</h3>
+                <div class="stat-number">{{ activity_stats.by_type.download|default(0) }}</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f56565, #e53e3e);">
+                <i class="fas fa-play"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Video Watches</h3>
+                <div class="stat-number">{{ activity_stats.by_type.watch|default(0) }}</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Logins</h3>
+                <div class="stat-number">{{ activity_stats.by_type.login|default(0) }}</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #38a169, #276749);">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Registrations</h3>
+                <div class="stat-number">{{ activity_stats.by_type.register|default(0) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Activity Chart Section -->
+    <div class="student-activity-section">
+        <div class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            Daily Activity (Last 7 Days)
+        </div>
+        <canvas id="dailyActivityChart" style="max-height: 300px; width: 100%;"></canvas>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-title">
+            <i class="fas fa-filter"></i> Filter Activities
+        </div>
+        <div class="filter-controls">
+            <div class="filter-group">
+                <label>Activity Type</label>
+                <select id="filterType" class="filter-select">
+                    <option value="">All Types</option>
+                    <option value="view">Views</option>
+                    <option value="download">Downloads</option>
+                    <option value="watch">Video Watches</option>
+                    <option value="contact">Contact Messages</option>
+                    <option value="login">Logins</option>
+                    <option value="register">Registrations</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Date Range</label>
+                <select id="filterDate" class="filter-select">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">Last 7 Days</option>
+                    <option value="month">Last 30 Days</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Search Student</label>
+                <input type="text" id="filterSearch" class="filter-input" placeholder="Student name or email...">
+            </div>
+
+            <button class="btn-filter" onclick="applyFilters()">
+                <i class="fas fa-search"></i> Apply Filters
+            </button>
+            <button class="btn-reset" onclick="resetFilters()">
+                <i class="fas fa-undo-alt"></i> Reset
+            </button>
+            <button class="btn-refresh" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Export Options -->
+    <div style="margin-bottom: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button onclick="exportToCSV()" class="btn-reset" style="padding: 0.5rem 1rem;">
+            <i class="fas fa-download"></i> Export to CSV
+        </button>
+        <button onclick="window.print()" class="btn-reset" style="padding: 0.5rem 1rem;">
+            <i class="fas fa-print"></i> Print
+        </button>
+    </div>
+
+    <!-- Activity Table -->
+    <div class="activity-table-container">
+        <table class="activity-table" id="activityTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Student</th>
+                    <th>Activity Type</th>
+                    <th>Item/Content</th>
+                    <th>Details</th>
+                    <th>XP Earned</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="activityTableBody">
+                {% if recent_activities and recent_activities|length > 0 %}
+                    {% for activity in recent_activities %}
+                    <tr data-activity-id="{{ activity._id }}" data-type="{{ activity.activity_type }}" data-student="{{ activity.user_name|lower }}">
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div class="user-avatar">
+                                    {{ activity.user_name[0]|upper if activity.user_name else '?' }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #1a202c;">{{ activity.user_name }}</div>
+                                    <div style="font-size: 0.7rem; color: #718096;">{{ activity.user_email|default('No email') }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="activity-badge badge-{{ activity.activity_type }}">
+                                <i class="fas fa-{% if activity.activity_type == 'view' %}eye{% elif activity.activity_type == 'download' %}download{% elif activity.activity_type == 'watch' %}play{% elif activity.activity_type == 'contact' %}envelope{% elif activity.activity_type == 'login' %}sign-in-alt{% elif activity.activity_type == 'register' %}user-plus{% elif activity.activity_type == 'upload' %}upload{% elif activity.activity_type == 'reply' %}reply{% else %}bell{% endif %}"></i>
+                                {{ activity.activity_type|replace('_', ' ')|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">{{ activity.item_title|default('N/A') }}</div>
+                            {% if activity.item_id %}
+                            <div style="font-size: 0.7rem; color: #718096;">ID: {{ activity.item_id[:8] }}...</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if activity.details %}
+                            <div style="font-size: 0.8rem; color: #4a5568;">{{ activity.details|truncate(50) }}</div>
+                            {% else %}
+                            <span style="color: #a0aec0;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="xp-badge">
+                                <i class="fas fa-star"></i> +{{ activity.xp_earned|default(0) }} XP
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem;">
+                                <i class="far fa-clock"></i> {{ activity.time_ago|default('Just now') }}
+                            </div>
+                            <div style="font-size: 0.7rem; color: #718096;">
+                                {{ activity.activity_at.strftime('%Y-%m-%d %H:%M') if activity.activity_at else 'N/A' }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-line"></i>
+                                <h3>No Activity Data Found</h3>
+                                <p>Student activities will appear here as they interact with the platform</p>
+                                <button onclick="refreshData()" class="btn-reset" style="margin-top: 1rem;">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Most Active Students Section -->
+    <div class="student-activity-section">
+        <div class="section-title">
+            <i class="fas fa-trophy"></i>
+            Most Active Students (Last 7 Days)
+        </div>
+        <div class="student-grid" id="mostActiveStudents">
+            {% if activity_stats.most_active_users and activity_stats.most_active_users|length > 0 %}
+                {% for student in activity_stats.most_active_users[:8] %}
+                <div class="student-card">
+                    <div class="user-avatar" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                        {{ student.user_name[0]|upper if student.user_name else '?' }}
+                    </div>
+                    <div class="student-info">
+                        <div class="student-name">{{ student.user_name }}</div>
+                        <div class="student-email">{{ student.user_email|default('No email') }}</div>
+                        <div class="student-stats">
+                            <span><i class="fas fa-chart-line"></i> {{ student.activity_count }} activities</span>
+                            <span><i class="fas fa-star"></i> +{{ student.xp_total }} XP</span>
+                            <span><i class="far fa-clock"></i> {{ student.last_activity_ago|default('Recently') }}</span>
+                        </div>
+                    </div>
+                    <div class="activity-count">{{ student.activity_count }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #a0aec0;">
+                    <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>No activity data available yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination">
+        <button class="page-btn" onclick="changePage(1)" id="firstPageBtn">
+            <i class="fas fa-angle-double-left"></i>
+        </button>
+        <button class="page-btn" onclick="changePage(currentPage - 1)" id="prevPageBtn">
+            <i class="fas fa-angle-left"></i>
+        </button>
+        <span id="pageInfo" style="padding: 0.5rem;">Page 1 of 1</span>
+        <button class="page-btn" onclick="changePage(currentPage + 1)" id="nextPageBtn">
+            <i class="fas fa-angle-right"></i>
+        </button>
+        <button class="page-btn" onclick="changePage(totalPages)" id="lastPageBtn">
+            <i class="fas fa-angle-double-right"></i>
+        </button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentFilters = {
+        type: '',
+        date: '',
+        search: ''
+    };
+    let activityChart = null;
+
+    // Initialize chart
+    function initChart() {
+        const ctx = document.getElementById('dailyActivityChart').getContext('2d');
+        const dailyData = {{ activity_stats.daily_counts|tojson|safe }};
+        
+        const labels = dailyData.map(d => d.date);
+        const counts = dailyData.map(d => d.count);
+        
+        activityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Activities',
+                    data: counts,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.y} activities`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Apply filters
+    async function applyFilters() {
+        const type = document.getElementById('filterType').value;
+        const date = document.getElementById('filterDate').value;
+        const search = document.getElementById('filterSearch').value;
+        
+        currentFilters = { type, date, search };
+        currentPage = 1;
+        
+        await loadActivities();
+    }
+
+    // Reset filters
+    function resetFilters() {
+        document.getElementById('filterType').value = '';
+        document.getElementById('filterDate').value = '';
+        document.getElementById('filterSearch').value = '';
+        currentFilters = { type: '', date: '', search: '' };
+        currentPage = 1;
+        loadActivities();
+    }
+
+    // Change page
+    function changePage(page) {
+        if (page < 1 || page > totalPages || page === currentPage) return;
+        currentPage = page;
+        loadActivities();
+    }
+
+    // Load activities via API
+    async function loadActivities() {
+        showLoading();
+        
+        try {
+            let params = new URLSearchParams();
+            if (currentFilters.type) params.append('type', currentFilters.type);
+            if (currentFilters.date) params.append('date', currentFilters.date);
+            if (currentFilters.search) params.append('search', currentFilters.search);
+            params.append('page', currentPage);
+            params.append('limit', 20);
+            
+            const response = await fetch(`/api/admin/activities?${params.toString()}`);
+            const data = await response.json();
+            
+            if (data.activities) {
+                updateTable(data.activities, currentPage);
+                updatePagination(data.page, data.total_pages);
+                totalPages = data.total_pages;
+            }
+            
+            if (data.stats) {
+                updateStats(data.stats);
+            }
+            
+        } catch (error) {
+            console.error('Error loading activities:', error);
+            showNotification('Error loading activities', 'error');
+        }
+        
+        hideLoading();
+    }
+
+    // Update table with activities
+    function updateTable(activities, page) {
+        const tbody = document.getElementById('activityTableBody');
+        if (!tbody) return;
+        
+        if (!activities || activities.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>No Activity Data Found</h3>
+                            <p>Try changing your filters</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        let html = '';
+        activities.forEach((activity, index) => {
+            const iconMap = {
+                'view': 'eye', 'download': 'download', 'watch': 'play',
+                'contact': 'envelope', 'login': 'sign-in-alt', 
+                'register': 'user-plus', 'upload': 'upload',
+                'reply': 'reply', 'email_campaign': 'envelope-open'
+            };
+            const icon = iconMap[activity.activity_type] || 'bell';
+            
+            html += `
+                <tr data-activity-id="${activity._id}">
+                    <td>${((page - 1) * 20) + index + 1}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div class="user-avatar">${activity.user_name ? activity.user_name[0].toUpperCase() : '?'}</div>
+                            <div>
+                                <div style="font-weight: 600; color: #1a202c;">${escapeHtml(activity.user_name)}</div>
+                                <div style="font-size: 0.7rem; color: #718096;">${escapeHtml(activity.user_email || 'No email')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="activity-badge badge-${activity.activity_type}">
+                            <i class="fas fa-${icon}"></i>
+                            ${escapeHtml(activity.activity_type.replace('_', ' ').charAt(0).toUpperCase() + activity.activity_type.replace('_', ' ').slice(1))}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">${escapeHtml(activity.item_title || 'N/A')}</div>
+                        ${activity.item_id ? `<div style="font-size: 0.7rem; color: #718096;">ID: ${activity.item_id.substring(0, 8)}...</div>` : ''}
+                    </td>
+                    <td>
+                        ${activity.details ? `<div style="font-size: 0.8rem; color: #4a5568;">${escapeHtml(activity.details.substring(0, 50))}</div>` : '<span style="color: #a0aec0;">-</span>'}
+                    </td>
+                    <td>
+                        <span class="xp-badge">
+                            <i class="fas fa-star"></i> +${activity.xp_earned || 0} XP
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem;">
+                            <i class="far fa-clock"></i> ${activity.time_ago || 'Just now'}
+                        </div>
+                        <div style="font-size: 0.7rem; color: #718096;">
+                            ${activity.activity_at ? new Date(activity.activity_at).toLocaleString() : 'N/A'}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tbody.innerHTML = html;
+    }
+
+    // Update pagination
+    function updatePagination(page, total) {
+        const pageInfo = document.getElementById('pageInfo');
+        if (pageInfo) {
+            pageInfo.textContent = `Page ${page} of ${total}`;
+        }
+        
+        const firstBtn = document.getElementById('firstPageBtn');
+        const prevBtn = document.getElementById('prevPageBtn');
+        const nextBtn = document.getElementById('nextPageBtn');
+        const lastBtn = document.getElementById('lastPageBtn');
+        
+        if (firstBtn) firstBtn.disabled = page === 1;
+        if (prevBtn) prevBtn.disabled = page === 1;
+        if (nextBtn) nextBtn.disabled = page === total;
+        if (lastBtn) lastBtn.disabled = page === total;
+    }
+
+    // Update stats
+    function updateStats(stats) {
+        if (stats.view !== undefined) {
+            // Stats are already displayed from server-side data
+        }
+    }
+
+    // Export to CSV
+    function exportToCSV() {
+        const table = document.getElementById('activityTable');
+        const rows = table.querySelectorAll('tr');
+        let csv = [];
+        
+        // Get headers
+        const headers = [];
+        table.querySelectorAll('th').forEach(th => {
+            headers.push(th.innerText);
+        });
+        csv.push(headers.join(','));
+        
+        // Get data
+        rows.forEach(row => {
+            const rowData = [];
+            row.querySelectorAll('td').forEach(cell => {
+                let text = cell.innerText.replace(/,/g, ';').replace(/\n/g, ' ');
+                rowData.push(`"${text}"`);
+            });
+            if (rowData.length > 0) csv.push(rowData.join(','));
+        });
+        
+        // Download
+        const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `activity_log_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        showNotification('Export started', 'success');
+    }
+
+    // Refresh data
+    async function refreshData() {
+        showLoading();
+        try {
+            const response = await fetch('/api/admin/activity-feed?limit=50');
+            const data = await response.json();
+            
+            if (data.activities) {
+                updateTable(data.activities, 1);
+                showNotification('Data refreshed successfully', 'success');
+            }
+            
+            // Also refresh stats
+            const statsResponse = await fetch('/api/admin/activity-stats');
+            const statsData = await statsResponse.json();
+            
+            // Update total activities
+            const totalElem = document.getElementById('totalActivities');
+            if (totalElem && statsData.total_activities) {
+                totalElem.textContent = statsData.total_activities;
+            }
+            
+            // Update chart if needed
+            if (statsData.daily_counts && activityChart) {
+                const labels = statsData.daily_counts.map(d => d.date);
+                const counts = statsData.daily_counts.map(d => d.count);
+                activityChart.data.labels = labels;
+                activityChart.data.datasets[0].data = counts;
+                activityChart.update();
+            }
+            
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+            showNotification('Error refreshing data', 'error');
+        }
+        hideLoading();
+    }
+
+    // Helper functions
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showLoading() {
+        let loading = document.getElementById('loadingOverlay');
+        if (!loading) {
+            loading = document.createElement('div');
+            loading.id = 'loadingOverlay';
+            loading.className = 'loading-overlay';
+            loading.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(loading);
+        }
+        loading.style.display = 'flex';
+    }
+
+    function hideLoading() {
+        const loading = document.getElementById('loadingOverlay');
+        if (loading) loading.style.display = 'none';
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+
+    // Auto-refresh every 30 seconds
+    let refreshInterval;
+    
+    function startAutoRefresh() {
+        refreshInterval = setInterval(() => {
+            if (!document.hidden) {
+                refreshData();
+            }
+        }, 30000);
+    }
+    
+    function stopAutoRefresh() {
+        if (refreshInterval) clearInterval(refreshInterval);
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Admin activity dashboard loaded');
+        initChart();
+        startAutoRefresh();
+        
+        // Add animation for slideOut
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        stopAutoRefresh();
+    });
+</script>
+{% endblock %}

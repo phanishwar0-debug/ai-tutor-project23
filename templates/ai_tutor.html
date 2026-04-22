@@ -1,0 +1,911 @@
+{% extends "base.html" %}
+
+{% block title %}AI Tutor Assistant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ai-tutor-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+        min-height: 80vh;
+    }
+    
+    .chat-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 75vh;
+        position: relative;
+    }
+    
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .chat-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+        background-size: cover;
+    }
+    
+    .ai-profile {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 1;
+    }
+    
+    .ai-avatar {
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #667eea;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .ai-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #48bb78;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .message {
+        max-width: 80%;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .user-message {
+        align-self: flex-end;
+    }
+    
+    .ai-message {
+        align-self: flex-start;
+    }
+    
+    .message-bubble {
+        padding: 1.25rem 1.5rem;
+        border-radius: 20px;
+        position: relative;
+        word-wrap: break-word;
+        line-height: 1.6;
+    }
+    
+    .user-bubble {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-bottom-right-radius: 5px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .ai-bubble {
+        background: white;
+        color: #2d3748;
+        border-bottom-left-radius: 5px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #667eea;
+    }
+    
+    .message-sender {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .message-time {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-top: 0.5rem;
+        text-align: right;
+    }
+    
+    .chat-input-container {
+        padding: 1.5rem;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        position: relative;
+    }
+    
+    .input-wrapper {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+    
+    #userInput {
+        flex: 1;
+        padding: 1.25rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 15px;
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        resize: none;
+        min-height: 60px;
+        max-height: 120px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    #userInput:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .send-btn {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    .send-btn:hover {
+        transform: translateY(-2px) rotate(5deg);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .typing-indicator {
+        display: none;
+        padding: 1rem 2rem;
+        color: #718096;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .typing-dots {
+        display: flex;
+        gap: 4px;
+    }
+    
+    .typing-dots span {
+        width: 8px;
+        height: 8px;
+        background: #667eea;
+        border-radius: 50%;
+        animation: typingBounce 1.4s infinite;
+    }
+    
+    .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .sidebar-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .sidebar-card h3 {
+        margin-bottom: 1rem;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .subject-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .subject-btn {
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .subject-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+    
+    .subject-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .quick-questions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .quick-question {
+        padding: 1rem;
+        background: #f0f7ff;
+        border: none;
+        border-radius: 10px;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        color: #4a5568;
+    }
+    
+    .quick-question:hover {
+        background: #667eea;
+        color: white;
+        transform: translateX(5px);
+    }
+    
+    .learning-tips {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+    }
+    
+    .learning-tips h3 {
+        color: white;
+    }
+    
+    .tip-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .tip-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .tip-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .ai-thinking {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        border-radius: 20px;
+    }
+    
+    .thinking-content {
+        text-align: center;
+    }
+    
+    .thinking-dots {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #667eea;
+    }
+    
+    .message-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .ai-message:hover .message-actions {
+        opacity: 1;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        background: #f8f9fa;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: #718096;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    @keyframes typingBounce {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+        30% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    .welcome-message {
+        text-align: center;
+        padding: 2rem;
+        color: #718096;
+    }
+    
+    .welcome-message i {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-tutor-container">
+    <!-- Main Chat Container -->
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="ai-profile">
+                <div class="ai-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; color: white;">AI Tutor Assistant</h3>
+                    <div class="ai-status">
+                        <span class="status-dot"></span>
+                        <span>Online & Ready to Help</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="z-index: 1; color: rgba(255, 255, 255, 0.9);">
+                <small>+10 XP per question</small>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            {% if not chat_history %}
+            <div class="welcome-message">
+                <i class="fas fa-robot"></i>
+                <h3>Hello! I'm your AI Tutor 👋</h3>
+                <p>I can help you with Mathematics, Science, English, and more!</p>
+                <p>Ask me anything, or try one of the quick questions on the right.</p>
+            </div>
+            {% else %}
+                {% for chat in chat_history %}
+                {% if chat.response %}
+                <div class="message ai-message">
+                    <div class="message-sender">
+                        <i class="fas fa-robot"></i> AI Tutor
+                    </div>
+                    <div class="message-bubble ai-bubble">
+                        {{ chat.response }}
+                        <div class="message-actions">
+                            <button class="action-btn" onclick="copyToClipboard('{{ chat.response|replace("\n", "\\n")|replace("'", "\\'") }}')" title="Copy">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="action-btn" onclick="readAloud('{{ chat.response|replace("\n", " ") }}')" title="Read aloud">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
+                        <div class="message-time">
+                            {{ chat.timestamp.strftime('%I:%M %p') }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if chat.question %}
+                <div class="message user-message">
+                    <div class="message-sender" style="justify-content: flex-end;">
+                        <i class="fas fa-user"></i> You
+                    </div>
+                    <div class="message-bubble user-bubble">
+                        {{ chat.question }}
+                        <div class="message-time">
+                            {{ chat.timestamp.strftime('%I:%M %p') }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            AI Tutor is thinking...
+        </div>
+        
+        <div class="ai-thinking" id="aiThinking">
+            <div class="thinking-content">
+                <div class="thinking-dots">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>Analyzing your question...</h3>
+                <p>Finding the best way to explain this concept</p>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="input-wrapper">
+                <textarea id="userInput" placeholder="Ask me anything about your subjects... (Shift+Enter for new line)" 
+                          onkeydown="handleKeydown(event)" oninput="autoResize(this)"></textarea>
+                <button class="send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.75rem;">
+                <small style="color: #718096;">
+                    Press Enter to send • Shift+Enter for new line
+                </small>
+                <small style="color: #667eeaa;">
+                    <i class="fas fa-star"></i> +10 XP per question
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-card">
+            <h3><i class="fas fa-book"></i> Select Subject</h3>
+            <div class="subject-buttons">
+                <button class="subject-btn active" onclick="setSubject('general')">
+                    <i class="fas fa-globe"></i> General
+                </button>
+                <button class="subject-btn" onclick="setSubject('mathematics')">
+                    <i class="fas fa-calculator"></i> Mathematics
+                </button>
+                <button class="subject-btn" onclick="setSubject('science')">
+                    <i class="fas fa-flask"></i> Science
+                </button>
+                <button class="subject-btn" onclick="setSubject('english')">
+                    <i class="fas fa-book"></i> English
+                </button>
+                <button class="subject-btn" onclick="setSubject('computer')">
+                    <i class="fas fa-laptop"></i> Computer
+                </button>
+                <button class="subject-btn" onclick="setSubject('social')">
+                    <i class="fas fa-globe-asia"></i> Social
+                </button>
+            </div>
+        </div>
+        
+        <div class="sidebar-card">
+            <h3><i class="fas fa-bolt"></i> Quick Questions</h3>
+            <div class="quick-questions">
+                <button class="quick-question" onclick="askQuickQuestion('Explain Pythagoras theorem with an example')">
+                    Explain Pythagoras theorem with an example
+                </button>
+                <button class="quick-question" onclick="askQuickQuestion('What is photosynthesis?')">
+                    What is photosynthesis?
+                </button>
+                <button class="quick-question" onclick="askQuickQuestion('Help me solve: 2x + 5 = 15')">
+                    Help me solve: 2x + 5 = 15
+                </button>
+                <button class="quick-question" onclick="askQuickQuestion('What are the parts of speech in English?')">
+                    What are the parts of speech in English?
+                </button>
+                <button class="quick-question" onclick="askQuickQuestion('Explain the water cycle')">
+                    Explain the water cycle
+                </button>
+            </div>
+        </div>
+        
+        <div class="sidebar-card learning-tips">
+            <h3><i class="fas fa-lightbulb"></i> Learning Tips</h3>
+            <div class="tip-item">
+                <div class="tip-icon">
+                    <i class="fas fa-question"></i>
+                </div>
+                <div>
+                    <strong>Ask specific questions</strong>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">Get better answers by being specific</p>
+                </div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">
+                    <i class="fas fa-redo"></i>
+                </div>
+                <div>
+                    <strong>Ask for examples</strong>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">Real-life examples help understanding</p>
+                </div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <div>
+                    <strong>Request practice problems</strong>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">Practice makes perfect</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-card">
+            <h3><i class="fas fa-chart-line"></i> Your Stats</h3>
+            <div style="text-align: center;">
+                <div style="font-size: 2.5rem; color: #667eea; font-weight: 700;">
+                    {{ current_user.xp|default(0) }}
+                </div>
+                <div style="color: #718096; margin-bottom: 1rem;">Total XP Earned</div>
+                
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Questions Asked:</span>
+                        <strong>{{ chat_history|length }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Topics Covered:</span>
+                        <strong>{{ (chat_history|map(attribute='subject')|unique|list)|length }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentSubject = 'general';
+    let currentMessageId = 1;
+    
+    function setSubject(subject) {
+        currentSubject = subject;
+        
+        // Update active button
+        document.querySelectorAll('.subject-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Update input placeholder
+        const input = document.getElementById('userInput');
+        input.placeholder = `Ask me anything about ${subject}... (Shift+Enter for new line)`;
+        
+        // Show notification
+        showNotification(`Subject changed to: ${subject.charAt(0).toUpperCase() + subject.slice(1)}`);
+    }
+    
+    function askQuickQuestion(question) {
+        document.getElementById('userInput').value = question;
+        sendMessage();
+    }
+    
+    function handleKeydown(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+    
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+    
+    function sendMessage() {
+        const input = document.getElementById('userInput');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        // Add user message to chat
+        addMessageToChat(message, 'user');
+        input.value = '';
+        input.style.height = 'auto';
+        
+        // Show typing indicator
+        showTypingIndicator();
+        
+        // Send to server
+        fetch('/ai-tutor', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                question: message,
+                subject: currentSubject,
+                message_id: currentMessageId++
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide typing indicator
+            hideTypingIndicator();
+            
+            // Add AI response to chat
+            addMessageToChat(data.response, 'ai');
+            
+            // Scroll to bottom
+            scrollToBottom();
+            
+            // Show XP earned notification
+            showNotification('+10 XP earned for asking a question!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            hideTypingIndicator();
+            addMessageToChat('Sorry, I encountered an error. Please try again.', 'ai');
+            showNotification('Error connecting to AI tutor. Please try again.', 'error');
+        });
+    }
+    
+    function addMessageToChat(message, sender) {
+        const chatMessages = document.getElementById('chatMessages');
+        
+        // Remove welcome message if it exists
+        const welcomeMessage = chatMessages.querySelector('.welcome-message');
+        if (welcomeMessage) {
+            welcomeMessage.remove();
+        }
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        if (sender === 'user') {
+            messageDiv.innerHTML = `
+                <div class="message-sender" style="justify-content: flex-end;">
+                    <i class="fas fa-user"></i> You
+                </div>
+                <div class="message-bubble user-bubble">
+                    ${escapeHtml(message)}
+                    <div class="message-time">${timeString}</div>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="message-sender">
+                    <i class="fas fa-robot"></i> AI Tutor
+                </div>
+                <div class="message-bubble ai-bubble">
+                    ${formatAIResponse(message)}
+                    <div class="message-actions">
+                        <button class="action-btn" onclick="copyToClipboard('${escapeHtml(message).replace(/\n/g, '\\n').replace(/'/g, "\\'")}')" title="Copy">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="action-btn" onclick="readAloud('${escapeHtml(message).replace(/\n/g, ' ')}')" title="Read aloud">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                    <div class="message-time">${timeString}</div>
+                </div>
+            `;
+        }
+        
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+    
+    function formatAIResponse(text) {
+        // Format the AI response with better styling
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+            .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+            .replace(/^### (.*$)/gm, '<h4>$1</h4>') // Headers
+            .replace(/^## (.*$)/gm, '<h3>$1</h3>')
+            .replace(/^# (.*$)/gm, '<h2>$1</h2>')
+            .replace(/\n\n/g, '</p><p>') // Paragraphs
+            .replace(/\n/g, '<br>')
+            .replace(/^- (.*$)/gm, '• $1<br>') // List items
+            .replace(/^\d+\. (.*$)/gm, '$1. $2<br>'); // Numbered lists
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function showTypingIndicator() {
+        const typingIndicator = document.getElementById('typingIndicator');
+        const aiThinking = document.getElementById('aiThinking');
+        
+        typingIndicator.style.display = 'flex';
+        aiThinking.style.display = 'flex';
+        
+        // Add some random "thinking" messages
+        const thinkingMessages = [
+            "Analyzing your question...",
+            "Searching for the best explanation...",
+            "Preparing step-by-step solution...",
+            "Finding relevant examples..."
+        ];
+        
+        let messageIndex = 0;
+        const messageInterval = setInterval(() => {
+            typingIndicator.innerHTML = `
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                ${thinkingMessages[messageIndex]}
+            `;
+            messageIndex = (messageIndex + 1) % thinkingMessages.length;
+        }, 2000);
+        
+        // Store interval ID for clearing later
+        typingIndicator._interval = messageInterval;
+    }
+    
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typingIndicator');
+        const aiThinking = document.getElementById('aiThinking');
+        
+        typingIndicator.style.display = 'none';
+        aiThinking.style.display = 'none';
+        
+        // Clear the message interval if it exists
+        if (typingIndicator._interval) {
+            clearInterval(typingIndicator._interval);
+        }
+    }
+    
+    function scrollToBottom() {
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                showNotification('Copied to clipboard!', 'success');
+            })
+            .catch(err => {
+                console.error('Failed to copy: ', err);
+                showNotification('Failed to copy to clipboard', 'error');
+            });
+    }
+    
+    function readAloud(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            // Try to find a good voice
+            const voices = speechSynthesis.getVoices();
+            const preferredVoices = voices.filter(v => v.lang.includes('en'));
+            if (preferredVoices.length > 0) {
+                utterance.voice = preferredVoices[0];
+            }
+            
+            speechSynthesis.speak(utterance);
+            showNotification('Reading aloud...', 'info');
+        } else {
+            showNotification('Text-to-speech not supported in your browser', 'error');
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `flash-message ${type} animate-pop`;
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '1000';
+        notification.style.maxWidth = '300px';
+        notification.innerHTML = `
+            ${message}
+            <button class="close-flash" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+    
+    // Initialize text-to-speech voices
+    if ('speechSynthesis' in window) {
+        speechSynthesis.getVoices(); // This loads the voices
+    }
+    
+    // Auto-scroll to bottom on load
+    window.onload = scrollToBottom;
+    
+    // Add sample questions button functionality
+    document.querySelectorAll('.quick-question').forEach(button => {
+        button.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 200);
+        });
+    });
+</script>
+{% endblock %}

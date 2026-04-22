@@ -1,0 +1,2231 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Content Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-content {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .content-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 1rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-info h3 {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-info p {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .content-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        background: white;
+        padding: 1rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-tab {
+        padding: 1rem 2rem;
+        background: #f8f9fa;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .content-tab.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .content-panel {
+        display: none;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .content-panel.active {
+        display: block;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    /* ===== LANGUAGE SELECTOR WITH ALL INDIAN LANGUAGES ===== */
+    .language-selector {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 15px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .lang-btn {
+        padding: 0.6rem 1.2rem;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .lang-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        border-color: #667eea;
+    }
+
+    .lang-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .lang-btn i {
+        font-size: 1rem;
+    }
+
+    /* Grade Selector */
+    .grade-selector {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .grade-btn {
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .grade-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .grade-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    /* ===== STUDY MATERIAL UPLOAD SECTION ===== */
+    .study-material-box {
+        background: linear-gradient(135deg, #f0f9ff, #e6f0fa);
+        border: 4px solid #667eea;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    .study-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        color: #2d3748;
+    }
+
+    .study-header i {
+        font-size: 2.5rem;
+        color: #667eea;
+    }
+
+    .study-header h3 {
+        font-size: 1.5rem;
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .study-badge {
+        background: #667eea;
+        color: white;
+        padding: 0.25rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        margin-left: 1rem;
+    }
+
+    .upload-type-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .upload-type-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 3px solid #e2e8f0;
+    }
+
+    .upload-type-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+        border-color: #667eea;
+    }
+
+    .upload-type-card.selected {
+        border-color: #667eea;
+        background: #f0f9ff;
+    }
+
+    .upload-type-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 2rem;
+    }
+
+    .upload-type-title {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-type-desc {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+
+    .upload-area {
+        border: 3px dashed #667eea;
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+        background: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+    .upload-area:hover {
+        background: #e2e8f0;
+        border-color: #764ba2;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .file-info {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 1rem;
+        border: 2px solid #e2e8f0;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .save-btn {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+    }
+
+    .btn-outline {
+        background: white;
+        border: 2px solid #667eea;
+        color: #667eea;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    /* ===== STUDY MATERIAL CARDS ===== */
+    .material-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .material-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+        position: relative;
+    }
+
+    .material-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .material-type-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 2;
+    }
+
+    .material-preview {
+        height: 180px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .material-preview::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .material-preview i {
+        position: relative;
+        z-index: 2;
+        font-size: 4rem;
+        filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+    }
+
+    .material-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .material-info {
+        padding: 1.5rem;
+    }
+
+    .material-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .material-meta {
+        display: flex;
+        gap: 1rem;
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .material-meta span {
+        background: #f8f9fa;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .material-description {
+        color: #4a5568;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .material-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .stat-item {
+        flex: 1;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-weight: 700;
+        color: #2d3748;
+        font-size: 1.1rem;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #718096;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 1rem;
+    }
+
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .btn-icon:hover {
+        transform: scale(1.1);
+    }
+
+    .btn-view { background: #667eea; color: white; }
+    .btn-download { background: #48bb78; color: white; }
+    .btn-edit { background: #ed8936; color: white; }
+    .btn-delete { background: #f56565; color: white; }
+    .btn-share { background: #9f7aea; color: white; }
+
+    /* Video Panel */
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .video-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .video-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .video-preview {
+        height: 200px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        position: relative;
+    }
+
+    .video-preview video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .video-info {
+        padding: 1.5rem;
+    }
+
+    .video-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+
+    .video-meta {
+        display: flex;
+        gap: 1rem;
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .language-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #667eea;
+        color: white;
+        border-radius: 50px;
+        font-size: 0.85rem;
+    }
+
+    .grade-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #ed8936;
+        color: white;
+        border-radius: 50px;
+        font-size: 0.85rem;
+    }
+
+    .subject-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #48bb78;
+        color: white;
+        border-radius: 50px;
+        font-size: 0.85rem;
+    }
+
+    /* Preview Modal */
+    .preview-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+
+    .preview-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 2rem;
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .preview-body {
+        min-height: 400px;
+    }
+
+    .pdf-preview {
+        width: 100%;
+        height: 600px;
+        border: none;
+    }
+
+    .video-preview video {
+        width: 100%;
+        max-height: 500px;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+        max-height: 500px;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .document-preview {
+        padding: 2rem;
+        text-align: center;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    /* Edit Modal */
+    .edit-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1001;
+        backdrop-filter: blur(5px);
+    }
+
+    .edit-modal-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 2rem;
+    }
+
+    .edit-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .update-btn {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .update-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+        50% {
+            box-shadow: 0 20px 35px rgba(102, 126, 234, 0.4);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .material-grid {
+            grid-template-columns: 1fr;
+        }
+       
+        .upload-type-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <!-- Header with Stats -->
+    <div class="content-header">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+            <i class="fas fa-cogs"></i> Content Management System
+        </h1>
+        <p style="opacity: 0.9; font-size: 1.1rem;">Upload and manage study materials in 22 Indian languages for students</p>
+       
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Study Materials</h3>
+                    <p id="totalMaterials">{{ study_materials|length }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Video Lectures</h3>
+                    <p id="totalVideos">{{ videos|length }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-language"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Languages</h3>
+                    <p>22 Indian Languages</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Downloads</h3>
+                    <p>{{ total_downloads|default(0) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Tabs -->
+    <div class="content-tabs">
+        <button class="content-tab active" onclick="switchPanel('study')">
+            <i class="fas fa-book"></i> Study Materials
+        </button>
+        <button class="content-tab" onclick="switchPanel('videos')">
+            <i class="fas fa-video"></i> Video Lectures
+        </button>
+    </div>
+
+    <!-- ===== STUDY MATERIALS PANEL ===== -->
+    <div id="study-panel" class="content-panel active">
+        <!-- Study Material Upload Section -->
+        <div class="section-card">
+            <div class="study-material-box">
+                <div class="study-header">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Upload Study Material <span class="study-badge">For Students</span></h3>
+                </div>
+               
+                <!-- Language Selector - All Indian Languages -->
+                <div class="language-selector" id="materialLangSelector">
+                    <button class="lang-btn active" onclick="setMaterialLanguage('english')">
+                        <i class="fas fa-language"></i> English
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('hindi')">
+                        <i class="fas fa-language"></i> हिंदी (Hindi)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('bengali')">
+                        <i class="fas fa-language"></i> বাংলা (Bengali)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('telugu')">
+                        <i class="fas fa-language"></i> తెలుగు (Telugu)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('marathi')">
+                        <i class="fas fa-language"></i> मराठी (Marathi)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('tamil')">
+                        <i class="fas fa-language"></i> தமிழ் (Tamil)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('urdu')">
+                        <i class="fas fa-language"></i> اردو (Urdu)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('gujarati')">
+                        <i class="fas fa-language"></i> ગુજરાતી (Gujarati)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('kannada')">
+                        <i class="fas fa-language"></i> ಕನ್ನಡ (Kannada)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('malayalam')">
+                        <i class="fas fa-language"></i> മലയാളം (Malayalam)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('oriya')">
+                        <i class="fas fa-language"></i> ଓଡ଼ିଆ (Odia)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('punjabi')">
+                        <i class="fas fa-language"></i> ਪੰਜਾਬੀ (Punjabi)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('assamese')">
+                        <i class="fas fa-language"></i> অসমীয়া (Assamese)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('maithili')">
+                        <i class="fas fa-language"></i> मैथिली (Maithili)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('santali')">
+                        <i class="fas fa-language"></i> ᱥᱟᱱᱛᱟᱲᱤ (Santali)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('kashmiri')">
+                        <i class="fas fa-language"></i> कॉशुर (Kashmiri)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('nepali')">
+                        <i class="fas fa-language"></i> नेपाली (Nepali)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('sindhi')">
+                        <i class="fas fa-language"></i> سنڌي (Sindhi)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('dogri')">
+                        <i class="fas fa-language"></i> डोगरी (Dogri)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('konkani')">
+                        <i class="fas fa-language"></i> कोंकणी (Konkani)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('manipuri')">
+                        <i class="fas fa-language"></i> মৈতৈলোন্ (Manipuri)
+                    </button>
+                    <button class="lang-btn" onclick="setMaterialLanguage('bodo')">
+                        <i class="fas fa-language"></i> बर' (Bodo)
+                    </button>
+                </div>
+
+                <!-- Grade Selector -->
+                <div class="grade-selector" id="materialGradeSelector">
+                    <button class="grade-btn active" onclick="setMaterialGrade('5')">Grade 5</button>
+                    <button class="grade-btn" onclick="setMaterialGrade('6')">Grade 6</button>
+                    <button class="grade-btn" onclick="setMaterialGrade('7')">Grade 7</button>
+                    <button class="grade-btn" onclick="setMaterialGrade('8')">Grade 8</button>
+                    <button class="grade-btn" onclick="setMaterialGrade('9')">Grade 9</button>
+                    <button class="grade-btn" onclick="setMaterialGrade('10')">Grade 10</button>
+                    <button class="grade-btn" onclick="setMaterialGrade('11')">Grade 11</button>
+                    <button class="grade-btn" onclick="setMaterialGrade('12')">Grade 12</button>
+                </div>
+
+                <!-- Upload Type Selection -->
+                <div class="upload-type-grid">
+                    <div class="upload-type-card selected" onclick="selectUploadType('pdf')" id="pdfType">
+                        <div class="upload-type-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="upload-type-title">PDF Documents</div>
+                        <div class="upload-type-desc">Upload textbooks, notes, worksheets</div>
+                    </div>
+                    <div class="upload-type-card" onclick="selectUploadType('image')" id="imageType">
+                        <div class="upload-type-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <div class="upload-type-title">Images</div>
+                        <div class="upload-type-desc">Diagrams, charts, infographics</div>
+                    </div>
+                    <div class="upload-type-card" onclick="selectUploadType('document')" id="docType">
+                        <div class="upload-type-icon">
+                            <i class="fas fa-file-word"></i>
+                        </div>
+                        <div class="upload-type-title">Documents</div>
+                        <div class="upload-type-desc">Word, PowerPoint, Excel files</div>
+                    </div>
+                    <div class="upload-type-card" onclick="selectUploadType('audio')" id="audioType">
+                        <div class="upload-type-icon">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <div class="upload-type-title">Audio Lectures</div>
+                        <div class="upload-type-desc">MP3, WAV audio lessons</div>
+                    </div>
+                </div>
+
+                <!-- Upload Form -->
+                <form id="uploadMaterialForm" onsubmit="return uploadMaterial(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Material Title</label>
+                            <input type="text" class="form-control" id="materialTitle"
+                                   placeholder="Enter title in selected language" required>
+                        </div>
+                       
+                        <div class="form-group">
+                            <label class="form-label">Subject</label>
+                            <select class="form-control" id="materialSubject" required>
+                                <option value="">Select Subject</option>
+                                <option value="mathematics">Mathematics</option>
+                                <option value="science">Science</option>
+                                <option value="physics">Physics</option>
+                                <option value="chemistry">Chemistry</option>
+                                <option value="biology">Biology</option>
+                                <option value="social">Social Studies</option>
+                                <option value="history">History</option>
+                                <option value="geography">Geography</option>
+                                <option value="civics">Civics</option>
+                                <option value="economics">Economics</option>
+                                <option value="english">English</option>
+                                <option value="hindi">Hindi</option>
+                                <option value="sanskrit">Sanskrit</option>
+                                <option value="computer">Computer Science</option>
+                                <option value="environment">Environmental Studies</option>
+                                <option value="general">General Knowledge</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Chapter/Unit</label>
+                            <input type="text" class="form-control" id="materialChapter"
+                                   placeholder="e.g., Chapter 1: Numbers">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Tags (comma separated)</label>
+                            <input type="text" class="form-control" id="materialTags"
+                                   placeholder="e.g., algebra, basics, formulas">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="materialDescription" rows="3"
+                                  placeholder="Describe what students will learn from this material..." required></textarea>
+                    </div>
+
+                    <!-- File Upload Area -->
+                    <div class="upload-area" onclick="document.getElementById('materialFile').click()">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Click to upload or drag and drop</h3>
+                        <p style="color: #718096; margin-top: 0.5rem;" id="fileTypeHint">
+                            PDF, Images, Documents, Audio (Max 200MB)
+                        </p>
+                        <input type="file" id="materialFile" style="display: none;"
+                               onchange="handleMaterialUpload(this.files)" accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.mp3,.wav,.ogg">
+                    </div>
+
+                    <!-- File Info -->
+                    <div id="materialFileInfo" class="file-info" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong id="materialFileName"></strong>
+                                <span id="materialFileSize" style="color: #718096; margin-left: 0.5rem;"></span>
+                            </div>
+                            <button type="button" class="btn-icon btn-delete" onclick="clearMaterialFile()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="uploadProgress"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="submit" class="save-btn" id="uploadMaterialBtn">
+                            <i class="fas fa-upload"></i> Upload Material
+                        </button>
+                        <button type="button" class="btn-outline" onclick="previewMaterial()">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Study Materials Library -->
+        <div class="section-card">
+            <h2 style="color: #2d3748; margin-bottom: 1.5rem;">
+                <i class="fas fa-book-open"></i> Study Materials Library
+            </h2>
+
+            <!-- Filters -->
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <select class="form-control" style="width: 200px;" id="filterMaterialLanguage" onchange="filterMaterials()">
+                    <option value="all">All Languages</option>
+                    <option value="english">English</option>
+                    <option value="hindi">हिंदी (Hindi)</option>
+                    <option value="bengali">বাংলা (Bengali)</option>
+                    <option value="telugu">తెలుగు (Telugu)</option>
+                    <option value="marathi">मराठी (Marathi)</option>
+                    <option value="tamil">தமிழ் (Tamil)</option>
+                    <option value="urdu">اردو (Urdu)</option>
+                    <option value="gujarati">ગુજરાતી (Gujarati)</option>
+                    <option value="kannada">ಕನ್ನಡ (Kannada)</option>
+                    <option value="malayalam">മലയാളം (Malayalam)</option>
+                    <option value="oriya">ଓଡ଼ିଆ (Odia)</option>
+                    <option value="punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="assamese">অসমীয়া (Assamese)</option>
+                    <option value="maithili">मैथिली (Maithili)</option>
+                    <option value="santali">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
+                    <option value="kashmiri">कॉशुर (Kashmiri)</option>
+                    <option value="nepali">नेपाली (Nepali)</option>
+                    <option value="sindhi">سنڌي (Sindhi)</option>
+                    <option value="dogri">डोगरी (Dogri)</option>
+                    <option value="konkani">कोंकणी (Konkani)</option>
+                    <option value="manipuri">মৈতৈলোন্ (Manipuri)</option>
+                    <option value="bodo">बर' (Bodo)</option>
+                </select>
+               
+                <select class="form-control" style="width: 200px;" id="filterMaterialGrade" onchange="filterMaterials()">
+                    <option value="all">All Grades</option>
+                    <option value="5">Grade 5</option>
+                    <option value="6">Grade 6</option>
+                    <option value="7">Grade 7</option>
+                    <option value="8">Grade 8</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                </select>
+               
+                <select class="form-control" style="width: 200px;" id="filterMaterialType" onchange="filterMaterials()">
+                    <option value="all">All Types</option>
+                    <option value="pdf">PDF</option>
+                    <option value="image">Image</option>
+                    <option value="document">Document</option>
+                    <option value="audio">Audio</option>
+                </select>
+               
+                <select class="form-control" style="width: 200px;" id="filterMaterialSubject" onchange="filterMaterials()">
+                    <option value="all">All Subjects</option>
+                    <option value="mathematics">Mathematics</option>
+                    <option value="science">Science</option>
+                    <option value="social">Social Studies</option>
+                    <option value="english">English</option>
+                    <option value="hindi">Hindi</option>
+                    <option value="computer">Computer</option>
+                </select>
+               
+                <input type="text" class="form-control" style="width: auto; flex: 1;"
+                       placeholder="Search materials..." id="searchMaterials" onkeyup="filterMaterials()">
+            </div>
+
+            <!-- Materials Grid -->
+            <div class="material-grid" id="materialGrid">
+                {% for material in study_materials %}
+                <div class="material-card" data-id="{{ material._id }}" data-language="{{ material.language }}" data-grade="{{ material.grade }}" data-type="{{ material.type }}" data-title="{{ material.title|lower }}">
+                    <div class="material-type-badge" style="background:
+                        {% if material.type == 'pdf' %}#f56565
+                        {% elif material.type == 'image' %}#48bb78
+                        {% elif material.type == 'document' %}#ed8936
+                        {% elif material.type == 'audio' %}#9f7aea
+                        {% else %}#667eea{% endif %};">
+                        <i class="fas fa-{% if material.type == 'pdf' %}file-pdf{% elif material.type == 'image' %}image{% elif material.type == 'document' %}file-word{% elif material.type == 'audio' %}headphones{% else %}file{% endif %}"></i>
+                        {{ material.type|upper }}
+                    </div>
+                   
+                    <div class="material-preview">
+                        {% if material.type == 'image' and material.thumbnail %}
+                            <img src="{{ material.thumbnail }}" alt="{{ material.title }}">
+                        {% elif material.type == 'pdf' %}
+                            <i class="fas fa-file-pdf"></i>
+                        {% elif material.type == 'audio' %}
+                            <i class="fas fa-headphones"></i>
+                        {% elif material.type == 'document' %}
+                            <i class="fas fa-file-word"></i>
+                        {% else %}
+                            <i class="fas fa-book-open"></i>
+                        {% endif %}
+                    </div>
+                   
+                    <div class="material-info">
+                        <div class="material-title">
+                            {{ material.title }}
+                            {% if material.is_new %}
+                            <span style="background: #f56565; color: white; padding: 0.2rem 0.5rem; border-radius: 50px; font-size: 0.7rem;">NEW</span>
+                            {% endif %}
+                        </div>
+                       
+                        <div class="material-meta">
+                            <span><i class="fas fa-language"></i> {{ material.language|title }}</span>
+                            <span><i class="fas fa-graduation-cap"></i> Grade {{ material.grade }}</span>
+                            <span><i class="fas fa-book"></i> {{ material.subject|title }}</span>
+                        </div>
+                       
+                        <div class="material-description">
+                            {{ material.description[:100] }}{% if material.description|length > 100 %}...{% endif %}
+                        </div>
+                       
+                        {% if material.chapter %}
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;">
+                            <i class="fas fa-bookmark" style="color: #667eea;"></i> {{ material.chapter }}
+                        </div>
+                        {% endif %}
+                       
+                        <div class="material-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ material.views|default(0) }}</div>
+                                <div class="stat-label">Views</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ material.downloads|default(0) }}</div>
+                                <div class="stat-label">Downloads</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ material.favorites|default(0) }}</div>
+                                <div class="stat-label">Favorites</div>
+                            </div>
+                        </div>
+                       
+                        <div class="action-buttons">
+                            <button class="btn-icon btn-view" onclick="previewMaterialById('{{ material._id }}', 'material')" title="Preview">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon btn-download" onclick="downloadMaterial('{{ material._id }}')" title="Download">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="btn-icon btn-edit" onclick="editMaterial('{{ material._id }}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon btn-share" onclick="shareContent('{{ material._id }}', 'study-material')" title="Share">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <button class="btn-icon btn-delete" onclick="deleteMaterial('{{ material._id }}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Lectures Panel -->
+    <div id="videos-panel" class="content-panel">
+        <div class="section-card">
+            <h2 style="color: #2d3748; margin-bottom: 1.5rem;">
+                <i class="fas fa-upload"></i> Upload Video Lectures
+            </h2>
+           
+            <!-- Language Selector - All Indian Languages -->
+            <div class="language-selector" id="videoLangSelector">
+                <button class="lang-btn active" onclick="setVideoLanguage('english')">
+                    <i class="fas fa-language"></i> English
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('hindi')">
+                    <i class="fas fa-language"></i> हिंदी
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('bengali')">
+                    <i class="fas fa-language"></i> বাংলা
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('telugu')">
+                    <i class="fas fa-language"></i> తెలుగు
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('marathi')">
+                    <i class="fas fa-language"></i> मराठी
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('tamil')">
+                    <i class="fas fa-language"></i> தமிழ்
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('urdu')">
+                    <i class="fas fa-language"></i> اردو
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('gujarati')">
+                    <i class="fas fa-language"></i> ગુજરાતી
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('kannada')">
+                    <i class="fas fa-language"></i> ಕನ್ನಡ
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('malayalam')">
+                    <i class="fas fa-language"></i> മലയാളം
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('oriya')">
+                    <i class="fas fa-language"></i> ଓଡ଼ିଆ
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('punjabi')">
+                    <i class="fas fa-language"></i> ਪੰਜਾਬੀ
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('assamese')">
+                    <i class="fas fa-language"></i> অসমীয়া
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('maithili')">
+                    <i class="fas fa-language"></i> मैथिली
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('santali')">
+                    <i class="fas fa-language"></i> ᱥᱟᱱᱛᱟᱲᱤ
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('kashmiri')">
+                    <i class="fas fa-language"></i> कॉशुर
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('nepali')">
+                    <i class="fas fa-language"></i> नेपाली
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('sindhi')">
+                    <i class="fas fa-language"></i> سنڌي
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('dogri')">
+                    <i class="fas fa-language"></i> डोगरी
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('konkani')">
+                    <i class="fas fa-language"></i> कोंकणी
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('manipuri')">
+                    <i class="fas fa-language"></i> মৈতৈলোন্
+                </button>
+                <button class="lang-btn" onclick="setVideoLanguage('bodo')">
+                    <i class="fas fa-language"></i> बर'
+                </button>
+            </div>
+
+            <div class="grade-selector" id="videoGradeSelector">
+                <button class="grade-btn active" onclick="setVideoGrade('5')">Grade 5</button>
+                <button class="grade-btn" onclick="setVideoGrade('6')">Grade 6</button>
+                <button class="grade-btn" onclick="setVideoGrade('7')">Grade 7</button>
+                <button class="grade-btn" onclick="setVideoGrade('8')">Grade 8</button>
+                <button class="grade-btn" onclick="setVideoGrade('9')">Grade 9</button>
+                <button class="grade-btn" onclick="setVideoGrade('10')">Grade 10</button>
+                <button class="grade-btn" onclick="setVideoGrade('11')">Grade 11</button>
+                <button class="grade-btn" onclick="setVideoGrade('12')">Grade 12</button>
+            </div>
+
+            <form id="uploadVideoForm" onsubmit="return uploadVideo(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Video Title</label>
+                        <input type="text" class="form-control" id="videoTitle"
+                               placeholder="Enter video title in selected language" required>
+                    </div>
+                   
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <select class="form-control" id="videoSubject" required>
+                            <option value="mathematics">Mathematics</option>
+                            <option value="science">Science</option>
+                            <option value="physics">Physics</option>
+                            <option value="chemistry">Chemistry</option>
+                            <option value="biology">Biology</option>
+                            <option value="social">Social Studies</option>
+                            <option value="english">English</option>
+                            <option value="hindi">Hindi</option>
+                            <option value="computer">Computer Science</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Chapter/Unit</label>
+                        <input type="text" class="form-control" id="videoChapter"
+                               placeholder="e.g., Chapter 5: Trigonometry">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" id="videoDuration" min="1" max="300" value="30">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Video Description</label>
+                    <textarea class="form-control" id="videoDescription" rows="3"
+                              placeholder="Describe what students will learn from this video..." required></textarea>
+                </div>
+
+                <div class="upload-area" onclick="document.getElementById('videoFile').click()">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>Click to upload or drag and drop</h3>
+                    <p style="color: #718096; margin-top: 0.5rem;">
+                        MP4, WebM, or Ogg (Max 500MB)
+                    </p>
+                    <input type="file" id="videoFile" accept="video/*" style="display: none;"
+                           onchange="handleVideoUpload(this.files)">
+                </div>
+
+                <div id="videoFileInfo" class="file-info" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong id="videoFileName"></strong>
+                            <span id="videoFileSize" style="color: #718096; margin-left: 0.5rem;"></span>
+                        </div>
+                        <button type="button" class="btn-icon btn-delete" onclick="clearVideoFile()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="videoUploadProgress"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="save-btn" id="uploadVideoBtn">
+                        <i class="fas fa-upload"></i> Upload Video
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="section-card">
+            <h2 style="color: #2d3748; margin-bottom: 1.5rem;">
+                <i class="fas fa-video"></i> Video Library
+            </h2>
+           
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <select class="form-control" style="width: 200px;" id="filterVideoLanguage" onchange="filterVideos()">
+                    <option value="all">All Languages</option>
+                    <option value="english">English</option>
+                    <option value="hindi">हिंदी</option>
+                    <option value="bengali">বাংলা</option>
+                    <option value="telugu">తెలుగు</option>
+                    <option value="marathi">मराठी</option>
+                    <option value="tamil">தமிழ்</option>
+                    <option value="urdu">اردو</option>
+                    <option value="gujarati">ગુજરાતી</option>
+                    <option value="kannada">ಕನ್ನಡ</option>
+                    <option value="malayalam">മലയാളം</option>
+                    <option value="oriya">ଓଡ଼ିଆ</option>
+                    <option value="punjabi">ਪੰਜਾਬੀ</option>
+                    <option value="assamese">অসমীয়া</option>
+                    <option value="maithili">मैथिली</option>
+                    <option value="santali">ᱥᱟᱱᱛᱟᱲᱤ</option>
+                    <option value="kashmiri">कॉशुर</option>
+                    <option value="nepali">नेपाली</option>
+                    <option value="sindhi">سنڌي</option>
+                    <option value="dogri">डोगरी</option>
+                    <option value="konkani">कोंकणी</option>
+                    <option value="manipuri">মৈতৈলোন্</option>
+                    <option value="bodo">बर'</option>
+                </select>
+               
+                <select class="form-control" style="width: 200px;" id="filterVideoGrade" onchange="filterVideos()">
+                    <option value="all">All Grades</option>
+                    <option value="5">Grade 5</option>
+                    <option value="6">Grade 6</option>
+                    <option value="7">Grade 7</option>
+                    <option value="8">Grade 8</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                </select>
+               
+                <select class="form-control" style="width: 200px;" id="filterVideoSubject" onchange="filterVideos()">
+                    <option value="all">All Subjects</option>
+                    <option value="mathematics">Mathematics</option>
+                    <option value="science">Science</option>
+                    <option value="physics">Physics</option>
+                    <option value="chemistry">Chemistry</option>
+                    <option value="biology">Biology</option>
+                    <option value="social">Social Studies</option>
+                    <option value="english">English</option>
+                    <option value="hindi">Hindi</option>
+                </select>
+               
+                <input type="text" class="form-control" style="width: auto; flex: 1;"
+                       placeholder="Search videos..." id="searchVideos" onkeyup="filterVideos()">
+            </div>
+
+            <div class="video-grid" id="videoGrid">
+                {% for video in videos %}
+                <div class="video-card" data-id="{{ video._id }}" data-language="{{ video.language }}" data-grade="{{ video.grade }}" data-title="{{ video.title|lower }}">
+                    <div class="video-preview">
+                        {% if video.thumbnail %}
+                        <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
+                        {% else %}
+                        <i class="fas fa-play-circle"></i>
+                        {% endif %}
+                        <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; z-index: 3;">
+                            <i class="fas fa-clock"></i> {{ video.duration|default(30) }} min
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">{{ video.title }}</div>
+                        <div class="video-meta">
+                            <span><i class="fas fa-language"></i> {{ video.language|title }}</span>
+                            <span><i class="fas fa-graduation-cap"></i> Grade {{ video.grade }}</span>
+                            <span><i class="fas fa-book"></i> {{ video.subject|title }}</span>
+                        </div>
+                        {% if video.chapter %}
+                        <div style="background: #f8f9fa; padding: 0.25rem 0.5rem; border-radius: 5px; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                            <i class="fas fa-bookmark" style="color: #667eea;"></i> {{ video.chapter }}
+                        </div>
+                        {% endif %}
+                        <p style="color: #718096; font-size: 0.9rem;">{{ video.description[:100] }}{% if video.description|length > 100 %}...{% endif %}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <span style="color: #667eea;"><i class="fas fa-eye"></i> {{ video.views|default(0) }}</span>
+                                <span style="color: #48bb78;"><i class="fas fa-thumbs-up"></i> {{ video.likes|default(0) }}</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn-icon btn-view" onclick="previewMaterialById('{{ video._id }}', 'video')" title="Play">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="btn-icon btn-edit" onclick="editVideo('{{ video._id }}')" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon btn-share" onclick="shareContent('{{ video._id }}', 'video')" title="Share">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                                <button class="btn-icon btn-delete" onclick="deleteVideo('{{ video._id }}')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="preview-modal" id="previewModal">
+    <div class="preview-content">
+        <div class="preview-header">
+            <h2><i class="fas fa-eye"></i> <span id="previewTitle">Material Preview</span></h2>
+            <button class="btn-icon btn-delete" onclick="closePreviewModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="preview-body" id="previewBody">
+            <!-- Content loaded dynamically -->
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+            <button class="btn-outline" onclick="closePreviewModal()">
+                <i class="fas fa-times"></i> Close
+            </button>
+            <button class="save-btn" id="previewDownloadBtn" onclick="downloadFromPreview()">
+                <i class="fas fa-download"></i> Download
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="edit-modal" id="editModal">
+    <div class="edit-modal-content">
+        <div class="edit-modal-header">
+            <h2><i class="fas fa-edit"></i> Edit <span id="editTypeText">Material</span></h2>
+            <button class="btn-icon btn-delete" onclick="closeEditModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="editForm" onsubmit="return updateContent(event)">
+            <input type="hidden" id="editId">
+            <input type="hidden" id="editContentType">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-control" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <select class="form-control" id="editSubject" required>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="science">Science</option>
+                        <option value="physics">Physics</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="biology">Biology</option>
+                        <option value="social">Social Studies</option>
+                        <option value="english">English</option>
+                        <option value="hindi">Hindi</option>
+                        <option value="computer">Computer Science</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Language</label>
+                    <select class="form-control" id="editLanguage" required>
+                        <option value="english">English</option>
+                        <option value="hindi">हिंदी</option>
+                        <option value="bengali">বাংলা</option>
+                        <option value="telugu">తెలుగు</option>
+                        <option value="marathi">मराठी</option>
+                        <option value="tamil">தமிழ்</option>
+                        <option value="urdu">اردو</option>
+                        <option value="gujarati">ગુજરાતી</option>
+                        <option value="kannada">ಕನ್ನಡ</option>
+                        <option value="malayalam">മലയാളം</option>
+                        <option value="oriya">ଓଡ଼ିଆ</option>
+                        <option value="punjabi">ਪੰਜਾਬੀ</option>
+                        <option value="assamese">অসমীয়া</option>
+                        <option value="maithili">मैथिली</option>
+                        <option value="santali">ᱥᱟᱱᱛᱟᱲᱤ</option>
+                        <option value="kashmiri">कॉशुर</option>
+                        <option value="nepali">नेपाली</option>
+                        <option value="sindhi">سنڌي</option>
+                        <option value="dogri">डोगरी</option>
+                        <option value="konkani">कोंकणी</option>
+                        <option value="manipuri">মৈতৈলোন্</option>
+                        <option value="bodo">बर</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Grade</label>
+                    <select class="form-control" id="editGrade" required>
+                        <option value="5">Grade 5</option>
+                        <option value="6">Grade 6</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chapter</label>
+                    <input type="text" class="form-control" id="editChapter" placeholder="Chapter/Unit">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Duration (minutes)</label>
+                    <input type="number" class="form-control" id="editDuration" placeholder="For videos only" step="1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="editDescription" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Replace File (Optional)</label>
+                <input type="file" class="form-control" id="editFile" accept=".pdf,.jpg,.jpeg,.png,.mp4,.webm">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button type="submit" class="update-btn"><i class="fas fa-save"></i> Update Content</button>
+                <button type="button" class="btn-outline" onclick="closeEditModal()"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ===== GLOBAL VARIABLES =====
+    let currentMaterialLang = 'english';
+    let currentVideoLang = 'english';
+    let currentGrade = '5';
+    let currentUploadType = 'pdf';
+    let currentPreviewId = null;
+    let currentPreviewType = null;
+
+    // ===== CONTENT PANEL SWITCHING =====
+    function switchPanel(panel) {
+        document.querySelectorAll('.content-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        event.target.classList.add('active');
+       
+        document.querySelectorAll('.content-panel').forEach(p => {
+            p.classList.remove('active');
+        });
+        document.getElementById(`${panel}-panel`).classList.add('active');
+    }
+
+    // ===== LANGUAGE SELECTION FUNCTIONS =====
+    function setMaterialLanguage(lang) {
+        currentMaterialLang = lang;
+        document.querySelectorAll('#materialLangSelector .lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        updateMaterialPlaceholders(lang);
+    }
+
+    function setVideoLanguage(lang) {
+        currentVideoLang = lang;
+        document.querySelectorAll('#videoLangSelector .lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+
+    // ===== GRADE SELECTION =====
+    function setMaterialGrade(grade) {
+        currentGrade = grade;
+        document.querySelectorAll('#materialGradeSelector .grade-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+
+    function setVideoGrade(grade) {
+        document.querySelectorAll('#videoGradeSelector .grade-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+
+    // ===== UPLOAD TYPE SELECTION =====
+    function selectUploadType(type) {
+        currentUploadType = type;
+        document.querySelectorAll('.upload-type-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        document.getElementById(type + 'Type').classList.add('selected');
+       
+        const fileInput = document.getElementById('materialFile');
+        const hint = document.getElementById('fileTypeHint');
+       
+        if (type === 'pdf') {
+            fileInput.accept = '.pdf';
+            hint.innerHTML = 'PDF files only (Max 200MB)';
+        } else if (type === 'image') {
+            fileInput.accept = '.jpg,.jpeg,.png,.gif,.bmp';
+            hint.innerHTML = 'Images: JPG, PNG, GIF, BMP (Max 50MB)';
+        } else if (type === 'document') {
+            fileInput.accept = '.doc,.docx,.ppt,.pptx,.xls,.xlsx';
+            hint.innerHTML = 'Documents: Word, PowerPoint, Excel (Max 100MB)';
+        } else if (type === 'audio') {
+            fileInput.accept = '.mp3,.wav,.ogg';
+            hint.innerHTML = 'Audio: MP3, WAV, OGG (Max 200MB)';
+        }
+    }
+
+    // ===== PLACEHOLDER UPDATES =====
+    function updateMaterialPlaceholders(lang) {
+        const titleInput = document.getElementById('materialTitle');
+        const descInput = document.getElementById('materialDescription');
+       
+        const placeholders = {
+            english: {
+                title: "Enter title in English...",
+                desc: "Describe what students will learn..."
+            },
+            hindi: {
+                title: "हिंदी में शीर्षक दर्ज करें...",
+                desc: "छात्र क्या सीखेंगे इसका वर्णन करें..."
+            },
+            telugu: {
+                title: "తెలుగులో శీర్షికను నమోదు చేయండి...",
+                desc: "విద్యార్థులు ఏమి నేర్చుకుంటారో వివరించండి..."
+            },
+            tamil: {
+                title: "தமிழில் தலைப்பை உள்ளிடவும்...",
+                desc: "மாணவர்கள் என்ன கற்றுக்கொள்வார்கள் என்பதை விவரிக்கவும்..."
+            },
+            kannada: {
+                title: "ಕನ್ನಡದಲ್ಲಿ ಶೀರ್ಷಿಕೆಯನ್ನು ನಮೂದಿಸಿ...",
+                desc: "ವಿದ್ಯಾರ್ಥಿಗಳು ಏನು ಕಲಿಯುತ್ತಾರೆ ಎಂಬುದನ್ನು ವಿವರಿಸಿ..."
+            },
+            malayalam: {
+                title: "മലയാളത്തിൽ തലക്കെട്ട് നൽകുക...",
+                desc: "വിദ്യാർത്ഥികൾ എന്താണ് പഠിക്കുക എന്നത് വിവരിക്കുക..."
+            }
+        };
+       
+        if (placeholders[lang]) {
+            titleInput.placeholder = placeholders[lang].title;
+            descInput.placeholder = placeholders[lang].desc;
+        } else {
+            titleInput.placeholder = "Enter title...";
+            descInput.placeholder = "Describe what students will learn...";
+        }
+    }
+
+    // ===== STUDY MATERIAL UPLOAD FUNCTIONS =====
+    function handleMaterialUpload(files) {
+        if (files.length > 0) {
+            const file = files[0];
+            const fileInfo = document.getElementById('materialFileInfo');
+            const fileName = document.getElementById('materialFileName');
+            const fileSize = document.getElementById('materialFileSize');
+           
+            fileName.textContent = file.name;
+            fileSize.textContent = `(${(file.size / (1024*1024)).toFixed(2)} MB)`;
+            fileInfo.style.display = 'block';
+        }
+    }
+
+    async function uploadMaterial(event) {
+        event.preventDefault();
+       
+        const materialFile = document.getElementById('materialFile').files[0];
+        if (!materialFile) {
+            showNotification('Please select a file to upload', 'error');
+            return false;
+        }
+       
+        const formData = new FormData();
+        formData.append('file', materialFile);
+        formData.append('title', document.getElementById('materialTitle').value);
+        formData.append('description', document.getElementById('materialDescription').value);
+        formData.append('language', currentMaterialLang);
+        formData.append('grade', document.querySelector('#materialGradeSelector .grade-btn.active').textContent.split(' ')[1]);
+        formData.append('subject', document.getElementById('materialSubject').value);
+        formData.append('chapter', document.getElementById('materialChapter').value);
+        formData.append('tags', document.getElementById('materialTags').value);
+        formData.append('type', currentUploadType);
+       
+        showLoading('Uploading study material...');
+       
+        let progress = 0;
+        const progressBar = document.getElementById('uploadProgress');
+        const interval = setInterval(() => {
+            progress += 5;
+            progressBar.style.width = progress + '%';
+            if (progress >= 100) clearInterval(interval);
+        }, 200);
+       
+        try {
+            const response = await fetch('/api/admin/study-material/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+           
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+           
+            setTimeout(() => {
+                hideLoading();
+                if (data.success) {
+                    showNotification('Study material uploaded successfully!', 'success');
+                    document.getElementById('uploadMaterialForm').reset();
+                    document.getElementById('materialFileInfo').style.display = 'none';
+                    progressBar.style.width = '0%';
+                    location.reload();
+                } else {
+                    showNotification('Error uploading: ' + data.error, 'error');
+                }
+            }, 500);
+        } catch (error) {
+            clearInterval(interval);
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        }
+       
+        return false;
+    }
+
+    // ===== VIDEO UPLOAD FUNCTIONS =====
+    function handleVideoUpload(files) {
+        if (files.length > 0) {
+            const file = files[0];
+            const fileInfo = document.getElementById('videoFileInfo');
+            const fileName = document.getElementById('videoFileName');
+            const fileSize = document.getElementById('videoFileSize');
+           
+            fileName.textContent = file.name;
+            fileSize.textContent = `(${(file.size / (1024*1024)).toFixed(2)} MB)`;
+            fileInfo.style.display = 'block';
+        }
+    }
+
+    async function uploadVideo(event) {
+        event.preventDefault();
+       
+        const videoFile = document.getElementById('videoFile').files[0];
+        if (!videoFile) {
+            showNotification('Please select a video file', 'error');
+            return false;
+        }
+       
+        const formData = new FormData();
+        formData.append('video', videoFile);
+        formData.append('title', document.getElementById('videoTitle').value);
+        formData.append('description', document.getElementById('videoDescription').value);
+        formData.append('language', currentVideoLang);
+        formData.append('grade', document.querySelector('#videoGradeSelector .grade-btn.active').textContent.split(' ')[1]);
+        formData.append('subject', document.getElementById('videoSubject').value);
+        formData.append('chapter', document.getElementById('videoChapter').value);
+        formData.append('duration', document.getElementById('videoDuration').value);
+       
+        showLoading('Uploading video...');
+       
+        let progress = 0;
+        const progressBar = document.getElementById('videoUploadProgress');
+        const interval = setInterval(() => {
+            progress += 5;
+            progressBar.style.width = progress + '%';
+            if (progress >= 100) clearInterval(interval);
+        }, 200);
+       
+        try {
+            const response = await fetch('/api/admin/videos/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+           
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+           
+            setTimeout(() => {
+                hideLoading();
+                if (data.success) {
+                    showNotification('Video uploaded successfully!', 'success');
+                    document.getElementById('uploadVideoForm').reset();
+                    document.getElementById('videoFileInfo').style.display = 'none';
+                    progressBar.style.width = '0%';
+                    location.reload();
+                } else {
+                    showNotification('Error uploading video: ' + data.error, 'error');
+                }
+            }, 500);
+        } catch (error) {
+            clearInterval(interval);
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        }
+       
+        return false;
+    }
+
+    // ===== PREVIEW FUNCTIONS =====
+    function previewMaterial() {
+        const file = document.getElementById('materialFile').files[0];
+        if (!file) {
+            showNotification('Please select a file to preview', 'error');
+            return;
+        }
+       
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            showPreviewModal(document.getElementById('materialTitle').value || 'Preview', e.target.result, currentUploadType);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function previewMaterialById(id, type) {
+        currentPreviewId = id;
+        currentPreviewType = type;
+        showLoading('Loading preview...');
+       
+        try {
+            const response = await fetch(`/api/admin/${type === 'material' ? 'study-material' : 'videos'}/${id}`);
+            const data = await response.json();
+            hideLoading();
+            showPreviewModal(data.title, type === 'material' ? data.file_url : data.video_url, type === 'material' ? data.type : 'video');
+        } catch (error) {
+            hideLoading();
+            showNotification('Error loading preview: ' + error.message, 'error');
+        }
+    }
+
+    function showPreviewModal(title, url, type) {
+        const modal = document.getElementById('previewModal');
+        const titleSpan = document.getElementById('previewTitle');
+        const body = document.getElementById('previewBody');
+       
+        titleSpan.textContent = title;
+       
+        if (type === 'pdf') {
+            body.innerHTML = `<iframe src="${url}" class="pdf-preview" title="PDF Preview"></iframe>`;
+        } else if (type === 'image') {
+            body.innerHTML = `<div class="image-preview"><img src="${url}" alt="Preview"></div>`;
+        } else if (type === 'video') {
+            body.innerHTML = `<div class="video-preview"><video src="${url}" controls style="width:100%;"></video></div>`;
+        } else if (type === 'audio') {
+            body.innerHTML = `<div class="document-preview"><audio src="${url}" controls style="width:100%;"></audio></div>`;
+        } else if (type === 'document') {
+            body.innerHTML = `<div class="document-preview"><i class="fas fa-file-word" style="font-size: 5rem; color: #667eea; margin-bottom: 1rem;"></i><p>Preview not available. Please download the file.</p></div>`;
+        }
+       
+        modal.style.display = 'flex';
+    }
+
+    function closePreviewModal() {
+        document.getElementById('previewModal').style.display = 'none';
+        document.getElementById('previewBody').innerHTML = '';
+    }
+
+    function downloadFromPreview() {
+        if (currentPreviewId && currentPreviewType) {
+            window.open(`/api/admin/${currentPreviewType === 'material' ? 'study-material' : 'videos'}/${currentPreviewId}/download`, '_blank');
+        }
+    }
+
+    // ===== CRUD OPERATIONS =====
+    function downloadMaterial(id) {
+        window.open(`/api/admin/study-material/${id}/download`, '_blank');
+    }
+
+    async function editMaterial(id) {
+        showLoading('Loading content...');
+        try {
+            const response = await fetch(`/api/admin/study-material/${id}`);
+            const data = await response.json();
+            hideLoading();
+           
+            document.getElementById('editId').value = id;
+            document.getElementById('editContentType').value = 'material';
+            document.getElementById('editTypeText').textContent = 'Study Material';
+            document.getElementById('editTitle').value = data.title;
+            document.getElementById('editSubject').value = data.subject;
+            document.getElementById('editLanguage').value = data.language;
+            document.getElementById('editGrade').value = data.grade;
+            document.getElementById('editChapter').value = data.chapter || '';
+            document.getElementById('editDescription').value = data.description;
+            document.getElementById('editDuration').disabled = true;
+            document.getElementById('editDuration').value = '';
+            document.getElementById('editFile').value = '';
+            document.getElementById('editModal').style.display = 'flex';
+        } catch (error) {
+            hideLoading();
+            showNotification('Error loading content: ' + error.message, 'error');
+        }
+    }
+
+    async function editVideo(id) {
+        showLoading('Loading video...');
+        try {
+            const response = await fetch(`/api/admin/videos/${id}`);
+            const data = await response.json();
+            hideLoading();
+           
+            document.getElementById('editId').value = id;
+            document.getElementById('editContentType').value = 'video';
+            document.getElementById('editTypeText').textContent = 'Video';
+            document.getElementById('editTitle').value = data.title;
+            document.getElementById('editSubject').value = data.subject;
+            document.getElementById('editLanguage').value = data.language;
+            document.getElementById('editGrade').value = data.grade;
+            document.getElementById('editChapter').value = data.chapter || '';
+            document.getElementById('editDescription').value = data.description;
+            document.getElementById('editDuration').disabled = false;
+            document.getElementById('editDuration').value = data.duration || 30;
+            document.getElementById('editFile').value = '';
+            document.getElementById('editModal').style.display = 'flex';
+        } catch (error) {
+            hideLoading();
+            showNotification('Error loading video: ' + error.message, 'error');
+        }
+    }
+
+    async function updateContent(event) {
+        event.preventDefault();
+        const id = document.getElementById('editId').value;
+        const type = document.getElementById('editContentType').value;
+        const formData = new FormData();
+        formData.append('title', document.getElementById('editTitle').value);
+        formData.append('subject', document.getElementById('editSubject').value);
+        formData.append('language', document.getElementById('editLanguage').value);
+        formData.append('grade', document.getElementById('editGrade').value);
+        formData.append('chapter', document.getElementById('editChapter').value);
+        formData.append('description', document.getElementById('editDescription').value);
+        if (type === 'video') formData.append('duration', document.getElementById('editDuration').value);
+        const file = document.getElementById('editFile').files[0];
+        if (file) formData.append('file', file);
+       
+        showLoading('Updating content...');
+        try {
+            const response = await fetch(`/api/admin/${type === 'material' ? 'study-material' : 'videos'}/${id}/update`, {
+                method: 'PUT',
+                body: formData
+            });
+            const data = await response.json();
+            hideLoading();
+            if (data.success) {
+                showNotification('Content updated successfully!', 'success');
+                closeEditModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Error: ' + data.error, 'error');
+            }
+        } catch (error) {
+            hideLoading();
+            showNotification('Error: ' + error.message, 'error');
+        }
+        return false;
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+        document.getElementById('editForm').reset();
+    }
+
+    function shareContent(id, type) {
+        const url = `${window.location.origin}/${type === 'study-material' ? 'study-material' : 'video'}/${id}`;
+        navigator.clipboard.writeText(url);
+        showNotification('Link copied to clipboard!', 'success');
+    }
+
+    async function deleteMaterial(id) {
+        if (confirm('Are you sure you want to delete this study material?')) {
+            showLoading('Deleting...');
+            try {
+                const response = await fetch(`/api/admin/study-material/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+                hideLoading();
+                if (data.success) {
+                    showNotification('Material deleted successfully', 'success');
+                    location.reload();
+                } else {
+                    showNotification('Error deleting material', 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+    }
+
+    async function deleteVideo(id) {
+        if (confirm('Are you sure you want to delete this video?')) {
+            showLoading('Deleting...');
+            try {
+                const response = await fetch(`/api/admin/videos/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+                hideLoading();
+                if (data.success) {
+                    showNotification('Video deleted successfully', 'success');
+                    location.reload();
+                } else {
+                    showNotification('Error deleting video', 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+    }
+
+    // ===== FILTER FUNCTIONS =====
+    function filterMaterials() {
+        const lang = document.getElementById('filterMaterialLanguage').value;
+        const grade = document.getElementById('filterMaterialGrade').value;
+        const type = document.getElementById('filterMaterialType').value;
+        const search = document.getElementById('searchMaterials').value.toLowerCase();
+       
+        document.querySelectorAll('#materialGrid .material-card').forEach(card => {
+            const matchLang = lang === 'all' || card.dataset.language === lang;
+            const matchGrade = grade === 'all' || card.dataset.grade === grade;
+            const matchType = type === 'all' || card.dataset.type === type;
+            const matchSearch = search === '' || card.dataset.title.includes(search);
+            card.style.display = (matchLang && matchGrade && matchType && matchSearch) ? '' : 'none';
+        });
+    }
+
+    function filterVideos() {
+        const lang = document.getElementById('filterVideoLanguage').value;
+        const grade = document.getElementById('filterVideoGrade').value;
+        const subject = document.getElementById('filterVideoSubject').value;
+        const search = document.getElementById('searchVideos').value.toLowerCase();
+       
+        document.querySelectorAll('#videoGrid .video-card').forEach(card => {
+            const matchLang = lang === 'all' || card.dataset.language === lang;
+            const matchGrade = grade === 'all' || card.dataset.grade === grade;
+            const matchSubject = subject === 'all' || card.dataset.subject === subject;
+            const matchSearch = search === '' || card.dataset.title.includes(search);
+            card.style.display = (matchLang && matchGrade && matchSubject && matchSearch) ? '' : 'none';
+        });
+    }
+
+    // ===== UTILITY FUNCTIONS =====
+    function clearMaterialFile() {
+        document.getElementById('materialFile').value = '';
+        document.getElementById('materialFileInfo').style.display = 'none';
+        document.getElementById('uploadProgress').style.width = '0%';
+    }
+
+    function clearVideoFile() {
+        document.getElementById('videoFile').value = '';
+        document.getElementById('videoFileInfo').style.display = 'none';
+        document.getElementById('videoUploadProgress').style.width = '0%';
+    }
+
+    function showLoading(message) {
+        let loading = document.getElementById('adminLoading');
+        if (!loading) {
+            loading = document.createElement('div');
+            loading.id = 'adminLoading';
+            loading.className = 'preview-modal';
+            loading.style.display = 'flex';
+            loading.innerHTML = `
+                <div class="preview-content" style="text-align: center; padding: 3rem; max-width: 400px;">
+                    <div class="loading-spinner" style="width: 60px; height: 60px; margin: 0 auto 1.5rem; border: 5px solid #f3f3f3; border-top: 5px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <h3>${message}</h3>
+                </div>
+            `;
+            document.body.appendChild(loading);
+           
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        loading.style.display = 'flex';
+    }
+
+    function hideLoading() {
+        const loading = document.getElementById('adminLoading');
+        if (loading) {
+            loading.style.display = 'none';
+        }
+    }
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.background = type === 'success' ? '#48bb78' : type === 'error' ? '#f56565' : '#667eea';
+        notification.style.color = 'white';
+        notification.style.padding = '1rem 1.5rem';
+        notification.style.borderRadius = '10px';
+        notification.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+        notification.style.zIndex = '9999';
+        notification.style.animation = 'slideInRight 0.3s ease-out';
+        notification.style.maxWidth = '400px';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span style="flex: 1;">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+       
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // ===== INITIALIZATION =====
+    document.addEventListener('DOMContentLoaded', function() {
+        updateMaterialPlaceholders('english');
+        selectUploadType('pdf');
+       
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(100px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+           
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1871 @@
+{% extends "base.html" %}
+
+{% block title %}My Learning Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .learning-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* ============ HERO SECTION WITH LANGUAGE SELECTION ============ */
+    .learning-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.8s ease-out;
+    }
+
+    .learning-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+        background-size: cover;
+        animation: slideInRight 1s ease-out;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+
+    .hero-text h1 {
+        font-size: 2.8rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .hero-text p {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        margin-bottom: 1.5rem;
+    }
+
+    .student-stats {
+        display: flex;
+        gap: 2rem;
+        background: rgba(255,255,255,0.15);
+        padding: 1.5rem 2rem;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-top: 0.25rem;
+    }
+
+    /* ============ LANGUAGE SELECTOR CARDS ============ */
+    .language-selector-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .lang-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 3px solid transparent;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .lang-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .lang-card:hover::before {
+        left: 100%;
+    }
+
+    .lang-card.active {
+        border-color: #667eea;
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    }
+
+    .lang-flag-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .lang-flag.english {
+        background: linear-gradient(135deg, #f56565, #ed64a6);
+        animation: float 6s ease-in-out infinite;
+    }
+    .lang-flag.hindi {
+        background: linear-gradient(135deg, #ed8936, #dd6b20);
+        animation: float 6s ease-in-out infinite 0.5s;
+    }
+    .lang-flag.telugu {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        animation: float 6s ease-in-out infinite 1s;
+    }
+    .lang-flag.bengali {
+        background: linear-gradient(135deg, #f56565, #e53e3e);
+        animation: float 6s ease-in-out infinite 0.2s;
+    }
+    .lang-flag.tamil {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        animation: float 6s ease-in-out infinite 0.7s;
+    }
+    .lang-flag.marathi {
+        background: linear-gradient(135deg, #9f7aea, #805ad5);
+        animation: float 6s ease-in-out infinite 0.3s;
+    }
+    .lang-flag.gujarati {
+        background: linear-gradient(135deg, #fc8181, #f56565);
+        animation: float 6s ease-in-out infinite 0.8s;
+    }
+    .lang-flag.kannada {
+        background: linear-gradient(135deg, #68d391, #48bb78);
+        animation: float 6s ease-in-out infinite 0.4s;
+    }
+    .lang-flag.malayalam {
+        background: linear-gradient(135deg, #b794f4, #9f7aea);
+        animation: float 6s ease-in-out infinite 0.6s;
+    }
+    .lang-flag.punjabi {
+        background: linear-gradient(135deg, #f6ad55, #ed8936);
+        animation: float 6s ease-in-out infinite 0.9s;
+    }
+    .lang-flag.assamese {
+        background: linear-gradient(135deg, #4fd1c5, #38b2ac);
+        animation: float 6s ease-in-out infinite 0.1s;
+    }
+    .lang-flag.oriya {
+        background: linear-gradient(135deg, #f687b3, #ed64a6);
+        animation: float 6s ease-in-out infinite 0.5s;
+    }
+    .lang-flag.maithili {
+        background: linear-gradient(135deg, #cbd5e0, #a0aec0);
+        animation: float 6s ease-in-out infinite 0.2s;
+    }
+    .lang-flag.santali {
+        background: linear-gradient(135deg, #90cdf4, #63b3ed);
+        animation: float 6s ease-in-out infinite 0.7s;
+    }
+    .lang-flag.kashmiri {
+        background: linear-gradient(135deg, #d53f8c, #b83280);
+        animation: float 6s ease-in-out infinite 0.3s;
+    }
+    .lang-flag.nepali {
+        background: linear-gradient(135deg, #fbbf24, #d69e2e);
+        animation: float 6s ease-in-out infinite 0.8s;
+    }
+    .lang-flag.sindhi {
+        background: linear-gradient(135deg, #b794f4, #9f7aea);
+        animation: float 6s ease-in-out infinite 0.4s;
+    }
+    .lang-flag.dogri {
+        background: linear-gradient(135deg, #f687b3, #ed64a6);
+        animation: float 6s ease-in-out infinite 0.6s;
+    }
+    .lang-flag.konkani {
+        background: linear-gradient(135deg, #4fd1c5, #319795);
+        animation: float 6s ease-in-out infinite 0.9s;
+    }
+    .lang-flag.manipuri {
+        background: linear-gradient(135deg, #f6ad55, #dd6b20);
+        animation: float 6s ease-in-out infinite 0.1s;
+    }
+    .lang-flag.bodo {
+        background: linear-gradient(135deg, #a0aec0, #718096);
+        animation: float 6s ease-in-out infinite 0.5s;
+    }
+
+    .lang-info h3 {
+        font-size: 1.6rem;
+        margin-bottom: 0.25rem;
+        color: #2d3748;
+    }
+
+    .lang-info p {
+        color: #718096;
+        margin-bottom: 0.5rem;
+    }
+
+    .lang-progress {
+        width: 100%;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .lang-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 3px;
+        transition: width 1s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .lang-progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    /* ============ GRADE FILTER ============ */
+    .grade-filter-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+
+    .grade-filter-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #4a5568;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .grade-filter-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .grade-btn {
+        padding: 0.75rem 1.5rem;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        font-weight: 600;
+        color: #4a5568;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .grade-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .grade-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    /* ============ LEARNING TABS ============ */
+    .learning-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .learning-tab {
+        padding: 1rem;
+        background: transparent;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: #718096;
+    }
+
+    .learning-tab i {
+        font-size: 1.2rem;
+    }
+
+    .learning-tab:hover {
+        background: #f8f9fa;
+        color: #667eea;
+    }
+
+    .learning-tab.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+    }
+
+    /* ============ CONTENT SECTIONS ============ */
+    .content-section {
+        display: none;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .content-section.active {
+        display: block;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .section-header h2 {
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.8rem;
+    }
+
+    .filter-dropdown {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        color: #4a5568;
+        cursor: pointer;
+        background: white;
+    }
+
+    /* ============ STUDY MATERIAL CARDS ============ */
+    .materials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .material-card-enhanced {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #e2e8f0;
+        position: relative;
+    }
+
+    .material-card-enhanced:hover {
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 0 30px 50px rgba(102, 126, 234, 0.2);
+        border-color: #667eea;
+    }
+
+    .material-header {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .material-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .material-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .material-type-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        z-index: 2;
+    }
+
+    .type-pdf { background: #f5656520; color: #c53030; border: 1px solid #f56565; }
+    .type-image { background: #48bb7820; color: #2f855a; border: 1px solid #48bb78; }
+    .type-audio { background: #9f7aea20; color: #6b46c1; border: 1px solid #9f7aea; }
+    .type-document { background: #ed893620; color: #c05621; border: 1px solid #ed8936; }
+
+    .material-body {
+        padding: 1.5rem;
+    }
+
+    .material-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.75rem;
+        padding-right: 80px;
+    }
+
+    .material-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .meta-tag {
+        background: #f8f9fa;
+        padding: 0.35rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        color: #4a5568;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .material-description {
+        color: #718096;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .chapter-info {
+        background: #ebf4ff;
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: #4a5568;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .material-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .material-stats {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .stat {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-number {
+        font-weight: 700;
+        color: #2d3748;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #718096;
+    }
+
+    .btn-preview, .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn-download {
+        background: linear-gradient(135deg, #9f7aea, #805ad5);
+    }
+
+    .btn-preview:hover, .btn-download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    /* ============ VIDEO CARDS ============ */
+    .videos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .video-card-enhanced {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        transition: all 0.4s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .video-card-enhanced:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 50px rgba(0,0,0,0.15);
+    }
+
+    .video-preview {
+        height: 220px;
+        background: linear-gradient(135deg, #1a202c, #2d3748);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .video-preview video, .video-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .video-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .video-card-enhanced:hover .video-overlay {
+        opacity: 1;
+    }
+
+    .play-button {
+        width: 70px;
+        height: 70px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: #667eea;
+        cursor: pointer;
+        transform: scale(0.8);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+
+    .video-card-enhanced:hover .play-button {
+        transform: scale(1);
+    }
+
+    .play-button:hover {
+        background: #667eea;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .video-info {
+        padding: 1.5rem;
+    }
+
+    .video-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+
+    .video-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .video-description {
+        color: #718096;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .video-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-watch {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 1;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-download-video {
+        background: #48bb78;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-download-video:hover {
+        background: #38a169;
+        transform: translateY(-2px);
+    }
+
+    .video-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* ============ EMPTY STATES ============ */
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 20px;
+        color: #a0aec0;
+        grid-column: 1/-1;
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        color: #cbd5e0;
+    }
+
+    .empty-state h3 {
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ============ PROGRESS INDICATOR ============ */
+    .progress-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        margin-top: 1rem;
+    }
+
+    .progress-dot {
+        width: 10px;
+        height: 10px;
+        background: #48bb78;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    .progress-text {
+        color: #48bb78;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* ============ ACHIEVEMENT BADGE ============ */
+    .achievement-badge {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: white;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        border-left: 5px solid gold;
+        animation: slideInRight 0.5s ease-out;
+        z-index: 1000;
+    }
+
+    .achievement-icon {
+        font-size: 2rem;
+        color: gold;
+    }
+
+    .achievement-text h4 {
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+
+    .achievement-text p {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+
+    /* ============ ANIMATIONS ============ */
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ============ RESPONSIVE DESIGN ============ */
+    @media (max-width: 768px) {
+        .learning-hero {
+            padding: 1.5rem;
+        }
+
+        .hero-text h1 {
+            font-size: 2rem;
+        }
+
+        .student-stats {
+            width: 100%;
+            justify-content: space-around;
+        }
+
+        .language-selector-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .learning-tabs {
+            grid-template-columns: 1fr;
+        }
+
+        .materials-grid,
+        .videos-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .material-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .video-actions {
+            flex-direction: column;
+        }
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    .loading-spinner-large {
+        width: 50px;
+        height: 50px;
+        border-width: 5px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Flash message styles */
+    .flash-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        max-width: 350px;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        animation: slideInRight 0.5s ease-out;
+        color: white;
+    }
+    
+    .flash-message.success { background: #48bb78; }
+    .flash-message.error { background: #f56565; }
+    .flash-message.info { background: #667eea; }
+    
+    .animate-pop {
+        animation: pop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    @keyframes pop {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    /* Badge styles */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        background: rgba(255,255,255,0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="learning-container">
+    <!-- ============ HERO SECTION ============ -->
+    <div class="learning-hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>
+                    {% if student.language == 'english' %}
+                    👋 Welcome back, {{ student.name }}!
+                    {% elif student.language == 'hindi' %}
+                    👋 नमस्ते, {{ student.name }}!
+                    {% elif student.language == 'telugu' %}
+                    👋 నమస్కారం, {{ student.name }}!
+                    {% elif student.language == 'bengali' %}
+                    👋 নমস্কার, {{ student.name }}!
+                    {% elif student.language == 'tamil' %}
+                    👋 வணக்கம், {{ student.name }}!
+                    {% elif student.language == 'marathi' %}
+                    👋 नमस्कार, {{ student.name }}!
+                    {% elif student.language == 'gujarati' %}
+                    👋 નમસ્તે, {{ student.name }}!
+                    {% elif student.language == 'kannada' %}
+                    👋 ನಮಸ್ಕಾರ, {{ student.name }}!
+                    {% elif student.language == 'malayalam' %}
+                    👋 നമസ്കാരം, {{ student.name }}!
+                    {% elif student.language == 'punjabi' %}
+                    👋 ਸਤ ਸ੍ਰੀ ਅਕਾਲ, {{ student.name }}!
+                    {% else %}
+                    👋 Welcome back, {{ student.name }}!
+                    {% endif %}
+                </h1>
+                <p>
+                    {% if student.language == 'english' %}
+                    Learn in your preferred language with study materials and videos
+                    {% elif student.language == 'hindi' %}
+                    अपनी पसंदीदा भाषा में अध्ययन सामग्री और वीडियो के साथ सीखें
+                    {% elif student.language == 'telugu' %}
+                    మీకు నచ్చిన భాషలో అధ్యయన సామగ్రి మరియు వీడియోలతో నేర్చుకోండి
+                    {% elif student.language == 'bengali' %}
+                    আপনার পছন্দের ভাষায় অধ্যয়ন সামগ্রী এবং ভিডিও সহ শিখুন
+                    {% else %}
+                    Learn in your preferred language with study materials and videos
+                    {% endif %}
+                </p>
+            </div>
+            <div class="student-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ student.xp|default(0) }}</div>
+                    <div class="stat-label">XP</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ student.level|default(1) }}</div>
+                    <div class="stat-label">Level</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ student.medals|length if student.medals else 0 }}</div>
+                    <div class="stat-label">Medals</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ streak|default(7) }}</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ LANGUAGE SELECTION ============ -->
+    <h2 style="color: #2d3748; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-language" style="color: #667eea;"></i>
+        {% if student.language == 'english' %}
+        Choose Your Learning Language (22 Indian Languages)
+        {% elif student.language == 'hindi' %}
+        अपनी सीखने की भाषा चुनें (22 भारतीय भाषाएँ)
+        {% elif student.language == 'telugu' %}
+        మీ అభ్యాస భాషను ఎంచుకోండి (22 భారతీయ భాషలు)
+        {% elif student.language == 'bengali' %}
+        আপনার শেখার ভাষা নির্বাচন করুন (২২টি ভারতীয় ভাষা)
+        {% else %}
+        Choose Your Learning Language (22 Indian Languages)
+        {% endif %}
+    </h2>
+
+    <div class="language-selector-grid">
+        {% set languages = [
+            ('english','English','🇬🇧','Learn in English',75,'items available'),
+            ('hindi','हिंदी','🇮🇳','हिंदी में सीखें',45,'सामग्री उपलब्ध'),
+            ('telugu','తెలుగు','🇮🇳','తెలుగులో నేర్చుకోండి',30,'అంశాలు అందుబాటులో ఉన్నాయి'),
+            ('bengali','বাংলা','🇮🇳','বাংলায় শিখুন',20,'উপকরণ উপলব্ধ'),
+            ('tamil','தமிழ்','🇮🇳','தமிழில் கற்க',25,'உள்ளடக்கம் கிடைக்கிறது'),
+            ('marathi','मराठी','🇮🇳','मराठीत शिका',15,'साहित्य उपलब्ध'),
+            ('gujarati','ગુજરાતી','🇮🇳','ગુજરાતીમાં શીખો',10,'સામગ્રી ઉપલબ્ધ'),
+            ('kannada','ಕನ್ನಡ','🇮🇳','ಕನ್ನಡದಲ್ಲಿ ಕಲಿಯಿರಿ',12,'ವಿಷಯ ಲಭ್ಯವಿದೆ'),
+            ('malayalam','മലയാളം','🇮🇳','മലയാളത്തിൽ പഠിക്കൂ',8,'ഉള്ളടക്കം ലഭ്യമാണ്'),
+            ('punjabi','ਪੰਜਾਬੀ','🇮🇳','ਪੰਜਾਬੀ ਵਿੱਚ ਸਿੱਖੋ',5,'ਸਮੱਗਰੀ ਉਪਲਬਧ'),
+            ('assamese','অসমীয়া','🇮🇳','অসমীয়াত শিকক',3,'সামগ্রী উপলব্ধ'),
+            ('oriya','ଓଡ଼ିଆ','🇮🇳','ଓଡ଼ିଆରେ ଶିଖନ୍ତୁ',4,'ସାମଗ୍ରୀ ଉପଲବ୍ଧ'),
+            ('maithili','मैथिली','🇮🇳','मैथिली में सीखें',6,'सामग्री उपलब्ध'),
+            ('santali','ᱥᱟᱱᱛᱟᱲᱤ','🇮🇳','ᱥᱟᱱᱛᱟᱲᱤ ᱛᱮ ᱥᱮᱫᱟᱭ',2,'सामग्री उपलब्ध'),
+            ('kashmiri','कॉशुर','🇮🇳','कॉशुर में सीखें',3,'सामग्री उपलब्ध'),
+            ('nepali','नेपाली','🇳🇵','नेपालीमा सिक्नुहोस्',7,'सामग्री उपलब्ध'),
+            ('sindhi','سنڌي','🇮🇳','سنڌي ۾ سکيو',4,'सामग्री उपलब्ध'),
+            ('dogri','डोगरी','🇮🇳','डोगरी में सीखें',3,'सामग्री उपलब्ध'),
+            ('konkani','कोंकणी','🇮🇳','कोंकणी में सीखें',5,'सामग्री उपलब्ध'),
+            ('manipuri','মৈতৈলোন্','🇮🇳','মৈতৈলোন্ শিখুন',2,'सामग्री उपलब्ध'),
+            ('bodo','बर','🇮🇳','बोड़ो में सीखें',1,'सामग्री उपलब्ध')
+        ] %}
+
+        {% for code, name, flag, desc, default_progress, label in languages %}
+            {% set lang_total = language_counts.get(code, 0) if language_counts is defined else 0 %}
+            <div class="lang-card {% if student.language == code %}active{% endif %}" 
+                 onclick="setLearningLanguage('{{ code }}')">
+                <div class="lang-flag-wrapper lang-flag {{ code }}">
+                    {{ flag }}
+                </div>
+                <div class="lang-info">
+                    <h3>{{ name }}</h3>
+                    <p>{{ desc }}</p>
+                    <div class="lang-progress">
+                        <div class="lang-progress-bar"
+                             style="width: {{ language_progress.get(code, default_progress) if language_progress is defined else default_progress }}%">
+                        </div>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #718096; margin-top: 0.5rem;">
+                        {{ lang_total }} {{ label }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- ============ GRADE FILTER ============ -->
+    <div class="grade-filter-section">
+        <div class="grade-filter-title">
+            <i class="fas fa-graduation-cap"></i>
+            {% if student.language == 'english' %}
+            Select Grade Level
+            {% elif student.language == 'hindi' %}
+            कक्षा स्तर चुनें
+            {% elif student.language == 'telugu' %}
+            తరగతి స్థాయిని ఎంచుకోండి
+            {% else %}
+            Select Grade Level
+            {% endif %}
+        </div>
+        <div class="grade-filter-buttons">
+            <button class="grade-btn active" onclick="filterByGrade('all')">
+                <i class="fas fa-globe"></i> All
+            </button>
+            {% for grade in range(5, 13) %}
+            <button class="grade-btn" onclick="filterByGrade('{{ grade }}')">
+                <i class="fas fa-graduation-cap"></i> Grade {{ grade }}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ============ LEARNING TABS ============ -->
+    <div class="learning-tabs">
+        <button class="learning-tab active" onclick="switchLearningTab('materials')">
+            <i class="fas fa-book"></i>
+            {% if student.language == 'english' %}Study Materials
+            {% elif student.language == 'hindi' %}अध्ययन सामग्री
+            {% elif student.language == 'telugu' %}అధ్యయన సామగ్రి
+            {% else %}Study Materials{% endif %}
+            <span class="badge" style="background: white; color: #667eea; padding: 0.25rem 0.75rem; border-radius: 50px; margin-left: 0.5rem;">
+                {{ materials|selectattr('language', 'equalto', student.language)|list|length }}
+            </span>
+        </button>
+        <button class="learning-tab" onclick="switchLearningTab('videos')">
+            <i class="fas fa-video"></i>
+            {% if student.language == 'english' %}Video Lessons
+            {% elif student.language == 'hindi' %}वीडियो पाठ
+            {% elif student.language == 'telugu' %}వీడియో పాఠాలు
+            {% else %}Video Lessons{% endif %}
+            <span class="badge" style="background: white; color: #667eea; padding: 0.25rem 0.75rem; border-radius: 50px; margin-left: 0.5rem;">
+                {{ videos|selectattr('language', 'equalto', student.language)|list|length }}
+            </span>
+        </button>
+    </div>
+
+    <!-- ============ STUDY MATERIALS SECTION ============ -->
+    <div id="materials-section" class="content-section active">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-book" style="color: #48bb78;"></i>
+                {% if student.language == 'english' %}Available Study Materials
+                {% elif student.language == 'hindi' %}उपलब्ध अध्ययन सामग्री
+                {% elif student.language == 'telugu' %}అందుబాటులో ఉన్న అధ్యయన సామగ్రి
+                {% else %}Available Study Materials{% endif %}
+                <span id="materialCountDisplay" class="badge" style="background: #48bb78; color: white; font-size: 0.9rem;">
+                    {{ materials|selectattr('language', 'equalto', student.language)|list|length }}
+                </span>
+            </h2>
+            <select class="filter-dropdown" id="subjectFilter" onchange="filterBySubject(this.value)">
+                <option value="all">
+                    {% if student.language == 'english' %}All Subjects
+                    {% elif student.language == 'hindi' %}सभी विषय
+                    {% elif student.language == 'telugu' %}అన్ని సబ్జెక్ట్లు
+                    {% else %}All Subjects{% endif %}
+                </option>
+                <option value="mathematics">Mathematics</option>
+                <option value="science">Science</option>
+                <option value="physics">Physics</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="biology">Biology</option>
+                <option value="social">Social Studies</option>
+                <option value="history">History</option>
+                <option value="geography">Geography</option>
+                <option value="civics">Civics</option>
+                <option value="economics">Economics</option>
+                <option value="english">English</option>
+                <option value="hindi">हिंदी</option>
+                <option value="telugu">తెలుగు</option>
+                <option value="bengali">বাংলা</option>
+                <option value="tamil">தமிழ்</option>
+                <option value="sanskrit">Sanskrit</option>
+                <option value="computer">Computer Science</option>
+                <option value="environment">Environmental Studies</option>
+                <option value="general">General Knowledge</option>
+            </select>
+        </div>
+
+        <div class="materials-grid" id="materialsGrid">
+            {% if materials and materials|length > 0 %}
+                {% for material in materials %}
+                    {% if material.language == student.language %}
+                    <div class="material-card-enhanced" data-grade="{{ material.grade }}" data-subject="{{ material.subject|lower }}" data-language="{{ material.language }}">
+                        <div class="material-type-badge
+                            {% if material.type == 'pdf' %}type-pdf
+                            {% elif material.type == 'image' %}type-image
+                            {% elif material.type == 'audio' %}type-audio
+                            {% elif material.type == 'document' %}type-document
+                            {% endif %}">
+                            <i class="fas fa-{% if material.type == 'pdf' %}file-pdf{% elif material.type == 'image' %}image{% elif material.type == 'audio' %}headphones{% elif material.type == 'document' %}file-word{% else %}file{% endif %}"></i>
+                            {{ material.type|upper }}
+                        </div>
+                        <div class="material-header">
+                            <div class="material-icon">
+                                {% if material.type == 'pdf' %}
+                                <i class="fas fa-file-pdf"></i>
+                                {% elif material.type == 'image' %}
+                                <i class="fas fa-image"></i>
+                                {% elif material.type == 'audio' %}
+                                <i class="fas fa-headphones"></i>
+                                {% elif material.type == 'document' %}
+                                <i class="fas fa-file-word"></i>
+                                {% else %}
+                                <i class="fas fa-book"></i>
+                                {% endif %}
+                            </div>
+                            <div class="material-badge">
+                                <i class="fas fa-star"></i> +5 XP
+                            </div>
+                        </div>
+                        <div class="material-body">
+                            <div class="material-title">{{ material.title }}</div>
+                            <div class="material-meta">
+                                <span class="meta-tag">
+                                    <i class="fas fa-language"></i>
+                                    {% if material.language == 'english' %}English
+                                    {% elif material.language == 'hindi' %}हिंदी
+                                    {% elif material.language == 'telugu' %}తెలుగు
+                                    {% elif material.language == 'bengali' %}বাংলা
+                                    {% elif material.language == 'tamil' %}தமிழ்
+                                    {% elif material.language == 'marathi' %}मराठी
+                                    {% elif material.language == 'gujarati' %}ગુજરાતી
+                                    {% elif material.language == 'kannada' %}ಕನ್ನಡ
+                                    {% elif material.language == 'malayalam' %}മലയാളം
+                                    {% elif material.language == 'punjabi' %}ਪੰਜਾਬੀ
+                                    {% elif material.language == 'assamese' %}অসমীয়া
+                                    {% elif material.language == 'oriya' %}ଓଡ଼ିଆ
+                                    {% elif material.language == 'maithili' %}मैथिली
+                                    {% elif material.language == 'santali' %}ᱥᱟᱱᱛᱟᱲᱤ
+                                    {% elif material.language == 'kashmiri' %}कॉशुर
+                                    {% elif material.language == 'nepali' %}नेपाली
+                                    {% elif material.language == 'sindhi' %}سنڌي
+                                    {% elif material.language == 'dogri' %}डोगरी
+                                    {% elif material.language == 'konkani' %}कोंकणी
+                                    {% elif material.language == 'manipuri' %}মৈতৈলোন্
+                                    {% elif material.language == 'bodo' %}बर'
+                                    {% else %}{{ material.language|title }}{% endif %}
+                                </span>
+                                <span class="meta-tag">
+                                    <i class="fas fa-graduation-cap"></i> Grade {{ material.grade }}
+                                </span>
+                                <span class="meta-tag">
+                                    <i class="fas fa-bookmark"></i> {{ material.subject|title }}
+                                </span>
+                            </div>
+                           
+                            {% if material.chapter %}
+                            <div class="chapter-info">
+                                <i class="fas fa-bookmark" style="color: #667eea;"></i> {{ material.chapter }}
+                            </div>
+                            {% endif %}
+                           
+                            <p class="material-description">{{ material.description[:150] }}{% if material.description|length > 150 %}...{% endif %}</p>
+                           
+                            <div class="material-footer">
+                                <div class="material-stats">
+                                    <div class="stat">
+                                        <span class="stat-number">{{ material.views|default(0) }}</span>
+                                        <span class="stat-label">Views</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-number">{{ material.downloads|default(0) }}</span>
+                                        <span class="stat-label">Downloads</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <a href="{{ url_for('preview_study_material', material_id=material._id) }}"
+                                       target="_blank"
+                                       class="btn-preview"
+                                       onclick="trackMaterialView('{{ material._id }}')">
+                                        <i class="fas fa-eye"></i>
+                                        {% if student.language == 'english' %}Preview
+                                        {% elif student.language == 'hindi' %}पूर्वावलोकन
+                                        {% elif student.language == 'telugu' %}ప్రివ్యూ
+                                        {% else %}Preview{% endif %}
+                                    </a>
+                                    <a href="{{ url_for('download_study_material', material_id=material._id) }}"
+                                       class="btn-download">
+                                        <i class="fas fa-download"></i>
+                                        {% if student.language == 'english' %}Download
+                                        {% elif student.language == 'hindi' %}डाउनलोड
+                                        {% elif student.language == 'telugu' %}డౌన్‌లోడ్
+                                        {% else %}Download{% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-book-open"></i>
+                    <h3>
+                        {% if student.language == 'english' %}No Study Materials Available
+                        {% elif student.language == 'hindi' %}कोई अध्ययन सामग्री उपलब्ध नहीं है
+                        {% elif student.language == 'telugu' %}అధ్యయన సామగ్రి అందుబాటులో లేదు
+                        {% else %}No Study Materials Available{% endif %}
+                    </h3>
+                    <p>
+                        {% if student.language == 'english' %}Check back later for new materials in your language!
+                        {% elif student.language == 'hindi' %}अपनी भाषा में नई सामग्री के लिए बाद में देखें!
+                        {% elif student.language == 'telugu' %}మీ భాషలో కొత్త అంశాల కోసం తర్వాత చూడండి!
+                        {% else %}Check back later for new materials in your language!{% endif %}
+                    </p>
+                    <a href="/contact-admin" style="color: #667eea; text-decoration: underline; margin-top: 1rem; display: inline-block;">
+                        {% if student.language == 'english' %}Contact Admin
+                        {% elif student.language == 'hindi' %}व्यवस्थापक से संपर्क करें
+                        {% elif student.language == 'telugu' %}అడ్మిన్‌ను సంప్రదించండి
+                        {% else %}Contact Admin{% endif %}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ============ VIDEOS SECTION ============ -->
+    <div id="videos-section" class="content-section">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-video" style="color: #f56565;"></i>
+                {% if student.language == 'english' %}Video Lessons
+                {% elif student.language == 'hindi' %}वीडियो पाठ
+                {% elif student.language == 'telugu' %}వీడియో పాఠాలు
+                {% else %}Video Lessons{% endif %}
+                <span id="videoCountDisplay" class="badge" style="background: #f56565; color: white; font-size: 0.9rem;">
+                    {{ videos|selectattr('language', 'equalto', student.language)|list|length }}
+                </span>
+            </h2>
+        </div>
+
+        <div class="videos-grid" id="videosGrid">
+            {% if videos and videos|length > 0 %}
+                {% for video in videos %}
+                    {% if video.language == student.language %}
+                    <div class="video-card-enhanced" data-grade="{{ video.grade }}" data-language="{{ video.language }}" data-subject="{{ video.subject|lower }}">
+                        <div class="video-preview">
+                            {% if video.thumbnail %}
+                            <img src="{{ video.thumbnail }}" alt="{{ video.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <video src="{{ url_for('static', filename='uploads/videos/' + video.filename) if video.filename else '' }}" preload="metadata"></video>
+                            {% endif %}
+                            <div class="video-overlay">
+                                <div class="play-button" onclick="playVideo('{{ video._id }}', this)">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                            </div>
+                            <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; z-index: 3;">
+                                <i class="fas fa-clock"></i> {{ video.duration|default(30) }} min
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">{{ video.title }}</div>
+                            <div class="video-meta">
+                                <span class="meta-tag">
+                                    <i class="fas fa-language"></i>
+                                    {% if video.language == 'english' %}English
+                                    {% elif video.language == 'hindi' %}हिंदी
+                                    {% elif video.language == 'telugu' %}తెలుగు
+                                    {% elif video.language == 'bengali' %}বাংলা
+                                    {% elif video.language == 'tamil' %}தமிழ்
+                                    {% else %}{{ video.language|title }}{% endif %}
+                                </span>
+                                <span class="meta-tag">
+                                    <i class="fas fa-graduation-cap"></i> Grade {{ video.grade }}
+                                </span>
+                                <span class="meta-tag">
+                                    <i class="fas fa-book"></i> {{ video.subject|title }}
+                                </span>
+                            </div>
+                           
+                            {% if video.chapter %}
+                            <div style="background: #ebf4ff; padding: 0.5rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                                <i class="fas fa-bookmark" style="color: #667eea;"></i> {{ video.chapter }}
+                            </div>
+                            {% endif %}
+                           
+                            <p class="video-description">{{ video.description[:150] }}{% if video.description|length > 150 %}...{% endif %}</p>
+                           
+                            <div class="video-stats">
+                                <span style="color: #667eea;">
+                                    <i class="fas fa-eye"></i> {{ video.views|default(0) }} views
+                                </span>
+                                <span style="color: #48bb78;">
+                                    <i class="fas fa-download"></i> {{ video.downloads|default(0) }} downloads
+                                </span>
+                            </div>
+                           
+                            <div class="video-actions">
+                                <a href="{{ url_for('watch_video', video_id=video._id) }}"
+                                   target="_blank"
+                                   class="btn-watch"
+                                   onclick="trackVideoView('{{ video._id }}')">
+                                    <i class="fas fa-play"></i>
+                                    {% if student.language == 'english' %}Watch Now
+                                    {% elif student.language == 'hindi' %}अभी देखें
+                                    {% elif student.language == 'telugu' %}ఇప్పుడే చూడండి
+                                    {% else %}Watch Now{% endif %}
+                                </a>
+                                <a href="{{ url_for('download_video', video_id=video._id) }}" class="btn-download-video">
+                                    <i class="fas fa-download"></i>
+                                    {% if student.language == 'english' %}Download
+                                    {% elif student.language == 'hindi' %}डाउनलोड
+                                    {% elif student.language == 'telugu' %}డౌన్‌లోడ్
+                                    {% else %}Download{% endif %}
+                                </a>
+                            </div>
+                           
+                            <div class="progress-indicator">
+                                <span class="progress-dot"></span>
+                                <span class="progress-text">
+                                    {% if student.language == 'english' %}Available for offline learning
+                                    {% elif student.language == 'hindi' %}ऑफलाइन सीखने के लिए उपलब्ध
+                                    {% elif student.language == 'telugu' %}ఆఫ్‌లైన్ అభ్యాసానికి అందుబాటులో ఉంది
+                                    {% else %}Available for offline learning{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-video-slash"></i>
+                    <h3>
+                        {% if student.language == 'english' %}No Videos Available
+                        {% elif student.language == 'hindi' %}कोई वीडियो उपलब्ध नहीं है
+                        {% elif student.language == 'telugu' %}వీడియోలు అందుబాటులో లేవు
+                        {% else %}No Videos Available{% endif %}
+                    </h3>
+                    <p>
+                        {% if student.language == 'english' %}Check back later for educational videos in your language!
+                        {% elif student.language == 'hindi' %}अपनी भाषा में शैक्षिक वीडियो के लिए बाद में देखें!
+                        {% elif student.language == 'telugu' %}మీ భాషలో విద్యా వీడియోల కోసం తర్వాత చూడండి!
+                        {% else %}Check back later for educational videos in your language!{% endif %}
+                    </p>
+                    <a href="/contact-admin" style="color: #667eea; text-decoration: underline; margin-top: 1rem; display: inline-block;">
+                        {% if student.language == 'english' %}Contact Admin
+                        {% elif student.language == 'hindi' %}व्यवस्थापक से संपर्क करें
+                        {% elif student.language == 'telugu' %}అడ్మిన్‌ను సంప్రదించండి
+                        {% else %}Contact Admin{% endif %}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ============ VIDEO MODAL ============ -->
+<div id="videoModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 800px; padding: 0; overflow: hidden;">
+        <div style="position: relative;">
+            <video id="modalVideo" controls style="width: 100%; height: auto;" autoplay>
+                <source src="" type="video/mp4">
+            </video>
+            <button onclick="closeVideoModal()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============ GLOBAL STATE ============
+    let currentLanguage = '{{ student.language|default("english") }}';
+    let currentGrade = 'all';
+    let currentSubject = 'all';
+    let currentVideo = null;
+
+    // ============ LANGUAGE SELECTION ============
+    function setLearningLanguage(lang) {
+        // Show loading
+        showLoading();
+
+        // Update active card
+        document.querySelectorAll('.lang-card').forEach(card => {
+            card.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+
+        // Save preference to server
+        fetch('/student/language', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({language: lang})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const messages = {
+                    'english': 'Learning language set to English',
+                    'hindi': 'सीखने की भाषा हिंदी में सेट की गई',
+                    'telugu': 'అభ్యాస భాష తెలుగులో సెట్ చేయబడింది',
+                    'bengali': 'শেখার ভাষা বাংলায় সেট করা হয়েছে',
+                    'tamil': 'கற்றல் மொழி தமிழில் அமைக்கப்பட்டது',
+                };
+                showNotification(messages[lang] || 'Language updated', 'success');
+               
+                // Reload page to show content in new language
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                hideLoading();
+                showNotification('Error updating language', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error updating language:', error);
+            hideLoading();
+            showNotification('Error updating language', 'error');
+        });
+    }
+
+    // ============ GRADE FILTER ============
+    function filterByGrade(grade) {
+        currentGrade = grade;
+       
+        // Update active button
+        document.querySelectorAll('.grade-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
+       
+        // Filter all content
+        filterContent();
+    }
+
+    // ============ SUBJECT FILTER ============
+    function filterBySubject(subject) {
+        currentSubject = subject;
+        filterContent();
+    }
+
+    // ============ CONTENT FILTERING ============
+    function filterContent() {
+        let materialCount = 0;
+        let videoCount = 0;
+
+        // Filter materials
+        document.querySelectorAll('#materialsGrid .material-card-enhanced').forEach(card => {
+            let show = true;
+            if (currentGrade !== 'all' && card.dataset.grade != currentGrade) show = false;
+            if (currentSubject !== 'all' && card.dataset.subject !== currentSubject && card.dataset.subject !== currentSubject.toLowerCase()) show = false;
+            card.style.display = show ? 'block' : 'none';
+            if (show) materialCount++;
+        });
+
+        // Filter videos
+        document.querySelectorAll('#videosGrid .video-card-enhanced').forEach(card => {
+            let show = true;
+            if (currentGrade !== 'all' && card.dataset.grade != currentGrade) show = false;
+            if (currentSubject !== 'all' && card.dataset.subject !== currentSubject && card.dataset.subject !== currentSubject.toLowerCase()) show = false;
+            card.style.display = show ? 'block' : 'none';
+            if (show) videoCount++;
+        });
+
+        // Update counts
+        const materialCountDisplay = document.getElementById('materialCountDisplay');
+        const videoCountDisplay = document.getElementById('videoCountDisplay');
+        if (materialCountDisplay) materialCountDisplay.textContent = materialCount;
+        if (videoCountDisplay) videoCountDisplay.textContent = videoCount;
+    }
+
+    // ============ TAB SWITCHING ============
+    function switchLearningTab(tab) {
+        document.querySelectorAll('.learning-tab').forEach(t => {
+            t.classList.remove('active');
+        });
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        } else {
+            // Fallback for direct calls
+            const activeTab = document.querySelector(`.learning-tab[onclick*="${tab}"]`);
+            if (activeTab) activeTab.classList.add('active');
+        }
+
+        document.querySelectorAll('.content-section').forEach(s => {
+            s.classList.remove('active');
+        });
+        document.getElementById(tab + '-section').classList.add('active');
+    }
+
+    // ============ VIDEO PLAYER ============
+    function playVideo(videoId, element) {
+        const videoCard = element.closest('.video-card-enhanced');
+        const videoSrc = videoCard.querySelector('video source')?.src ||
+                        videoCard.querySelector('video')?.src ||
+                        (videoCard.querySelector('img') ? '' : null);
+
+        if (!videoSrc) {
+            // If no video source found, open the watch page instead
+            window.open(`/watch_video/${videoId}`, '_blank');
+            return;
+        }
+
+        const modal = document.getElementById('videoModal');
+        const modalVideo = document.getElementById('modalVideo');
+        const source = modalVideo.querySelector('source');
+       
+        source.src = videoSrc;
+        modalVideo.load();
+        modal.style.display = 'flex';
+
+        // Track view
+        trackVideoView(videoId);
+
+        // Award XP for watching
+        const messages = {
+            'english': '+5 XP earned for watching!',
+            'hindi': '+5 एक्सपी देखने के लिए मिला!',
+            'telugu': '+5 ఎక్స్‌పి చూసినందుకు పొందారు!',
+            'bengali': '+5 এক্সপি দেখার জন্য অর্জিত!'
+        };
+        showNotification(messages[currentLanguage] || '+5 XP earned!', 'success');
+    }
+
+    function closeVideoModal() {
+        const modal = document.getElementById('videoModal');
+        const modalVideo = document.getElementById('modalVideo');
+        if (modalVideo) modalVideo.pause();
+        modal.style.display = 'none';
+    }
+
+    // Track material view
+    function trackMaterialView(materialId) {
+        fetch('/api/study-material/' + materialId + '/view', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const messages = {
+                    'english': '+5 XP earned for viewing!',
+                    'hindi': '+5 एक्सपी देखने के लिए मिला!',
+                    'telugu': '+5 ఎక్స్‌పి చూసినందుకు పొందారు!',
+                    'bengali': '+5 এক্সপি দেখার জন্য অর্জিত!'
+                };
+                showNotification(messages[currentLanguage] || '+5 XP earned!', 'success');
+            }
+        })
+        .catch(error => console.error('Error tracking view:', error));
+    }
+
+    // Track video view
+    function trackVideoView(videoId) {
+        fetch('/api/videos/' + videoId + '/view', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({duration: 0})
+        })
+        .then(response => response.json())
+        .catch(error => console.error('Error tracking view:', error));
+    }
+
+    // ============ LOADING INDICATOR ============
+    function showLoading() {
+        const loader = document.createElement('div');
+        loader.id = 'globalLoader';
+        loader.style.position = 'fixed';
+        loader.style.top = '0';
+        loader.style.left = '0';
+        loader.style.width = '100%';
+        loader.style.height = '100%';
+        loader.style.background = 'rgba(255,255,255,0.8)';
+        loader.style.display = 'flex';
+        loader.style.alignItems = 'center';
+        loader.style.justifyContent = 'center';
+        loader.style.zIndex = '9999';
+        loader.innerHTML = '<div class="loading-spinner loading-spinner-large"></div>';
+        document.body.appendChild(loader);
+    }
+
+    function hideLoading() {
+        const loader = document.getElementById('globalLoader');
+        if (loader) loader.remove();
+    }
+
+    // ============ NOTIFICATION SYSTEM ============
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `flash-message ${type} animate-pop`;
+       
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" style="font-size: 1.2rem;"></i>
+                <span style="flex: 1;">${message}</span>
+                <button onclick="this.closest('.flash-message').remove()" style="background: none; border: none; color: inherit; cursor: pointer; font-size: 1rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+       
+        document.body.appendChild(notification);
+       
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 5000);
+    }
+
+    // ============ INITIALIZATION ============
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('videoModal');
+            if (event.target === modal) {
+                closeVideoModal();
+            }
+        };
+
+        // Add animation to cards on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.material-card-enhanced, .video-card-enhanced').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(el);
+        });
+
+        // Update counts initially
+        setTimeout(() => filterContent(), 100);
+
+        // Check for URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab && (tab === 'materials' || tab === 'videos')) {
+            switchLearningTab(tab);
+        }
+        
+        // Add slideOutRight animation style
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOutRight {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+
+    // ============ KEYBOARD SHORTCUTS ============
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+1 for Materials, Ctrl+2 for Videos
+        if (e.ctrlKey && e.key === '1') {
+            e.preventDefault();
+            const materialTab = document.querySelector('.learning-tab[onclick*="materials"]');
+            if (materialTab) materialTab.click();
+        }
+        if (e.ctrlKey && e.key === '2') {
+            e.preventDefault();
+            const videoTab = document.querySelector('.learning-tab[onclick*="videos"]');
+            if (videoTab) videoTab.click();
+        }
+
+        // Escape to close video modal
+        if (e.key === 'Escape') {
+            closeVideoModal();
+        }
+    });
+</script>
+
+<!-- Add modal styles -->
+<style>
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 15px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.loading-spinner-large {
+    width: 50px;
+    height: 50px;
+    border-width: 5px;
+}
+
+/* Ensure cards are visible after filtering */
+.material-card-enhanced[style*="display: none"],
+.video-card-enhanced[style*="display: none"] {
+    display: none !important;
+}
+</style>
+{% endblock %}

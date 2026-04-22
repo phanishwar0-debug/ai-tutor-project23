@@ -1,0 +1,723 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Admin - Support{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contact-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .contact-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .contact-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .contact-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.8rem;
+    }
+
+    .contact-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .contact-form {
+        padding: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .form-label i {
+        margin-right: 0.5rem;
+        color: #667eea;
+    }
+
+    .required-field::after {
+        content: "*";
+        color: #f56565;
+        margin-left: 0.25rem;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .priority-options {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    .priority-option {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .priority-option input[type="radio"] {
+        display: none;
+    }
+
+    .priority-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        font-weight: 500;
+    }
+
+    .priority-option input[type="radio"]:checked + .priority-label {
+        border-color: #667eea;
+        background: #f8fafc;
+        color: #667eea;
+    }
+
+    .priority-option.low .priority-label:hover {
+        border-color: #48bb78;
+    }
+
+    .priority-option.medium .priority-label:hover {
+        border-color: #4299e1;
+    }
+
+    .priority-option.high .priority-label:hover {
+        border-color: #ed8936;
+    }
+
+    .priority-option.urgent .priority-label:hover {
+        border-color: #f56565;
+    }
+
+    .file-upload {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-upload-btn {
+        display: inline-block;
+        padding: 0.75rem 1rem;
+        background: #f8fafc;
+        border: 2px dashed #cbd5e0;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: center;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-btn:hover {
+        border-color: #667eea;
+        background: #ebf4ff;
+    }
+
+    .file-upload input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-name {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #718096;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+    }
+
+    .submit-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .alert-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border-left: 4px solid #48bb78;
+    }
+
+    .alert-error {
+        background: #fed7d7;
+        color: #742a2a;
+        border-left: 4px solid #f56565;
+    }
+
+    .alert-info {
+        background: #bee3f8;
+        color: #2c5282;
+        border-left: 4px solid #4299e1;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .character-count {
+        font-size: 0.75rem;
+        color: #718096;
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+
+    .success-message {
+        background: #48bb78;
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .success-message i {
+        font-size: 1.2rem;
+    }
+
+    @media (max-width: 768px) {
+        .contact-container {
+            margin: 1rem auto;
+        }
+        
+        .contact-form {
+            padding: 1.5rem;
+        }
+        
+        .priority-options {
+            flex-direction: column;
+        }
+        
+        .priority-option {
+            min-width: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-container">
+    <div class="contact-card">
+        <div class="contact-header">
+            <h1>
+                <i class="fas fa-headset"></i>
+                Contact Support
+            </h1>
+            <p>We're here to help! Send us your questions or concerns.</p>
+        </div>
+        
+        <div class="contact-form">
+            <!-- Success Message -->
+            {% if success %}
+            <div class="success-message">
+                <i class="fas fa-check-circle"></i>
+                <span>Your message has been sent successfully! Our team will get back to you within 24-48 hours.</span>
+            </div>
+            {% endif %}
+            
+            <!-- Alert Messages -->
+            <div id="alertContainer"></div>
+            
+            <form id="contactForm" enctype="multipart/form-data">
+                <!-- Student Name (Auto-filled if logged in) -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-user"></i>
+                        <span class="required-field">Your Name</span>
+                    </label>
+                    <input type="text" class="form-control" id="studentName" 
+                           value="{{ student.name if student else current_user.name if current_user else '' }}"
+                           {% if student or current_user %}readonly{% endif %}
+                           required>
+                </div>
+                
+                <!-- Student Email -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope"></i>
+                        <span class="required-field">Email Address</span>
+                    </label>
+                    <input type="email" class="form-control" id="studentEmail" 
+                           value="{{ student.email if student else current_user.email if current_user else '' }}"
+                           {% if student or current_user %}readonly{% endif %}
+                           required>
+                </div>
+                
+                <!-- Category -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-tag"></i>
+                        <span class="required-field">Category</span>
+                    </label>
+                    <select class="form-select" id="category" required>
+                        <option value="">Select a category</option>
+                        <option value="technical">Technical Issue</option>
+                        <option value="academic">Academic Question</option>
+                        <option value="account">Account Problem</option>
+                        <option value="feedback">Feedback/Suggestion</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <!-- Subject -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-heading"></i>
+                        <span class="required-field">Subject</span>
+                    </label>
+                    <input type="text" class="form-control" id="subject" 
+                           placeholder="Brief summary of your issue"
+                           required>
+                </div>
+                
+                <!-- Priority -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-flag"></i>
+                        <span class="required-field">Priority</span>
+                    </label>
+                    <div class="priority-options">
+                        <div class="priority-option low">
+                            <input type="radio" name="priority" id="priorityLow" value="low" checked>
+                            <label for="priorityLow" class="priority-label">
+                                <i class="fas fa-arrow-down"></i>
+                                Low
+                            </label>
+                        </div>
+                        <div class="priority-option medium">
+                            <input type="radio" name="priority" id="priorityMedium" value="medium">
+                            <label for="priorityMedium" class="priority-label">
+                                <i class="fas fa-minus"></i>
+                                Medium
+                            </label>
+                        </div>
+                        <div class="priority-option high">
+                            <input type="radio" name="priority" id="priorityHigh" value="high">
+                            <label for="priorityHigh" class="priority-label">
+                                <i class="fas fa-arrow-up"></i>
+                                High
+                            </label>
+                        </div>
+                        <div class="priority-option urgent">
+                            <input type="radio" name="priority" id="priorityUrgent" value="urgent">
+                            <label for="priorityUrgent" class="priority-label">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Urgent
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Message -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-comment"></i>
+                        <span class="required-field">Message</span>
+                    </label>
+                    <textarea class="form-control" id="message" 
+                              placeholder="Please provide detailed information about your issue..."
+                              rows="6"
+                              required></textarea>
+                    <div class="character-count">
+                        <span id="charCount">0</span> / 2000 characters
+                    </div>
+                </div>
+                
+                <!-- Attachment -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-paperclip"></i>
+                        Attachment (Optional)
+                    </label>
+                    <div class="file-upload">
+                        <div class="file-upload-btn">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Choose File
+                        </div>
+                        <input type="file" id="attachment" name="attachment" 
+                               accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt">
+                    </div>
+                    <div class="file-name" id="fileName"></div>
+                    <small class="text-muted">Max size: 10MB. Allowed: JPG, PNG, PDF, DOC, TXT</small>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    <span id="btnText">Send Message</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get DOM elements
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const alertContainer = document.getElementById('alertContainer');
+    const messageTextarea = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    const fileInput = document.getElementById('attachment');
+    const fileName = document.getElementById('fileName');
+    
+    // Character counter
+    messageTextarea.addEventListener('input', function() {
+        const count = this.value.length;
+        charCount.textContent = count;
+        
+        if (count > 2000) {
+            charCount.style.color = '#f56565';
+        } else if (count > 1800) {
+            charCount.style.color = '#ed8936';
+        } else {
+            charCount.style.color = '#718096';
+        }
+    });
+    
+    // File name display
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const fileSize = (file.size / 1024 / 1024).toFixed(2);
+            fileName.textContent = `${file.name} (${fileSize} MB)`;
+            
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('File size must be less than 10MB', 'error');
+                fileInput.value = '';
+                fileName.textContent = '';
+                return;
+            }
+            
+            // Validate file type
+            const allowedExts = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'txt'];
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedExts.includes(fileExt)) {
+                showAlert('File type not allowed. Please upload JPG, PNG, PDF, DOC, or TXT files.', 'error');
+                fileInput.value = '';
+                fileName.textContent = '';
+            }
+        } else {
+            fileName.textContent = '';
+        }
+    });
+    
+    // Show alert message
+    function showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        
+        let icon = '';
+        if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+        else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+        else icon = '<i class="fas fa-info-circle"></i>';
+        
+        alertDiv.innerHTML = `
+            ${icon}
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        alertContainer.appendChild(alertDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentElement) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+    
+    // Clear all alerts
+    function clearAlerts() {
+        alertContainer.innerHTML = '';
+    }
+    
+    // Set loading state
+    function setLoading(isLoading) {
+        if (isLoading) {
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<span class="btn-spinner"></span> Sending...';
+        } else {
+            submitBtn.disabled = false;
+            btnText.innerHTML = 'Send Message';
+        }
+    }
+    
+    // Email validation helper
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    // Form submission - FIXED: Using correct API endpoint
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Clear previous alerts
+        clearAlerts();
+        
+        // Validate form
+        const studentName = document.getElementById('studentName').value.trim();
+        const studentEmail = document.getElementById('studentEmail').value.trim();
+        const category = document.getElementById('category').value;
+        const subject = document.getElementById('subject').value.trim();
+        const message = document.getElementById('message').value.trim();
+        
+        if (!studentName) {
+            showAlert('Please enter your name', 'error');
+            document.getElementById('studentName').focus();
+            return;
+        }
+        
+        if (!studentEmail) {
+            showAlert('Please enter your email address', 'error');
+            document.getElementById('studentEmail').focus();
+            return;
+        }
+        
+        if (!isValidEmail(studentEmail)) {
+            showAlert('Please enter a valid email address', 'error');
+            document.getElementById('studentEmail').focus();
+            return;
+        }
+        
+        if (!category) {
+            showAlert('Please select a category', 'error');
+            document.getElementById('category').focus();
+            return;
+        }
+        
+        if (!subject) {
+            showAlert('Please enter a subject', 'error');
+            document.getElementById('subject').focus();
+            return;
+        }
+        
+        if (subject.length < 5) {
+            showAlert('Subject must be at least 5 characters long', 'error');
+            document.getElementById('subject').focus();
+            return;
+        }
+        
+        if (!message) {
+            showAlert('Please enter your message', 'error');
+            document.getElementById('message').focus();
+            return;
+        }
+        
+        if (message.length < 10) {
+            showAlert('Message must be at least 10 characters long', 'error');
+            document.getElementById('message').focus();
+            return;
+        }
+        
+        if (message.length > 2000) {
+            showAlert('Message cannot exceed 2000 characters', 'error');
+            document.getElementById('message').focus();
+            return;
+        }
+        
+        // Get selected priority
+        const priority = document.querySelector('input[name="priority"]:checked').value;
+        
+        // Create FormData object for file upload
+        const formData = new FormData();
+        formData.append('name', studentName);
+        formData.append('email', studentEmail);
+        formData.append('category', category);
+        formData.append('subject', subject);
+        formData.append('priority', priority);
+        formData.append('message', message);
+        
+        // Add file if selected
+        const file = fileInput.files[0];
+        if (file) {
+            formData.append('attachment', file);
+        }
+        
+        // Set loading state
+        setLoading(true);
+        
+        try {
+            // Send request to server - USING THE CORRECT API ENDPOINT
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                // Success
+                showAlert('Message sent successfully! Our team will get back to you within 24-48 hours.', 'success');
+                
+                // Reset form
+                form.reset();
+                
+                // Reset character count
+                charCount.textContent = '0';
+                
+                // Reset file name display
+                fileName.textContent = '';
+                
+                // Reset priority to low
+                document.getElementById('priorityLow').checked = true;
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Clear the form after 3 seconds and optionally redirect
+                setTimeout(() => {
+                    // You can uncomment this if you want to redirect after success
+                    // window.location.href = '/student/dashboard';
+                }, 3000);
+            } else {
+                // Error from server
+                showAlert(data.error || 'Failed to send message. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            showAlert('Network error. Please check your connection and try again.', 'error');
+        } finally {
+            // Reset loading state
+            setLoading(false);
+        }
+    });
+    
+    // Add input event listeners for real-time validation
+    document.getElementById('studentEmail').addEventListener('input', function() {
+        if (this.value && !isValidEmail(this.value)) {
+            this.style.borderColor = '#f56565';
+        } else {
+            this.style.borderColor = '#e2e8f0';
+        }
+    });
+    
+    // Prevent multiple submissions
+    let isSubmitting = false;
+    form.addEventListener('submit', function(e) {
+        if (isSubmitting) {
+            e.preventDefault();
+            showAlert('Please wait, your message is being sent...', 'info');
+            return;
+        }
+        isSubmitting = true;
+        setTimeout(() => {
+            isSubmitting = false;
+        }, 5000);
+    });
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Contact form loaded - ready to send messages');
+        
+        // If there was a success message in URL, show it
+        {% if success %}
+        showAlert('Message sent successfully! Our team will get back to you soon.', 'success');
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-login-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    }
+    
+    .admin-login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        padding: 3rem;
+        width: 100%;
+        max-width: 450px;
+        animation: slideDown 0.8s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .admin-login-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f56565);
+        animation: gradientFlow 3s ease infinite;
+    }
+    
+    @keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    .admin-login-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    
+    .admin-logo {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 3rem;
+        color: white;
+        position: relative;
+        animation: rotate 20s linear infinite;
+    }
+    
+    .admin-logo::after {
+        content: '';
+        position: absolute;
+        width: 110px;
+        height: 110px;
+        border: 2px dashed #667eea;
+        border-radius: 50%;
+        animation: rotateReverse 25s linear infinite;
+    }
+    
+    @keyframes rotateReverse {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
+    }
+    
+    .admin-login-header h1 {
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+    
+    .admin-login-header p {
+        color: #718096;
+        font-size: 1.1rem;
+    }
+    
+    .admin-login-form .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .admin-form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .admin-form-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+    }
+    
+    .admin-form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+    
+    .input-with-icon {
+        position: relative;
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #718096;
+        font-size: 1.2rem;
+    }
+    
+    .admin-login-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .admin-login-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .admin-login-btn:hover::before {
+        left: 100%;
+    }
+    
+    .admin-login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .admin-login-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .admin-login-footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .admin-login-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    .security-notice {
+        background: #fffaf0;
+        border: 1px solid #feebc8;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+        text-align: center;
+        color: #c05621;
+        font-size: 0.9rem;
+    }
+    
+    .security-notice i {
+        margin-right: 0.5rem;
+    }
+    
+    .admin-particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .particle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #667eea;
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: floatParticle 15s linear infinite;
+    }
+    
+    @keyframes floatParticle {
+        0% {
+            transform: translateY(100vh) translateX(0) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 0.3;
+        }
+        90% {
+            opacity: 0.3;
+        }
+        100% {
+            transform: translateY(-100px) translateX(100px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-particles" id="particles"></div>
+
+<div class="admin-login-container">
+    <div class="admin-login-card">
+        <div class="admin-login-header">
+            <div class="admin-logo">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h1>Administrator Portal</h1>
+            <p>Secure access to system management</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('admin_login') }}" class="admin-login-form">
+            <div class="form-group">
+                <label class="admin-form-label">
+                    <i class="fas fa-user-cog"></i> Admin Email
+                </label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" name="email" class="admin-form-input" 
+                           placeholder="admin@aitutor.com" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="admin-form-label">
+                    <i class="fas fa-key"></i> Admin Password
+                </label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" name="password" class="admin-form-input" 
+                           placeholder="Enter admin password" required
+                           id="adminPassword">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="remember" name="remember">
+                    <span>Remember this device</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="admin-login-btn">
+                <i class="fas fa-sign-in-alt"></i> Access Admin Dashboard
+            </button>
+        </form>
+        
+        <div class="security-notice">
+            <i class="fas fa-shield-alt"></i>
+            This portal is restricted to authorized administrators only.
+        </div>
+        
+        <div class="admin-login-footer">
+            <p>Are you a student? <a href="{{ url_for('student_login') }}">Student Login</a></p>
+            <p>Forgot credentials? Contact system administrator</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Create floating particles
+    function createParticles() {
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 20;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Random position
+            const left = Math.random() * 100;
+            particle.style.left = `${left}%`;
+            
+            // Random size
+            const size = 5 + Math.random() * 10;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            
+            // Random color
+            const colors = ['#667eea', '#764ba2', '#f56565', '#ed8936', '#48bb78'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.background = color;
+            
+            // Random animation delay
+            const delay = Math.random() * 15;
+            particle.style.animationDelay = `${delay}s`;
+            
+            particlesContainer.appendChild(particle);
+        }
+    }
+    
+    // Add security feature - hide page when not focused
+    let blurTime;
+    
+    window.addEventListener('blur', () => {
+        blurTime = new Date();
+        document.title = "⚠️ Admin Portal - Session Active";
+    });
+    
+    window.addEventListener('focus', () => {
+        if (blurTime) {
+            const secondsAway = (new Date() - blurTime) / 1000;
+            if (secondsAway > 30) { // 30 seconds timeout
+                location.reload(); // Reload for security
+            }
+        }
+        document.title = "Admin Login - AI Tutor";
+    });
+    
+    // Add keypress listener for Ctrl+Shift+A (admin shortcut)
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+            e.preventDefault();
+            document.querySelector('input[name="email"]').focus();
+        }
+    });
+    
+    // Initialize particles on load
+    document.addEventListener('DOMContentLoaded', createParticles);
+    
+    // Add shake animation on wrong password attempt (simulated)
+    document.querySelector('.admin-login-form').addEventListener('submit', function(e) {
+        const passwordField = document.getElementById('adminPassword');
+        
+        // Simulate wrong password animation (you can remove this in production)
+        setTimeout(() => {
+            passwordField.classList.add('animate-shake');
+            setTimeout(() => {
+                passwordField.classList.remove('animate-shake');
+            }, 1000);
+        }, 100);
+    });
+</script>
+{% endblock %}
