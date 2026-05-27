@@ -37,8 +37,8 @@ app.config['ALLOWED_ATTACHMENT_EXTENSIONS'] = {'.jpg', '.jpeg', '.png', '.pdf', 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'fanishwarthannrru@gmail.com'
-app.config['MAIL_PASSWORD'] = 'fjbc yffp eusw jchf'
+app.config['MAIL_USERNAME'] = 'youremail@gmail.com'
+app.config['MAIL_PASSWORD'] = 'your gmail app password'
 app.config['MAIL_DEFAULT_SENDER'] = 'noreply@aitutor.com'
 
 # Create upload directories with absolute paths
